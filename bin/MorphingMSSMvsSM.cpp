@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
-  bkgs = {"ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
-  bkgs_em = {"W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
+  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
+  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
   std::cout << "[INFO] Considerung the following processes:\n";
 
   if (chan.find("em") != std::string::npos) {
