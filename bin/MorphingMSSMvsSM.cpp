@@ -46,7 +46,6 @@ int main(int argc, char **argv) {
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
-  bool remove_empty_categories = false;
   string categories = "sm"; // "sm", "mssm", "mssm_vs_sm", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
@@ -58,7 +57,6 @@ int main(int argc, char **argv) {
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
-      ("remove_empty_categories", po::value<bool>(&remove_empty_categories)->default_value(remove_empty_categories))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("categories", po::value<string>(&categories)->default_value(categories))
       ("binomial_bbb", po::value<bool>(&binomial_bbb)->default_value(binomial_bbb))
