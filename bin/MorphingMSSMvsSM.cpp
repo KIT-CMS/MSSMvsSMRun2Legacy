@@ -38,55 +38,29 @@ int main(int argc, char **argv) {
   using ch::JoinStr;
 
   // Define program options
-  string output_folder = "sm_run2";
-  string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes";
-  string input_folder_em = "Vienna/";
-  string input_folder_et = "Vienna/";
-  string input_folder_mt = "Vienna/";
-  string input_folder_tt = "Vienna/";
+  string output_folder = "output_MSSMvsSM_Run2";
+  string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string chan = "all";
-  string postfix = "-ML";
-  bool regional_jec = true;
-  bool ggh_wg1 = true;
+  string variable = "m_sv_puppi";
   bool auto_rebin = false;
-  bool rebin_categories = true;
-  bool manual_rebin_for_yields = false;
   bool real_data = false;
-  bool jetfakes = true;
-  bool embedding = false;
-  bool classic_bbb = false;
   bool binomial_bbb = false;
   bool verbose = false;
   bool remove_empty_categories = false;
-  string stxs_signals = "stxs_stage0"; // "stxs_stage0" or "stxs_stage1p1"
-  string categories = "stxs_stage0"; // "stxs_stage0", "stxs_stage1p1" or "gof"
-  string gof_category_name = "gof";
-  int era = 2016; // 2016 or 2017
+  string categories = "sm"; // "sm", "mssm", "mssm_vs_sm", "gof"
+  int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
       ("base_path", po::value<string>(&base_path)->default_value(base_path))
-      ("input_folder_em", po::value<string>(&input_folder_em)->default_value(input_folder_em))
-      ("input_folder_et", po::value<string>(&input_folder_et)->default_value(input_folder_et))
-      ("input_folder_mt", po::value<string>(&input_folder_mt)->default_value(input_folder_mt))
-      ("input_folder_tt", po::value<string>(&input_folder_tt)->default_value(input_folder_tt))
-      ("postfix", po::value<string>(&postfix)->default_value(postfix))
+      ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
-      ("rebin_categories", po::value<bool>(&rebin_categories)->default_value(rebin_categories))
-      ("manual_rebin_for_yields", po::value<bool>(&manual_rebin_for_yields)->default_value(manual_rebin_for_yields))
-      ("regional_jec", po::value<bool>(&regional_jec)->default_value(regional_jec))
-      ("ggh_wg1", po::value<bool>(&ggh_wg1)->default_value(ggh_wg1))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("remove_empty_categories", po::value<bool>(&remove_empty_categories)->default_value(remove_empty_categories))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
-      ("stxs_signals", po::value<string>(&stxs_signals)->default_value(stxs_signals))
       ("categories", po::value<string>(&categories)->default_value(categories))
-      ("gof_category_name", po::value<string>(&gof_category_name)->default_value(gof_category_name))
-      ("jetfakes", po::value<bool>(&jetfakes)->default_value(jetfakes))
-      ("embedding", po::value<bool>(&embedding)->default_value(embedding))
-      ("classic_bbb", po::value<bool>(&classic_bbb)->default_value(classic_bbb))
       ("binomial_bbb", po::value<bool>(&binomial_bbb)->default_value(binomial_bbb))
       ("era", po::value<int>(&era)->default_value(era));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
@@ -95,10 +69,10 @@ int main(int argc, char **argv) {
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
   std::map<string, string> input_dir;
-  input_dir["mt"] = base_path + "/" + input_folder_mt + "/";
-  input_dir["et"] = base_path + "/" + input_folder_et + "/";
-  input_dir["tt"] = base_path + "/" + input_folder_tt + "/";
-  input_dir["em"] = base_path + "/" + input_folder_em + "/";
+  input_dir["mt"] = base_path;
+  input_dir["et"] = base_path;
+  input_dir["tt"] = base_path;
+  input_dir["em"] = base_path;
 
   // Define channels
   VString chns;
@@ -115,36 +89,13 @@ int main(int argc, char **argv) {
 
   // Define background processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em;
-  bkgs = {"W", "ZTT", "QCD", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVJ", "VVT", "VVL", "WH125", "ZH125", "ttH125"};
-  bkgs_em = {"W", "ZTT", "TTT","VVT", "QCD", "ZL", "TTL", "VVL", "WH125", "ZH125", "ttH125"};
-
-  if (era != 2018) {
-    bkgs = JoinStr({bkgs,{"ggHWW125", "qqHWW125"}});
-    bkgs_em = JoinStr({bkgs_em,{"ggHWW125", "qqHWW125"}});
-  }
-     
-
-  if(embedding){
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "ZTT"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "TTT"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "VVT"), bkgs.end());
-    bkgs = JoinStr({bkgs,{"EMB"}});
-    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "ZTT"), bkgs_em.end());
-    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "TTT"), bkgs_em.end());
-    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "VVT"), bkgs_em.end());
-    bkgs_em = JoinStr({bkgs_em,{"EMB"}});
-  }
-  if(jetfakes){
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "QCD"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "W"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "VVJ"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "TTJ"), bkgs.end());
-    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "ZJ"), bkgs.end());
-    bkgs = JoinStr({bkgs,{"jetFakes"}});
-  }
-
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_signals;
+  sm_signals = {"WH125", "ZH125", "ttH125"};
+  main_sm_signals = {"ggH125", "qqH125"};
+  bkgs = {"ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
+  bkgs_em = {"W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
   std::cout << "[INFO] Considerung the following processes:\n";
+
   if (chan.find("em") != std::string::npos) {
     std::cout << "For em channel : \n";
     for (unsigned int i=0; i < bkgs_em.size(); i++) std::cout << bkgs_em[i] << std::endl;
@@ -162,164 +113,54 @@ int main(int argc, char **argv) {
   map<string, Categories> cats;
   std::vector<std::string> cats_to_keep; // will be used later for the card writer
   // STXS stage 0 categories (optimized on ggH and VBF)
-  if(categories == "stxs_stage0"){
+  if(categories == "sm"){
+    for(auto chn : chns){
+        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
+    } 
     cats["et"] = {
-        { 1, "et_ggh"},
-        { 2, "et_qqh"},
-        {11, "et_w"},
-        {12, "et_ztt"},
-        {13, "et_tt"},
-        {14, "et_ss"},
-        {15, "et_zll"},
-        {16, "et_misc"},
-    };
-     cats["mt"] = {
-        { 1, "mt_ggh"},
-        { 2, "mt_qqh"},
-        {11, "mt_w"},
-        {12, "mt_ztt"},
-        {13, "mt_tt"},
-        {14, "mt_ss"},
-        {15, "mt_zll"},
-        {16, "mt_misc"},
-    };
-     cats["tt"] = {
-        { 1, "tt_ggh"},
-        { 2, "tt_qqh"},
-        {12, "tt_ztt"},
-        {16, "tt_misc"},
-        {17, "tt_noniso"},
-    };
-     cats["em"] = {
-        { 1, "em_ggh"},
-        { 2, "em_qqh"},
-        {12, "em_ztt"},
-        {13, "em_tt"},
-        {14, "em_ss"},
-        {16, "em_misc"},
-//        {18, "em_st"},
-        {19, "em_db"},
-    };
-  }
-  // STXS stage 1 categories (optimized on STXS stage 1 splits of ggH and VBF)
-  else if(categories == "stxs_stage1p1"){
-    cats["et"] = {
-        {100, "et_ggh_100"},
-        {101, "et_ggh_101"},
-        {102, "et_ggh_102"},
-        {103, "et_ggh_103"},
-        {200, "et_qqh_200"},
-        {201, "et_qqh_201"},
-        {202, "et_qqh_202"},
-        {203, "et_qqh_203"},
-        { 11, "et_w"},
-        { 12, "et_ztt"},
-        { 13, "et_tt"},
-        { 14, "et_ss"},
-        { 15, "et_zll"},
-        { 16, "et_misc"},
-    };
-     cats["mt"] = {
-        {100, "mt_ggh_100"},
-        {101, "mt_ggh_101"},
-        {102, "mt_ggh_102"},
-        {103, "mt_ggh_103"},
-        {200, "mt_qqh_200"},
-        {201, "mt_qqh_201"},
-        {202, "mt_qqh_202"},
-        {203, "mt_qqh_203"},
-        { 11, "mt_w"},
-        { 12, "mt_ztt"},
-        { 13, "mt_tt"},
-        { 14, "mt_ss"},
-        { 15, "mt_zll"},
-        { 16, "mt_misc"},
-    };
-     cats["tt"] = {
-        {100, "tt_ggh_100"},
-        {101, "tt_ggh_101"},
-        {102, "tt_ggh_102"},
-        {103, "tt_ggh_103"},
-        {200, "tt_qqh_200"},
-        {201, "tt_qqh_201"},
-        {202, "tt_qqh_202"},
-        {203, "tt_qqh_203"},
-        { 12, "tt_ztt"},
-        { 16, "tt_misc"},
-        { 17, "tt_noniso"},
-    };
-     cats["em"] = {
-        {100, "em_ggh_100"},
-        {101, "em_ggh_101"},
-        {102, "em_ggh_102"},
-        {103, "em_ggh_103"},
-        {200, "em_qqh_200"},
-        {201, "em_qqh_201"},
-        {202, "em_qqh_202"},
-        {203, "em_qqh_203"},
-        { 12, "em_ztt"},
-        { 13, "em_tt"},
-        { 14, "em_ss"},
-        { 16, "em_misc"},
-        { 19, "em_db"},
-    };
-  }
-  else if(categories == "gof"){
-    cats["et"] = {
-        {300, gof_category_name.c_str() },
+        { 1, "et_wjets_control"},
+        { 2, "et_signal_region_boosted"},
+        { 3, "et_signal_region_0jet"},
+        { 4, "et_signal_region_1jetlowpt"},
+        { 5, "et_signal_region_1jethighpt"},
+        { 6, "et_signal_region_2jetlowmjj"},
+        { 7, "et_signal_region_2jethighmjjlowpt"},
+        { 8, "et_signal_region_2jethighmjjhighpt"},
     };
     cats["mt"] = {
-        {300, gof_category_name.c_str() },
+        { 1, "mt_wjets_control"},
+        { 2, "mt_signal_region_boosted"},
+        { 3, "mt_signal_region_0jet"},
+        { 4, "mt_signal_region_1jetlowpt"},
+        { 5, "mt_signal_region_1jethighpt"},
+        { 6, "mt_signal_region_2jetlowmjj"},
+        { 7, "mt_signal_region_2jethighmjjlowpt"},
+        { 8, "mt_signal_region_2jethighmjjhighpt"},
     };
     cats["tt"] = {
-        {300, gof_category_name.c_str() },
+        { 2, "tt_signal_region_boosted"},
+        { 3, "tt_signal_region_0jet"},
+        { 4, "tt_signal_region_1jetlowpt"},
+        { 5, "tt_signal_region_1jethighpt"},
+        { 6, "tt_signal_region_2jetlowmjj"},
+        { 7, "tt_signal_region_2jethighmjjlowpt"},
+        { 8, "tt_signal_region_2jethighmjjhighpt"},
     };
     cats["em"] = {
-        {300, gof_category_name.c_str() },
+        { 1, "em_ttbar_control"},
+        { 2, "em_signal_region_boosted"},
+        { 3, "em_signal_region_0jet"},
+        { 4, "em_signal_region_1jetlowpt"},
+        { 5, "em_signal_region_1jethighpt"},
+        { 6, "em_signal_region_2jetlowmjj"},
+        { 7, "em_signal_region_2jethighmjjlowpt"},
+        { 8, "em_signal_region_2jethighmjjhighpt"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
 
   // Specify signal processes and masses
-  vector<string> sig_procs;
-  // STXS stage 0: ggH and VBF processes
-  if(stxs_signals == "stxs_stage0") sig_procs = {"ggH", "qqH"};
-  // STXS stage 1.1: Splits of ggH and VBF processes
-  // References:
-  // - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWGFiducialAndSTXS
-  // - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWG2
-  // - https://gitlab.cern.ch/LHCHIGGSXS/LHCHXSWG2/STXS
-  else if(stxs_signals == "stxs_stage1p1") sig_procs = {
-      // ggH
-      "ggH_GG2H_FWDH",
-      "ggH_GG2H_PTH_GT200",
-      "ggH_GG2H_0J_PTH_0_10",
-      "ggH_GG2H_0J_PTH_GT10",
-      "ggH_GG2H_1J_PTH_0_60",
-      "ggH_GG2H_1J_PTH_60_120",
-      "ggH_GG2H_1J_PTH_120_200",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_0_60",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_60_120",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_120_200",
-      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25",
-      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25",
-      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25",
-      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_GT25",
-      // VBF
-      "qqH_QQ2HQQ_FWDH",
-      "qqH_QQ2HQQ_0J",
-      "qqH_QQ2HQQ_1J",
-      "qqH_QQ2HQQ_GE2J_MJJ_0_60",
-      "qqH_QQ2HQQ_GE2J_MJJ_60_120",
-      "qqH_QQ2HQQ_GE2J_MJJ_120_350",
-      "qqH_QQ2HQQ_GE2J_MJJ_GT350_PTH_GT200",
-      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25",
-      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25",
-      "qqH_QQ2HQQ_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25",
-      "qqH_QQ2HQQ_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_GT25"
-  };
-
-  else throw std::runtime_error("Given STXS signals are not known.");
+  vector<string> sig_procs = {"ggH", "qqH"};
   vector<string> masses = {"125"};
 
   // Create combine harverster object
@@ -342,15 +183,15 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, jetfakes, embedding, regional_jec, ggh_wg1, era);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, era);
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-sm-" + era_tag + postfix + ".root",
+        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
         "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-sm-" + era_tag + postfix + ".root",
+        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
         "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
   }
 
@@ -385,6 +226,7 @@ int main(int argc, char **argv) {
     return false;
   });
 
+  // Transforming shape systematics to lnN, where necessary
   int count_lnN = 0;
   int count_all = 0;
   cb.cp().ForEachSyst([&count_lnN, &count_all](ch::Systematic *s) {
@@ -457,39 +299,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Rebin categories to predefined binning for binning
-  if (rebin_categories) {
-    // Rebin background categories
-    for (auto b : cb.cp().bin_set()) {
-      TString bstr = b;
-      if (bstr.Contains("ggh") || bstr.Contains("qqh")) continue;
-      std::cout << "[INFO] Rebin background bin " << b << "\n";
-      auto shape = cb.cp().bin({b}).backgrounds().GetShape();
-      auto min = shape.GetBinLowEdge(1);
-      cb.cp().bin({b}).VariableRebin({min, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0});
-    }
-    // Rebin ggh stage 1.1 categories
-    for (auto b : cb.cp().bin_set()) {
-      TString bstr = b;
-      if (bstr.Contains("ggh_10")) {
-        std::cout << "[INFO] Rebin ggh signal bin " << b << "\n";
-        auto shape = cb.cp().bin({b}).backgrounds().GetShape();
-        auto min = shape.GetBinLowEdge(1);
-        cb.cp().bin({b}).VariableRebin({min, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 1.0});
-      }
-    }
-    // Rebin qqh stage 1.1 categories
-    for (auto b : cb.cp().bin_set()) {
-      TString bstr = b;
-      if (bstr.Contains("qqh_20")) {
-        std::cout << "[INFO] Rebin qqh signal bin " << b << "\n";
-        auto shape = cb.cp().bin({b}).backgrounds().GetShape();
-        auto min = shape.GetBinLowEdge(1);
-        cb.cp().bin({b}).VariableRebin({min, 0.4, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.90, 0.95, 1.0});
-      }
-    }
-  }
-
   // At this point we can fix the negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
   cb.ForEachProc([](ch::Process *p) {
@@ -515,66 +324,11 @@ int main(int argc, char **argv) {
 
   // Perform auto-rebinning
   if (auto_rebin) {
-    const auto threshold = 1.0;
-    for (auto b : cb.cp().bin_set()) {
-      std::cout << "[INFO] Rebin bin " << b << "\n";
-      // Get shape of this category with sum of backgrounds
-      auto shape = cb.cp().bin({b}).backgrounds().GetShape();
-      // Push back last bin edge
-      vector<double> binning;
-      const auto num_bins = shape.GetNbinsX();
-      binning.push_back(shape.GetBinLowEdge(num_bins + 1));
-      // Now, go backwards through bins (from right to left) and merge a bin if
-      // the background yield is below a given threshold.
-      auto c = 0.0;
-      for(auto i = num_bins; i > 0; i--) {
-        auto low_edge = shape.GetBinLowEdge(i);
-        c += shape.GetBinContent(i);
-        if (c > threshold) { // Set lower edge if the bin content is above the threshold.
-          binning.insert(binning.begin(), low_edge);
-          c = 0.0;
-        }
-      }
-      if (binning.size() == 1){ // catching case, if the total yield of the histogram is smaller then threshold.
-        binning.insert(binning.begin(), shape.GetBinLowEdge(1));
-      }
-      cb.cp().bin({b}).VariableRebin(binning);
-    }
-    // Remove categories with too little events, if specified
-    for (auto b : cb.cp().bin_set()) {
-      // Get yield of all backgrounds in this category
-      float shape_integral = cb.cp().bin({b}).backgrounds().GetShape().Integral();
-      if(shape_integral < threshold && remove_empty_categories){
-        std::cout << "[WARNING] Remove category " << b << " due to insufficient population!" << "\n";
-      }
-      else {
-        cats_to_keep.push_back(b);
-      }
-    }
-  }
-  else {
-    for (auto b : cb.cp().bin_set()) {
-        cats_to_keep.push_back(b);
-    }
-  }
-  cb = cb.bin(cats_to_keep);
-
-  if(manual_rebin_for_yields) {
-    for(auto b : cb.cp().bin_set()) {
-      std::cout << "Rebinning by hand for bin: " << b <<  std::endl;
-      cb.cp().bin({b}).VariableRebin({0.0,1.0});
-    }
+    auto rebin = ch::AutoRebin().SetBinThreshold(0.).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    rebin.Rebin(cb, cb);
   }
 
   // Merge bins and set bin-by-bin uncertainties if no autoMCStats is used.
-  if (classic_bbb) {
-    auto bbb = ch::BinByBinFactory()
-                   .SetAddThreshold(0.0)
-                   .SetMergeThreshold(0.5)
-                   .SetFixNorm(false);
-    bbb.MergeBinErrors(cb.cp().backgrounds());
-    bbb.AddBinByBin(cb.cp().backgrounds(), cb);
-  }
   if (binomial_bbb) {
     auto bbb = ch::BinomialBinByBinFactory()
                    .SetPattern("CMS_$ANALYSIS_$CHANNEL_$BIN_$ERA_$PROCESS_binomial_bin_$#")
@@ -584,6 +338,8 @@ int main(int argc, char **argv) {
     bbb.AddBinomialBinByBin(cb.cp().channel({"em"}).process({"EMB"}), cb);
   }
 
+  // Adding AutoMCStats
+  cb.SetAutoMCStats(cb, 0.0);
 
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
