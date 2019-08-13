@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
+  output_folder = output_folder + "_" + categories + "_" + variable;
   std::map<string, string> input_dir;
   input_dir["mt"] = base_path;
   input_dir["et"] = base_path;
@@ -159,10 +160,6 @@ int main(int argc, char **argv) {
   }
   else throw std::runtime_error("Given categorization is not known.");
 
-  // Specify signal processes and masses
-  vector<string> sig_procs = {"ggH", "qqH"};
-  vector<string> masses = {"125"};
-
   // Create combine harverster object
   ch::CombineHarvester cb;
 
@@ -178,7 +175,7 @@ int main(int argc, char **argv) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn],
                     false);
-    cb.AddProcesses(masses, {"htt"}, {era_tag}, {chn}, sig_procs, cats[chn],
+    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn],
                     true);
   }
 
@@ -190,7 +187,7 @@ int main(int argc, char **argv) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
         input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
         "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
+    cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
         input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
         "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
   }
@@ -324,12 +321,14 @@ int main(int argc, char **argv) {
 
   // Perform auto-rebinning
   if (auto_rebin) {
+    std::cout << "[INFO] Performing auto-rebinning.\n";
     auto rebin = ch::AutoRebin().SetBinThreshold(0.).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
   // Merge bins and set bin-by-bin uncertainties if no autoMCStats is used.
   if (binomial_bbb) {
+    std::cout << "[INFO] Adding binomial bbb.\n";
     auto bbb = ch::BinomialBinByBinFactory()
                    .SetPattern("CMS_$ANALYSIS_$CHANNEL_$BIN_$ERA_$PROCESS_binomial_bin_$#")
                    .SetBinomialP(0.022)
@@ -339,7 +338,8 @@ int main(int argc, char **argv) {
   }
 
   // Adding AutoMCStats
-  cb.SetAutoMCStats(cb, 0.0);
+  std::cout << "[INFO] Adding auto MC stats.\n";
+  cb.AddDatacardLineAtEnd("* autoMCStats 0.0");
 
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
@@ -348,10 +348,8 @@ int main(int argc, char **argv) {
   // Write out datacards. Naming convention important for rest of workflow. We
   // make one directory per chn-cat, one per chn and cmb. In this code we only
   // store the individual datacards for each directory to be combined later.
-  string output_prefix = "output/";
-  ch::CardWriter writer(output_prefix + output_folder + "/$TAG/$MASS/$BIN.txt",
-                        output_prefix + output_folder +
-                            "/$TAG/common/htt_input_" + era_tag + ".root");
+  ch::CardWriter writer(output_folder + "/$TAG/$MASS/$BIN.txt",
+                        output_folder + "/$TAG/common/htt_input_" + era_tag + ".root");
 
   // We're not using mass as an identifier - which we need to tell the
   // CardWriter
