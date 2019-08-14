@@ -49,3 +49,12 @@ do
     echo;
 done;
 ```
+
+## Prefit shapes
+
+```bash
+for card in output_MSSMvsSM_Run2*/cmb/combined.txt.cmb;
+do
+    PostFitShapesFromWorkspace -w ${card/combined.txt.cmb/stage0.root}  -o ${card/combined.txt.cmb/prefit_shapes.root} -d ${card}
+done;
+```
