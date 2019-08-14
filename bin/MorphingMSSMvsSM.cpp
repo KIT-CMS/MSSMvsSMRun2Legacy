@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
-  string categories = "sm"; // "sm", "mssm", "mssm_vs_sm", "gof"
+  string categories = "sm"; // "sm", "sm_nobtag", "mssm", "mssm_btag", "mssm_vs_sm", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
@@ -154,6 +154,50 @@ int main(int argc, char **argv) {
         { 6, "em_signal_region_2jetlowmjj"},
         { 7, "em_signal_region_2jethighmjjlowpt"},
         { 8, "em_signal_region_2jethighmjjhighpt"},
+    };
+  }
+  else if(categories == "sm_nobtag"){
+    for(auto chn : chns){
+        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
+    }
+    cats["et"] = {
+        { 1, "et_wjets_control"},
+        { 2, "et_nobtag_boosted"},
+        { 3, "et_nobtag_0jet"},
+        { 4, "et_nobtag_1jetlowpt"},
+        { 5, "et_nobtag_1jethighpt"},
+        { 6, "et_nobtag_2jetlowmjj"},
+        { 7, "et_nobtag_2jethighmjjlowpt"},
+        { 8, "et_nobtag_2jethighmjjhighpt"},
+    };
+    cats["mt"] = {
+        { 1, "mt_wjets_control"},
+        { 2, "mt_nobtag_boosted"},
+        { 3, "mt_nobtag_0jet"},
+        { 4, "mt_nobtag_1jetlowpt"},
+        { 5, "mt_nobtag_1jethighpt"},
+        { 6, "mt_nobtag_2jetlowmjj"},
+        { 7, "mt_nobtag_2jethighmjjlowpt"},
+        { 8, "mt_nobtag_2jethighmjjhighpt"},
+    };
+    cats["tt"] = {
+        { 2, "tt_nobtag_boosted"},
+        { 3, "tt_nobtag_0jet"},
+        { 4, "tt_nobtag_1jetlowpt"},
+        { 5, "tt_nobtag_1jethighpt"},
+        { 6, "tt_nobtag_2jetlowmjj"},
+        { 7, "tt_nobtag_2jethighmjjlowpt"},
+        { 8, "tt_nobtag_2jethighmjjhighpt"},
+    };
+    cats["em"] = {
+        { 1, "em_ttbar_control"},
+        { 2, "em_nobtag_boosted"},
+        { 3, "em_nobtag_0jet"},
+        { 4, "em_nobtag_1jetlowpt"},
+        { 5, "em_nobtag_1jethighpt"},
+        { 6, "em_nobtag_2jetlowmjj"},
+        { 7, "em_nobtag_2jethighmjjlowpt"},
+        { 8, "em_nobtag_2jethighmjjhighpt"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
