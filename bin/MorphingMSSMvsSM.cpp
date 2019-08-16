@@ -86,14 +86,23 @@ int main(int argc, char **argv) {
   if (chan == "all")
     chns = {"mt", "et", "tt", "em"};
 
-  // Define background processes
+  // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_signals;
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals;
+
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
+
+  mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  mssm_bbH_signals = {"bbA", "bbH", "bbh"};
+
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
-  std::cout << "[INFO] Considerung the following processes:\n";
+
+  VString SUSYggH_masses = {"100", "110", "120", "130", "140", "180", "200", "250", "300", "350", "400", "450", "600", "700", "800", "900", "1200", "1400", "1500", "1600", "1800", "2000", "2300", "2600", "2900", "3200"};
+  VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "300", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
+
+  std::cout << "[INFO] Considerung the following processes as main backgrounds:\n";
 
   if (chan.find("em") != std::string::npos) {
     std::cout << "For em channel : \n";
@@ -107,6 +116,16 @@ int main(int argc, char **argv) {
   bkg_procs["mt"] = bkgs;
   bkg_procs["tt"] = bkgs;
   bkg_procs["em"] = bkgs_em;
+
+  // Define MSSM model-dependent mass parameters mA, mH, mh
+  RooRealVar mA("mA", "mA", 90., 4000.);
+  RooRealVar mH("mH", "mH", 90., 4000.);
+  RooRealVar mh("mh", "mh", 90., 4000.);
+  mA.setConstant(true);
+
+  // Define MSSM model-independent mass parameter MH
+  RooRealVar MH("MH", "MH", 90., 4000.);
+  MH.setConstant(true);
 
   // Define categories
   map<string, Categories> cats;
