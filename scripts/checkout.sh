@@ -24,13 +24,16 @@ git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
 # MSSM vs SM analysis specific code
 git clone https://github.com/KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
 
-# compile everything
+# Install LHCHXSWGMSSMNeutral packages
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/python -O mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.py_v2.1
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/src -O mssm_xs_tools.cc https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.C_v2.1
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/interface -O mssm_xs_tools.h https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.h_v2.1
+
+# Compile everything
 scramv1 b clean; scramv1 b -j $NUM_CORES
 
-# download root files for latest MSSM benchmark scenarios
-cd CombineHarvester/MSSMvsSMRun2Legacy/data
-wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_13.root
-wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_ls_13.root
-wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_lc_13.root
-wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_align_13.root
-cd -
+# Download root files for latest MSSM benchmark scenarios
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_13.root
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_ls_13.root
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_lc_13.root
+wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_align_13.root
