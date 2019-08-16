@@ -21,8 +21,16 @@ cd -
 # CombineHarvester (current master for 102X)
 git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
 
-# MSSM cs SM analysis specific code
+# MSSM vs SM analysis specific code
 git clone https://github.com/KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
 
 # compile everything
 scramv1 b clean; scramv1 b -j $NUM_CORES
+
+# download root files for latest MSSM benchmark scenarios
+cd CombineHarvester/MSSMvsSMRun2Legacy/data
+wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_13.root
+wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_ls_13.root
+wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_lc_13.root
+wget https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_align_13.root
+cd -
