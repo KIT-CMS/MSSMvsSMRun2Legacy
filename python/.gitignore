@@ -1,2 +1,4 @@
 # Ignore mssm xsec tools wrapper
 mssm_xs_tools.py
+*init*
+*pyc
