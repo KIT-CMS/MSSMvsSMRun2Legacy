@@ -295,8 +295,16 @@ int main(int argc, char **argv) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn],
                     false);
-    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn],
-                    true);
+    if(categories == "sm" || categories == "sm_nobtag"){
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn],
+                      true);
+    }
+    else if(categories == "mssm" || categories == "mssm_btag"){
+      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
+                      true);
+      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
+                      true);
+    }
   }
 
   // Add systematics
@@ -307,9 +315,16 @@ int main(int argc, char **argv) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
         input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
         "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-        "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+    if(categories == "sm" || categories == "sm_nobtag"){
+      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+          "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+    }
+    else if(categories == "mssm" || categories == "mssm_btag"){
+      cb.cp().channel({chn}).process(JoinStr({mssm_ggH_signals, mssm_bbH_signals})).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+          "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+    }
   }
 
   // Delete processes with 0 yield
