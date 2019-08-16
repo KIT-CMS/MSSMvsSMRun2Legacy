@@ -40,3 +40,7 @@ wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub
 wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_ls_13.root
 wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_lc_13.root
 wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mh125_align_13.root
+
+# Download ggH NLO reweighting inputs
+git archive --remote=ssh://git@gitlab.cern.ch:7999/cms-htt/MSSM-Full-2016.git HEAD Models/higgs_pt_v3.root | tar -C CombineHarvester/MSSMvsSMRun2Legacy/data -xf - Models/higgs_pt_v3.root --strip-components=1
+git archive --remote=ssh://git@gitlab.cern.ch:7999/cms-htt/MSSM-Full-2016.git HEAD Models/higgs_pt_v3_mssm_mode.root | tar -C CombineHarvester/MSSMvsSMRun2Legacy/data -xf - Models/higgs_pt_v3_mssm_mode.root --strip-components=1
