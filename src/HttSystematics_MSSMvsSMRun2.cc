@@ -21,12 +21,9 @@ using ch::JoinStr;
 void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedding, bool regional_jec, bool ggh_wg1, int era) {
 
   // ##########################################################################
-  // Define groups of processes
+  // Define groups of signal processes
   // ##########################################################################
 
-  // Signal processes
-      // ggH
-      // VBF
   std::vector<std::string> signals_ggH = {
       // STXS stage 0
       "ggH",
@@ -73,20 +70,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      "qqHWW125"};
   std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
 
-  // Background processes
-  /* // Not used in the function, keep it for documentation purposes.
-  std::vector<std::string> backgrounds = {"ZTT",  "W",   "ZL",      "ZJ",
-                                          "TTT",  "TTJ", "VVT",     "VVJ",
-                                          "EWKZ", "QCD", "jetFakes", "EMB", "TTL"};
-  */
+  std::vecto<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  std::vecto<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh"};
+  std::vecto<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   // All processes being taken from simulation
-  // FIXME: Adapt for fake factor and embedding
   std::vector<std::string> mc_processes =
       JoinStr({
               signals,
               signals_ggHToWW,
               signals_qqHToWW,
+              mssm_signals,
               {"ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST"}
               });
   // ##########################################################################
@@ -95,7 +89,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - "CMS Luminosity Measurements for the 2016 Data Taking Period"
   //   (PAS, https://cds.cern.ch/record/2257069)
   // Notes:
-  // - FIXME: Adapt for fake factor and embedding
   // ##########################################################################
 
   float lumi_unc = 1.0;
@@ -173,7 +166,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"tt"})
       .process(mc_processes)
       .AddSyst(cb, "CMS_eff_trigger_tt_$ERA", "lnN", SystMap<>::init(1.0707));
-      
+
   cb.cp()
       .channel({"tt"})
       .process(mc_processes)
@@ -235,7 +228,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   }
 
   // MC uncorrelated uncertainty
-  
+
   // Electron ID
   cb.cp()
       .channel({"et", "em"})
@@ -356,7 +349,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
 
   // repeat tt channel for correlated part between 2016 and 2017
-  
+
   // MC uncorrelated uncertainty
   // Tau ID: et and mt with 1 real tau
   cb.cp()
@@ -476,9 +469,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(mc_processes)
       .AddSyst(cb, "CMS_reso_mc_e", "shape", SystMap<>::init(1.00));
       //.AddSyst(cb, "CMS_scale_mc_e", "shape", SystMap<>::init(0.71));
-      
+
   // Embedded uncorrelated uncertainty
-      
+
   cb.cp()
       .channel({"em", "et"})
       .process({"EMB"})
@@ -669,7 +662,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"et", "mt", "tt", "em"})
         .process(mc_processes)
         .AddSyst(cb, "CMS_scale_j_RelativeBal", "shape", SystMap<>::init(0.71));
-        
+
     if (era == 2017) {
       cb.cp()
 	  .channel({"et", "mt", "tt", "em"})
@@ -898,7 +891,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
      .process(JoinStr({signals_ggHToWW,signals_qqHToWW}))
-     .AddSyst(cb, "BR_hww_THU", "lnN", SystMap<>::init(1.0099));   
+     .AddSyst(cb, "BR_hww_THU", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
      .process(JoinStr({signals_ggHToWW,signals_qqHToWW}))
