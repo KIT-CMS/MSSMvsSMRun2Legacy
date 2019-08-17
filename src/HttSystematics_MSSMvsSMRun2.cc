@@ -14,6 +14,7 @@ using ch::syst::SystMapAsymm;
 using ch::syst::era;
 using ch::syst::channel;
 using ch::syst::bin_id;
+using ch::syst::mass;
 using ch::syst::process;
 using ch::syst::bin;
 using ch::JoinStr;
@@ -70,9 +71,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      "qqHWW125"};
   std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
 
-  std::vecto<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
-  std::vecto<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh"};
-  std::vecto<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh"};
+  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   // All processes being taken from simulation
   std::vector<std::string> mc_processes =
@@ -83,6 +84,71 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               mssm_signals,
               {"ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST"}
               });
+
+  std::vector<int> nobtag_catagories = {2,3,4,5,6,7,8,32,33,34}; // SM and MSSM no-btag categories
+  std::vector<int> btag_catagories = {35,36,37};
+  cb.cp().process(mssm_bbH_signals).AddSyst(cb, "QCDScale_QshScale_bbH","lnN", SystMap<channel,bin_id,mass>::init
+     ({"em","et","mt","tt"}, nobtag_catagories, {"80"},   1.034)
+     ({"em","et","mt","tt"},   btag_catagories, {"80"},   0.827)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"90"},   1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"90"},   0.835)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"100"},  1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"100"},  0.847)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"110"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"110"},  0.853)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"120"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"120"},  0.862)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"125"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"125"},  0.862)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"130"},  1.04 )
+     ({"em","et","mt","tt"},   btag_catagories, {"130"},  0.867)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"140"},  1.04 )
+     ({"em","et","mt","tt"},   btag_catagories, {"140"},  0.872)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"160"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"160"},  0.887)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"180"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"180"},  0.897)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"200"},  1.038)
+     ({"em","et","mt","tt"},   btag_catagories, {"200"},  0.902)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"250"},  1.035)
+     ({"em","et","mt","tt"},   btag_catagories, {"250"},  0.922)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"350"},  1.033)
+     ({"em","et","mt","tt"},   btag_catagories, {"350"},  0.939)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"400"},  1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"400"},  0.934)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"450"},  1.035)
+     ({"em","et","mt","tt"},   btag_catagories, {"450"},  0.94 )
+     ({"em","et","mt","tt"}, nobtag_catagories, {"500"},  1.032)
+     ({"em","et","mt","tt"},   btag_catagories, {"500"},  0.95 )
+     ({"em","et","mt","tt"}, nobtag_catagories, {"600"},  1.034)
+     ({"em","et","mt","tt"},   btag_catagories, {"600"},  0.948)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"700"},  1.034)
+     ({"em","et","mt","tt"},   btag_catagories, {"700"},  0.952)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"800"},  1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"800"},  0.948)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"900"},  1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"900"},  0.95 )
+     ({"em","et","mt","tt"}, nobtag_catagories, {"1000"}, 1.037)
+     ({"em","et","mt","tt"},   btag_catagories, {"1000"}, 0.949)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"1200"}, 1.037)
+     ({"em","et","mt","tt"},   btag_catagories, {"1200"}, 0.951)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"1400"}, 1.034)
+     ({"em","et","mt","tt"},   btag_catagories, {"1400"}, 0.957)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"1600"}, 1.041)
+     ({"em","et","mt","tt"},   btag_catagories, {"1600"}, 0.943)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"1800"}, 1.037)
+     ({"em","et","mt","tt"},   btag_catagories, {"1800"}, 0.952)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"2000"}, 1.035)
+     ({"em","et","mt","tt"},   btag_catagories, {"2000"}, 0.956)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"2300"}, 1.035)
+     ({"em","et","mt","tt"},   btag_catagories, {"2300"}, 0.956)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"2600"}, 1.039)
+     ({"em","et","mt","tt"},   btag_catagories, {"2600"}, 0.95 )
+     ({"em","et","mt","tt"}, nobtag_catagories, {"2900"}, 1.036)
+     ({"em","et","mt","tt"},   btag_catagories, {"2900"}, 0.954)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"3200"}, 1.034)
+     ({"em","et","mt","tt"},   btag_catagories, {"3200"}, 0.957));
+
   // ##########################################################################
   // Uncertainty: Lumi
   // References:
@@ -478,13 +544,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_scale_emb_e", "shape", SystMap<>::init(1.00));
       //.AddSyst(cb, "CMS_scale_emb_e", "shape", SystMap<>::init(0.71));
 
-  // MC + embedded correlated uncertainty
-
-  //cb.cp()
-  //    .channel({"em", "et"})
-  //    .process(JoinStr({mc_processes, {"EMB"}}))
-  //    .AddSyst(cb, "CMS_scale_e", "shape", SystMap<>::init(0.71));
-
 
   // ##########################################################################
   // Uncertainty: Tau energy scale
@@ -492,6 +551,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes:
   // - Tau energy scale is splitted by decay mode.
   // - FIXME: References?
+  // - FIXME: Need it for H->WW in mt, et, (and tt)?
   // ##########################################################################
 
 
@@ -500,18 +560,18 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_mc_t_1prong_$ERA", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_mc_t_1prong1pizero_$ERA", "shape",
                SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_mc_t_3prong_$ERA", "shape", SystMap<>::init(0.5));
 
   // Embedded uncorrelated uncertainty
@@ -535,17 +595,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_1prong_$ERA", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(0.5));
 
   //// correlated part between ERAs
@@ -553,18 +613,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_mc_t_1prong", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_1prong1pizero", "shape",
-               SystMap<>::init(0.5));
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .AddSyst(cb, "CMS_scale_mc_t_1prong1pizero", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_mc_t_3prong", "shape", SystMap<>::init(0.5));
 
   // Embedded uncorrelated uncertainty
@@ -588,17 +647,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_1prong", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_1prong1pizero", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
       .AddSyst(cb, "CMS_scale_t_3prong", "shape", SystMap<>::init(0.5));
 
   // ##########################################################################
@@ -609,66 +668,53 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes:
   // ##########################################################################
 
-  if (!regional_jec) {
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_$ERA", "shape", SystMap<>::init(0.71));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j", "shape", SystMap<>::init(0.71));
-  }
-
   // Regional JES
-  else {
-    // uncorrelated between eras
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta0to3_$ERA", "shape", SystMap<>::init(0.71));
+  // uncorrelated between eras
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta0to3_$ERA", "shape", SystMap<>::init(0.71));
 
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta0to5_$ERA", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta0to5_$ERA", "shape", SystMap<>::init(0.71));
 
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta3to5_$ERA", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta3to5_$ERA", "shape", SystMap<>::init(0.71));
 
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_RelativeBal_$ERA", "shape", SystMap<>::init(0.71));
-    // correlated between eras
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta0to3", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_RelativeBal_$ERA", "shape", SystMap<>::init(0.71));
+  // correlated between eras
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta0to3", "shape", SystMap<>::init(0.71));
 
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta0to5", "shape", SystMap<>::init(0.71));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_eta3to5", "shape", SystMap<>::init(0.71));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_RelativeBal", "shape", SystMap<>::init(0.71));
+
+  if (era == 2017) {
     cb.cp()
         .channel({"et", "mt", "tt", "em"})
         .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta0to5", "shape", SystMap<>::init(0.71));
-
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_eta3to5", "shape", SystMap<>::init(0.71));
-
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_RelativeBal", "shape", SystMap<>::init(0.71));
-
-    if (era == 2017) {
-      cb.cp()
-	  .channel({"et", "mt", "tt", "em"})
-          .process(mc_processes)
-          .AddSyst(cb, "CMS_scale_j_RelativeSample_$ERA", "shape", SystMap<>::init(1.00));
-    }
+        .AddSyst(cb, "CMS_scale_j_RelativeSample_$ERA", "shape", SystMap<>::init(1.00));
   }
 
   // ##########################################################################
@@ -681,15 +727,15 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"})  //Z and W processes are only included due to the EWK fraction. Make sure that there is no contribution to the shift from the DY or Wjets samples.
+      .process({"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"})
       .AddSyst(cb, "CMS_scale_met_unclustered", "shape", SystMap<>::init(1.00));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, signals_ggHToWW, signals_qqHToWW, {"ZTT", "ZL", "ZJ", "W"}}))
+      .process(JoinStr({signals, mssm_signals, signals_ggHToWW, signals_qqHToWW, {"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_scale_met_$ERA", "shape", SystMap<>::init(1.00));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}}))
+     .process(JoinStr({signals, mssm_signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_reso_met_$ERA", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
