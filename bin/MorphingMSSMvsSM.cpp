@@ -40,18 +40,20 @@ int main(int argc, char **argv) {
   // Define program options
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
+  string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root";
   string chan = "all";
   string variable = "m_sv_puppi";
   bool auto_rebin = false;
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
-  string categories = "sm"; // "sm", "sm_nobtag", "mssm", "mssm_btag", "mssm_vs_sm", "gof"
+  string categories = "sm"; // "sm", "sm_nobtag", "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_new", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
       ("base_path", po::value<string>(&base_path)->default_value(base_path))
+      ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
@@ -88,13 +90,15 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals;
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_model_independent_ggH_signals, mssm_model_independent_bbH_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
 
   mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
   mssm_bbH_signals = {"bbA", "bbH", "bbh"};
+  mssm_model_independent_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
+  mssm_model_independent_bbH_signals = {"bbh"};
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
@@ -251,7 +255,7 @@ int main(int argc, char **argv) {
         { 7, "em_btag_lowdzeta"},
     };
   }
-  else if(categories == "mssm_btag"){
+  else if(categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
     for(auto chn : chns){
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
@@ -300,9 +304,9 @@ int main(int argc, char **argv) {
                       true);
     }
     else if(categories == "mssm" || categories == "mssm_btag"){
-      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
+      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_model_independent_ggH_signals, cats[chn],
                       true);
-      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
+      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_model_independent_bbH_signals, cats[chn],
                       true);
     }
   }
@@ -321,7 +325,7 @@ int main(int argc, char **argv) {
           "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
     else if(categories == "mssm" || categories == "mssm_btag"){
-      cb.cp().channel({chn}).process(JoinStr({mssm_ggH_signals, mssm_bbH_signals})).ExtractShapes(
+      cb.cp().channel({chn}).process(JoinStr({mssm_model_independent_ggH_signals, mssm_model_independent_bbH_signals})).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
     }
@@ -479,6 +483,53 @@ int main(int argc, char **argv) {
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
+
+  // Setup morphed mssm signals for model-independent case
+  if(categories == "mssm" || categories == "mssm_btag")
+  {
+    RooWorkspace ws("htt", "htt");
+    TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
+    map<string, RooAbsReal *> mass_var = {
+      {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH}, // Using little higgs 'ggh' for model-independent analysis
+      {"bbh", &MH}
+    };
+
+    // Assuming sm fractions of t,b and i contributions of 'ggh' in model-independent analysis
+    TFile fractions_sm(sm_gg_fractions.c_str());
+    RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
+    w_sm->var("mh")->SetName("MH");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    t_frac->SetName("ggh_t_frac");
+    b_frac->SetName("ggh_b_frac");
+    i_frac->SetName("ggh_i_frac");
+    ws.import(MH);
+    ws.import(*t_frac, RooFit::RecycleConflictNodes());
+    ws.import(*b_frac, RooFit::RecycleConflictNodes());
+    ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    fractions_sm.Close();
+
+    // Perform morphing
+    auto bins = cb.bin_set();
+    for (auto b : bins) {
+      auto procs = cb.cp().bin({b}).process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).process_set();
+      for (auto p : procs) {
+        std::string norm = "norm";
+        if (ch::contains(mssm_model_independent_ggH_signals, p)) {norm = "prenorm";}
+        std::string pdf_name = ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]), norm, true, false, false, &morphing_demo);
+        if (ch::contains(mssm_model_independent_ggH_signals, p)) {
+          ws.factory(TString::Format("expr::%s_norm('@0*@1',%s, %s_frac)", pdf_name.c_str(),(pdf_name + "_" + norm).c_str(), p.c_str()));
+        }
+      }
+    }
+
+    // Saving workspace with morphed signals
+    morphing_demo.Close();
+    cb.AddWorkspace(ws);
+    cb.cp().process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+  }
+
 
   // Write out datacards. Naming convention important for rest of workflow. We
   // make one directory per chn-cat, one per chn and cmb. In this code we only
