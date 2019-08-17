@@ -228,31 +228,31 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
     cats["et"] = {
-        { 1, "et_wjets_control"},
-        { 2, "et_nobtag_tightmt"},
-        { 3, "et_nobtag_loosemt"},
-        { 4, "et_btag_tightmt"},
-        { 5, "et_btag_loosemt"},
+        {  1, "et_wjets_control"},
+        { 32, "et_nobtag_tightmt"},
+        { 33, "et_nobtag_loosemt"},
+        { 35, "et_btag_tightmt"},
+        { 36, "et_btag_loosemt"},
     };
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
-        { 2, "mt_nobtag_tightmt"},
-        { 3, "mt_nobtag_loosemt"},
-        { 4, "mt_btag_tightmt"},
-        { 5, "mt_btag_loosemt"},
+        {  1, "mt_wjets_control"},
+        { 32, "mt_nobtag_tightmt"},
+        { 33, "mt_nobtag_loosemt"},
+        { 35, "mt_btag_tightmt"},
+        { 36, "mt_btag_loosemt"},
     };
     cats["tt"] = {
-        { 2, "tt_nobtag"},
-        { 3, "tt_tag"},
+        { 32, "tt_nobtag"},
+        { 35, "tt_tag"},
     };
     cats["em"] = {
-        { 1, "em_ttbar_control"},
-        { 2, "em_nobtag_highdzeta"},
-        { 3, "em_nobtag_mediumdzeta"},
-        { 4, "em_nobtag_lowdzeta"},
-        { 5, "em_btag_highdzeta"},
-        { 6, "em_btag_mediumdzeta"},
-        { 7, "em_btag_lowdzeta"},
+        {  1, "em_ttbar_control"},
+        { 32, "em_nobtag_highdzeta"},
+        { 33, "em_nobtag_mediumdzeta"},
+        { 34, "em_nobtag_lowdzeta"},
+        { 35, "em_btag_highdzeta"},
+        { 36, "em_btag_mediumdzeta"},
+        { 37, "em_btag_lowdzeta"},
     };
   }
   else if(categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
@@ -260,26 +260,23 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
     cats["et"] = {
-        { 1, "et_wjets_control"},
-        { 4, "et_btag_tightmt"},
-        { 5, "et_btag_loosemt"},
+        {  1, "et_wjets_control"},
+        { 35, "et_btag_tightmt"},
+        { 36, "et_btag_loosemt"},
     };
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
-        { 4, "mt_btag_tightmt"},
-        { 5, "mt_btag_loosemt"},
+        {  1, "mt_wjets_control"},
+        { 35, "mt_btag_tightmt"},
+        { 36, "mt_btag_loosemt"},
     };
     cats["tt"] = {
-        { 3, "tt_tag"},
+        { 35, "tt_tag"},
     };
     cats["em"] = {
-        { 1, "em_ttbar_control"},
-        { 2, "em_nobtag_highdzeta"},
-        { 3, "em_nobtag_mediumdzeta"},
-        { 4, "em_nobtag_lowdzeta"},
-        { 5, "em_btag_highdzeta"},
-        { 6, "em_btag_mediumdzeta"},
-        { 7, "em_btag_lowdzeta"},
+        {  1, "em_ttbar_control"},
+        { 35, "em_btag_highdzeta"},
+        { 36, "em_btag_mediumdzeta"},
+        { 37, "em_btag_lowdzeta"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
