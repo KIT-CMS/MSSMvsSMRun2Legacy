@@ -485,9 +485,9 @@ int main(int argc, char **argv) {
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
 
   // Setup morphed mssm signals for model-independent case
+  RooWorkspace ws("htt", "htt");
   if(categories == "mssm" || categories == "mssm_btag")
   {
-    RooWorkspace ws("htt", "htt");
     TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
     map<string, RooAbsReal *> mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH}, // Using little higgs 'ggh' for model-independent analysis
@@ -519,7 +519,7 @@ int main(int argc, char **argv) {
       for (auto p : procs) {
         std::string norm = "norm";
         if (ch::contains(mssm_model_independent_ggH_signals, p)) {norm = "prenorm";}
-        std::string pdf_name = ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]), norm, true, false, false, &morphing_demo);
+        std::string pdf_name = ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]), norm, true, verbose, false, &morphing_demo);
         if (ch::contains(mssm_model_independent_ggH_signals, p)) {
           ws.factory(TString::Format("expr::%s_norm('@0*@1',%s, %s_frac)", pdf_name.c_str(),(pdf_name + "_" + norm).c_str(), p.c_str()));
         }
@@ -527,23 +527,26 @@ int main(int argc, char **argv) {
     }
 
     // Saving workspace with morphed signals
+    morphing_demo.cd();
+    ws.Write();
     morphing_demo.Close();
     cb.AddWorkspace(ws);
     cb.cp().process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
   }
 
 
-  std::cout << "[INFO] Writing datacards.\n";
+
+  std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // Write out datacards. Naming convention important for rest of workflow. We
   // make one directory per chn-cat, one per chn and cmb. In this code we only
   // store the individual datacards for each directory to be combined later.
-  ch::CardWriter writer(output_folder + "/$TAG/$MASS/$BIN.txt",
-                        output_folder + "/$TAG/common/htt_input_" + era_tag + ".root");
+  ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
+                        output_folder + "/" + era_tag + "/$TAG/common/htt_input_" + era_tag + ".root");
 
   // We're not using mass as an identifier - which we need to tell the
   // CardWriter
   // otherwise it will see "*" as the mass value for every object and skip it
-  //    writer.SetWildcardMasses({});
+  writer.SetWildcardMasses({});
 
   // Set verbosity
   if (verbose)
@@ -559,5 +562,5 @@ int main(int argc, char **argv) {
   if (verbose)
     cb.PrintAll();
 
-  cout << "[INFO] Done producing datacards.\n";
+  std::cout << "[INFO] Done producing datacards.\n";
 }
