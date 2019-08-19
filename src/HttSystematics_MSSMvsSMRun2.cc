@@ -112,6 +112,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"},   btag_catagories, {"200"},  0.902)
      ({"em","et","mt","tt"}, nobtag_catagories, {"250"},  1.035)
      ({"em","et","mt","tt"},   btag_catagories, {"250"},  0.922)
+     ({"em","et","mt","tt"}, nobtag_catagories, {"300"},  1.035)
+     ({"em","et","mt","tt"},   btag_catagories, {"300"},  0.922)
      ({"em","et","mt","tt"}, nobtag_catagories, {"350"},  1.033)
      ({"em","et","mt","tt"},   btag_catagories, {"350"},  0.939)
      ({"em","et","mt","tt"}, nobtag_catagories, {"400"},  1.036)

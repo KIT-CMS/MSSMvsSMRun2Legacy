@@ -106,13 +106,13 @@ int main(int argc, char **argv) {
   VString SUSYggH_masses = {"100", "110", "120", "130", "140", "180", "200", "250", "300", "350", "400", "450", "600", "700", "800", "900", "1200", "1400", "1500", "1600", "1800", "2000", "2300", "2600", "2900", "3200"};
   VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "300", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
 
-  std::cout << "[INFO] Considerung the following processes as main backgrounds:\n";
+  std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
-  if (chan.find("em") != std::string::npos) {
+  if (chan.find("em") != std::string::npos || chan.find("all") != std::string::npos) {
     std::cout << "For em channel : \n";
     for (unsigned int i=0; i < bkgs_em.size(); i++) std::cout << bkgs_em[i] << std::endl;
   }
-  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos) {
+  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
     std::cout << "For et,mt,tt channels : \n";
     for (unsigned int i=0; i < bkgs.size(); i++) std::cout << bkgs[i] << std::endl;
   }
@@ -494,6 +494,7 @@ int main(int argc, char **argv) {
       {"bbh", &MH}
     };
 
+    std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t,b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
@@ -511,6 +512,7 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
 
     // Perform morphing
+    std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto bins = cb.bin_set();
     for (auto b : bins) {
       auto procs = cb.cp().bin({b}).process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).process_set();
@@ -531,6 +533,7 @@ int main(int argc, char **argv) {
   }
 
 
+  std::cout << "[INFO] Writing datacards.\n";
   // Write out datacards. Naming convention important for rest of workflow. We
   // make one directory per chn-cat, one per chn and cmb. In this code we only
   // store the individual datacards for each directory to be combined later.
