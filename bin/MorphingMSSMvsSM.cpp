@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
     };
     cats["tt"] = {
         { 32, "tt_nobtag"},
-        { 35, "tt_tag"},
+        { 35, "tt_btag"},
     };
     cats["em"] = {
         {  1, "em_ttbar_control"},
@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
         { 36, "mt_btag_loosemt"},
     };
     cats["tt"] = {
-        { 35, "tt_tag"},
+        { 35, "tt_btag"},
     };
     cats["em"] = {
         {  1, "em_ttbar_control"},
@@ -322,9 +322,12 @@ int main(int argc, char **argv) {
           "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
     else if(categories == "mssm" || categories == "mssm_btag"){
-      cb.cp().channel({chn}).process(JoinStr({mssm_model_independent_ggH_signals, mssm_model_independent_bbH_signals})).ExtractShapes(
+      cb.cp().channel({chn}).process(mssm_model_independent_ggH_signals).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(mssm_model_independent_bbH_signals).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+          "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
   }
 
