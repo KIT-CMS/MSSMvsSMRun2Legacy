@@ -409,29 +409,45 @@ int main(int argc, char **argv) {
       auto signal_shape = cb.cp().bin({b}).signals().GetShape();
       auto total_procs_shape = cb.cp().bin({b}).data().GetShape();
       total_procs_shape.Scale(0.0);
-      bool no_signal = (signal_shape.GetNbinsX() == 1 && signal_shape.Integral() == 0.0);
-      bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
-      if(no_signal && no_background)
-      {
-        std::cout << "\t[WARNING] No signal and no background available in bin " << b << std::endl;
+      if(categories == "sm" || categories == "sm_nobtag"){
+        bool no_signal = (signal_shape.GetNbinsX() == 1 && signal_shape.Integral() == 0.0);
+        bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
+        if(no_signal && no_background)
+        {
+          std::cout << "\t[WARNING] No signal and no background available in bin " << b << std::endl;
+        }
+        else if(no_background)
+        {
+          std::cout << "\t[WARNING] No background available in bin " << b << std::endl;
+          total_procs_shape = total_procs_shape + signal_shape;
+        }
+        else if(no_signal)
+        {
+          std::cout << "\t[WARNING] No signal available in bin " << b << std::endl;
+          total_procs_shape = total_procs_shape + background_shape;
+        }
+        else
+        {
+          total_procs_shape = total_procs_shape + background_shape + signal_shape;
+        }
+        cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
+          obs->set_shape(total_procs_shape,true);
+        });
       }
-      else if(no_background)
-      {
-        std::cout << "\t[WARNING] No background available in bin " << b << std::endl;
-        total_procs_shape = total_procs_shape + signal_shape;
+      else if(categories == "mssm" || categories == "mssm_btag"){
+        bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
+        if(no_background)
+        {
+          std::cout << "\t[WARNING] No background available in bin " << b << std::endl;
+        }
+        else
+        {
+          total_procs_shape = total_procs_shape + background_shape;
+        }
+        cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
+          obs->set_shape(total_procs_shape,true);
+        });
       }
-      else if(no_signal)
-      {
-        std::cout << "\t[WARNING] No signal available in bin " << b << std::endl;
-        total_procs_shape = total_procs_shape + background_shape;
-      }
-      else
-      {
-        total_procs_shape = total_procs_shape + background_shape + signal_shape;
-      }
-      cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
-        obs->set_shape(total_procs_shape,true);
-      });
     }
   }
 
@@ -476,14 +492,28 @@ int main(int argc, char **argv) {
     bbb.AddBinomialBinByBin(cb.cp().channel({"em"}).process({"EMB"}), cb);
   }
 
-  // Adding AutoMCStats
-  std::cout << "[INFO] Adding auto MC stats.\n";
-  cb.AddDatacardLineAtEnd("* autoMCStats 0.0");
-
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
 
+  // Adding bin-by-bin uncertainties
+  std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
+  if(categories == "sm" || categories == "mssm_nobtag")
+  {
+    cb.SetAutoMCStats(cb, 0.0);
+  }
+  else if(categories == "mssm" || categories == "mssm_btag")
+  {
+    auto bbb = ch::BinByBinFactory()
+      .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
+      .SetAddThreshold(0.)
+      .SetMergeThreshold(0.4)
+      .SetFixNorm(true)
+      .SetMergeSaturatedBins(false)
+      .SetPoissonErrors(false);
+    bbb.MergeBinErrors(cb.cp().backgrounds());
+    bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+  }
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
   if(categories == "mssm" || categories == "mssm_btag")
