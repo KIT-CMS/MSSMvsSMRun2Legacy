@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
   });
 
   // Transforming shape systematics to lnN, where necessary
-  int count_lnN = 0;
+  /*int count_lnN = 0;
   int count_all = 0;
   cb.cp().ForEachSyst([&count_lnN, &count_all](ch::Systematic *s) {
     if (TString(s->name()).Contains("scale")||TString(s->name()).Contains("CMS_htt_boson_reso_met")){
@@ -397,7 +397,7 @@ int main(int argc, char **argv) {
       }
     }
   });
-  std::cout << "[WARNING] Turned " << count_lnN << " of " << count_all << " checked systematics into lnN:" << std::endl;
+  std::cout << "[WARNING] Turned " << count_lnN << " of " << count_all << " checked systematics into lnN:" << std::endl;*/
 
   // Replacing observation with the sum of the backgrounds (Asimov data)
   // useful to be able to check this, so don't do the replacement
@@ -498,7 +498,7 @@ int main(int argc, char **argv) {
 
   // Adding bin-by-bin uncertainties
   std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-  if(categories == "sm" || categories == "mssm_nobtag")
+  if(categories == "sm" || categories == "sm_nobtag")
   {
     cb.SetAutoMCStats(cb, 0.0);
   }
