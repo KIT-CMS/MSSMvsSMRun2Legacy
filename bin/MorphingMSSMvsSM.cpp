@@ -91,21 +91,24 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_model_independent_ggH_signals, mssm_model_independent_bbH_signals;
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
 
   mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
   mssm_bbH_signals = {"bbA", "bbH", "bbh"};
-  mssm_model_independent_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
-  mssm_model_independent_bbH_signals = {"bbh"};
+  if(categories == "mssm" || categories == "mssm_btag")
+  {
+    mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
+    mssm_bbH_signals = {"bbh"};
+  }
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
 
   VString SUSYggH_masses = {"100", "110", "120", "130", "140", "180", "200", "250", "300", "350", "400", "450", "600", "700", "800", "900", "1200", "1400", "1500", "1600", "1800", "2000", "2300", "2600", "2900", "3200"};
-  VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "300", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
+  VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
 
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
@@ -122,14 +125,25 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs;
   bkg_procs["em"] = bkgs_em;
 
+  if(categories == "sm" || categories == "sm_nobtag"){
+    for(auto chn : chns){
+        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
+    }
+  }
+  else if(categories == "mssm" || categories == "mssm_btag"){
+    for(auto chn : chns){
+        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
+    }
+  }
+
   // Define MSSM model-dependent mass parameters mA, mH, mh
-  RooRealVar mA("mA", "mA", 90., 4000.);
-  RooRealVar mH("mH", "mH", 90., 4000.);
-  RooRealVar mh("mh", "mh", 90., 4000.);
+  RooRealVar mA("mA", "mA", 125., 90., 4000.);
+  RooRealVar mH("mH", "mH", 125., 90., 4000.);
+  RooRealVar mh("mh", "mh", 125., 90., 4000.);
   mA.setConstant(true);
 
   // Define MSSM model-independent mass parameter MH
-  RooRealVar MH("MH", "MH", 90., 4000.);
+  RooRealVar MH("MH", "MH", 125., 90., 4000.);
   MH.setConstant(true);
 
   // Define categories
@@ -137,9 +151,6 @@ int main(int argc, char **argv) {
   std::vector<std::string> cats_to_keep; // will be used later for the card writer
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(categories == "sm"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
-    } 
     cats["et"] = {
         { 1, "et_wjets_control"},
         { 2, "et_signal_region_boosted"},
@@ -181,9 +192,6 @@ int main(int argc, char **argv) {
     };
   }
   else if(categories == "sm_nobtag"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
-    }
     cats["et"] = {
         { 1, "et_wjets_control"},
         { 2, "et_nobtag_boosted"},
@@ -224,10 +232,7 @@ int main(int argc, char **argv) {
         { 8, "em_nobtag_2jethighmjjhighpt"},
     };
   }
-  else if(categories == "mssm"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
-    }
+  else if(categories == "mssm" || categories == "mssm_vs_sm_standard"){
     cats["et"] = {
         {  1, "et_wjets_control"},
         { 32, "et_nobtag_tightmt"},
@@ -256,10 +261,7 @@ int main(int argc, char **argv) {
         { 37, "em_btag_lowdzeta"},
     };
   }
-  else if(categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
-    }
+  else if(categories == "mssm_btag"){
     cats["et"] = {
         {  1, "et_wjets_control"},
         { 35, "et_btag_tightmt"},
@@ -302,9 +304,17 @@ int main(int argc, char **argv) {
                       true);
     }
     else if(categories == "mssm" || categories == "mssm_btag"){
-      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_model_independent_ggH_signals, cats[chn],
+      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
                       true);
-      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_model_independent_bbH_signals, cats[chn],
+      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
+                      true);
+    }
+    else if(categories == "mssm_vs_sm_standard"){
+      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
+                      true);
+      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
+                      true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn],
                       true);
     }
   }
@@ -323,12 +333,20 @@ int main(int argc, char **argv) {
           "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
     else if(categories == "mssm" || categories == "mssm_btag"){
-      cb.cp().channel({chn}).process(mssm_model_independent_ggH_signals).ExtractShapes(
+      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(mssm_model_independent_bbH_signals).ExtractShapes(
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+    }
+    else if(categories == "mssm_vs_sm_standard"){
+      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+          "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+          "$BIN/$PROCESS_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
   }
 
@@ -362,43 +380,6 @@ int main(int argc, char **argv) {
     }
     return false;
   });
-
-  // Transforming shape systematics to lnN, where necessary
-  /*int count_lnN = 0;
-  int count_all = 0;
-  cb.cp().ForEachSyst([&count_lnN, &count_all](ch::Systematic *s) {
-    if (TString(s->name()).Contains("scale")||TString(s->name()).Contains("CMS_htt_boson_reso_met")){
-      count_all++;
-      double err_u = 0.0;
-      double err_d = 0.0;
-      int nbins = s->shape_u()->GetNbinsX();
-      double yield_u = s->shape_u()->IntegralAndError(1,nbins,err_u);
-      double yield_d = s->shape_d()->IntegralAndError(1,nbins,err_d);
-      double value_u = s->value_u();
-      double value_d = s->value_d();
-      if (std::abs(value_u-1.0)+std::abs(value_d-1.0)<err_u/yield_u+err_d/yield_d){
-          count_lnN++;
-          std::cout << "[WARNING] Replacing systematic by lnN:" << std::endl;
-          std::cout << ch::Systematic::PrintHeader << *s << "\n";
-          s->set_type("lnN");
-          bool up_is_larger = (value_u>value_d);
-          if (value_u < 1.0) value_u = 1.0 / value_u;
-          if (value_d < 1.0) value_d = 1.0 / value_d;
-          if (up_is_larger){
-              value_u = std::sqrt(value_u*value_d);
-              value_d = 1.0 / value_u;
-          }else{
-              value_d = std::sqrt(value_u*value_d);
-              value_u = 1.0 / value_d;
-          }
-          std::cout << "Former relative integral up shift: " << s->value_u() << "; New relative integral up shift: " << value_u << std::endl;
-          std::cout << "Former relative integral down shift: " << s->value_d() << "; New relative integral down shift: " << value_d << std::endl;
-          s->set_value_u(value_u);
-          s->set_value_d(value_d);
-      }
-    }
-  });
-  std::cout << "[WARNING] Turned " << count_lnN << " of " << count_all << " checked systematics into lnN:" << std::endl;*/
 
   // Replacing observation with the sum of the backgrounds (Asimov data)
   // useful to be able to check this, so don't do the replacement
@@ -435,7 +416,7 @@ int main(int argc, char **argv) {
           obs->set_shape(total_procs_shape,true);
         });
       }
-      else if(categories == "mssm" || categories == "mssm_btag"){
+      else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -503,21 +484,39 @@ int main(int argc, char **argv) {
 
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
+
+  std::map<std::string, RooAbsReal *> mass_var = {
+    {"ggh_t", &mh}, {"ggh_b", &mh}, {"ggh_i", &mh},
+    {"ggH_t", &mH}, {"ggH_b", &mH}, {"ggH_i", &mH},
+    {"ggA_t", &mA}, {"ggA_b", &mA}, {"ggA_i", &mA},
+    {"bbh", &mh},
+    {"bbH", &mH},
+    {"bbA", &mA}
+  };
+
+  std::map<std::string, std::string> process_norm_map = {
+    {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
+    {"ggH_t", "prenorm"}, {"ggH_b", "prenorm"}, {"ggH_i", "prenorm"},
+    {"ggA_t", "prenorm"}, {"ggA_b", "prenorm"}, {"ggA_i", "prenorm"},
+    {"bbh", "norm"},
+    {"bbH", "norm"},
+    {"bbA", "norm"}
+  };
+
   if(categories == "mssm" || categories == "mssm_btag")
   {
-    TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
-    std::map<std::string, RooAbsReal *> mass_var = {
+    mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
       {"bbh", &MH}
     };
 
-    std::map<std::string, std::string> process_norm_map = {
+    process_norm_map = {
       {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
       {"bbh", "norm"}
     };
 
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
-    // Assuming sm fractions of t,b and i contributions of 'ggh' in model-independent analysis
+    // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
@@ -532,9 +531,15 @@ int main(int argc, char **argv) {
     ws.import(*b_frac, RooFit::RecycleConflictNodes());
     ws.import(*i_frac, RooFit::RecycleConflictNodes());
     fractions_sm.Close();
+  }
+
+
+  if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard")
+  {
+    TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
 
     // Perform morphing
-    auto mssm_signals = ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals});
+    auto mssm_signals = ch::JoinStr({mssm_ggH_signals,mssm_bbH_signals});
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
@@ -543,7 +548,7 @@ int main(int argc, char **argv) {
     // Adding 'norm' terms into workspace according to desired signals
     for (auto bin : cb.cp().bin_set())
     {
-      for (auto proc : mssm_model_independent_ggH_signals)
+      for (auto proc : mssm_ggH_signals)
       {
         std::string prenorm_name = bin + "_" + proc + "_morph_prenorm";
         std::string norm_name = bin + "_" + proc + "_morph_norm";
@@ -561,8 +566,6 @@ int main(int argc, char **argv) {
     cb.cp().process(mssm_signals).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-
-
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // Write out datacards. Naming convention important for rest of workflow. We
