@@ -19,7 +19,8 @@ git checkout v8.0.1
 cd -
 
 # CombineHarvester (current master for 102X)
-git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+#git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+git clone https://github.com/KIT-CMS/CombineHarvester.git CombineHarvester # fixes & extensions for morphing (22.08.2019)
 
 # MSSM vs SM analysis specific code
 git clone https://github.com/KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy

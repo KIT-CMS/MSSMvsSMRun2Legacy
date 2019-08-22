@@ -1,4 +1,5 @@
 #include "CombineHarvester/CombinePdfs/interface/MorphFunctions.h"
+#include "CombineHarvester/CombinePdfs/interface/CMSHistFuncFactory.h"
 #include "CombineHarvester/CombineTools/interface/Algorithm.h"
 #include "CombineHarvester/CombineTools/interface/AutoRebin.h"
 #include "CombineHarvester/CombineTools/interface/BinByBin.h"
@@ -498,30 +499,21 @@ int main(int argc, char **argv) {
 
   // Adding bin-by-bin uncertainties
   std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-  if(categories == "sm" || categories == "sm_nobtag")
-  {
-    cb.SetAutoMCStats(cb, 0.0);
-  }
-  else if(categories == "mssm" || categories == "mssm_btag")
-  {
-    auto bbb = ch::BinByBinFactory()
-      .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
-      .SetAddThreshold(0.)
-      .SetMergeThreshold(0.4)
-      .SetFixNorm(true)
-      .SetMergeSaturatedBins(false)
-      .SetPoissonErrors(false);
-    bbb.MergeBinErrors(cb.cp().backgrounds());
-    bbb.AddBinByBin(cb.cp().backgrounds(), cb);
-  }
+  cb.SetAutoMCStats(cb, 0.0);
+
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
   if(categories == "mssm" || categories == "mssm_btag")
   {
     TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
-    map<string, RooAbsReal *> mass_var = {
-      {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH}, // Using little higgs 'ggh' for model-independent analysis
+    std::map<std::string, RooAbsReal *> mass_var = {
+      {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
       {"bbh", &MH}
+    };
+
+    std::map<std::string, std::string> process_norm_map = {
+      {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
+      {"bbh", "norm"}
     };
 
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
@@ -542,26 +534,32 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
 
     // Perform morphing
+    auto mssm_signals = ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals});
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
-    auto bins = cb.bin_set();
-    for (auto b : bins) {
-      auto procs = cb.cp().bin({b}).process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).process_set();
-      for (auto p : procs) {
-        std::string norm = "norm";
-        if (ch::contains(mssm_model_independent_ggH_signals, p)) {norm = "prenorm";}
-        std::string pdf_name = ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]), norm, true, verbose, false, &morphing_demo);
-        if (ch::contains(mssm_model_independent_ggH_signals, p)) {
-          ws.factory(TString::Format("expr::%s_norm('@0*@1',%s, %s_frac)", pdf_name.c_str(),(pdf_name + "_" + norm).c_str(), p.c_str()));
-        }
+    auto morphFactory = ch::CMSHistFuncFactory();
+    morphFactory.SetHorizontalMorphingVariable(mass_var);
+    morphFactory.Run(cb, ws, process_norm_map);
+
+    // Adding 'norm' terms into workspace according to desired signals
+    for (auto bin : cb.cp().bin_set())
+    {
+      for (auto proc : mssm_model_independent_ggH_signals)
+      {
+        std::string prenorm_name = bin + "_" + proc + "_morph_prenorm";
+        std::string norm_name = bin + "_" + proc + "_morph_norm";
+        ws.factory(TString::Format("expr::%s('@0*@1',%s, %s_frac)", norm_name.c_str(), prenorm_name.c_str(), proc.c_str()));
       }
     }
 
     // Saving workspace with morphed signals
     morphing_demo.cd();
+    if (verbose)
+      ws.Print();
     ws.Write();
     morphing_demo.Close();
     cb.AddWorkspace(ws);
-    cb.cp().process(ch::JoinStr({mssm_model_independent_ggH_signals,mssm_model_independent_bbH_signals})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    cb.cp().process(mssm_signals).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
 
 
