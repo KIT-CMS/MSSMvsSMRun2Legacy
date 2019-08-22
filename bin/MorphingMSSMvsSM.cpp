@@ -303,19 +303,15 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn],
                       true);
     }
-    else if(categories == "mssm" || categories == "mssm_btag"){
+    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
       cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
                       true);
       cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
                       true);
-    }
-    else if(categories == "mssm_vs_sm_standard"){
-      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
-                      true);
-      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
-                      true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn],
-                      true);
+      if(categories == "mssm_vs_sm_standard"){
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn],
+                        true);
+      }
     }
   }
 
@@ -332,21 +328,18 @@ int main(int argc, char **argv) {
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
-    else if(categories == "mssm" || categories == "mssm_btag"){
+    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
           input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
           "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-    }
-    else if(categories == "mssm_vs_sm_standard"){
-      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-          "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-          "$BIN/$PROCESS_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      if(categories == "mssm_vs_sm_standard"){
+        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
+            input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
+            "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      }
     }
   }
 
@@ -545,14 +538,16 @@ int main(int argc, char **argv) {
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
 
-    // Adding 'norm' terms into workspace according to desired signals
-    for (auto bin : cb.cp().bin_set())
-    {
-      for (auto proc : mssm_ggH_signals)
+    if(categories == "mssm" || categories == "mssm_btag"){
+      // Adding 'norm' terms into workspace according to desired signals
+      for (auto bin : cb.cp().bin_set())
       {
-        std::string prenorm_name = bin + "_" + proc + "_morph_prenorm";
-        std::string norm_name = bin + "_" + proc + "_morph_norm";
-        ws.factory(TString::Format("expr::%s('@0*@1',%s, %s_frac)", norm_name.c_str(), prenorm_name.c_str(), proc.c_str()));
+        for (auto proc : mssm_ggH_signals)
+        {
+          std::string prenorm_name = bin + "_" + proc + "_morph_prenorm";
+          std::string norm_name = bin + "_" + proc + "_morph_norm";
+          ws.factory(TString::Format("expr::%s('@0*@1',%s, %s_frac)", norm_name.c_str(), prenorm_name.c_str(), proc.c_str()));
+        }
       }
     }
 
