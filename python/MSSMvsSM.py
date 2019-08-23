@@ -208,6 +208,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms = ['xs_%s' %proc, 'br_%stautau'%proc.split('_')[0].replace('gg','').replace('bb','')]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
+                if re.match("gg(A|H|h)_t", proc):
+                    terms += ['Yt_MSSM_%s'%proc]
+                elif re.match("gg(A|H|h)_b", proc):
+                    terms += ['Yb_MSSM_%s'%proc, 'Ydeltab_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
