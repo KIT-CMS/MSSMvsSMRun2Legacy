@@ -205,13 +205,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         for proc in self.PROC_SETS:
             if re.match("(gg(A|H|h)_(t|i|b)|bb(A|H|h))", proc):
-                terms = ['xs_%s' %proc, 'br_%stautau'%proc.split('_')[0].replace('gg','').replace('bb','')]
+                X = proc.split('_')[0].replace('gg','').replace('bb','')
+                terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
                 if re.match("gg(A|H|h)_t", proc):
-                    terms += ['Yt_MSSM_%s'%proc]
+                    terms += ['Yt_MSSM_%s'%X]
                 elif re.match("gg(A|H|h)_b", proc):
-                    terms += ['Yb_MSSM_%s'%proc, 'Ydeltab_MSSM']
+                    terms += ['Yb_MSSM_%s'%X, 'Ydeltab_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
