@@ -219,24 +219,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
             self.modelBuilder.out.function('scaling_%s'%proc).Print('')
 
-
-    def getHiggsProdDecMode(self, bin, process):
-        """Return a triple of (production, decay, energy)"""
-        P = ''
-        D = ''
-        if "_" in process:
-            (P, D) = process.split("_")
-        else:
-            raise RuntimeError, 'Expected signal process %s to be of the form PROD_DECAY' % process
-        E = None
-        for era in self.ERAS:
-            if era in bin:
-                if E: raise RuntimeError, "Validation Error: bin string %s contains multiple known energies" % bin
-                E = era
-        if not E:
-                raise RuntimeError, 'Did not find a valid energy in bin string %s' % bin
-        return (P, D, E)
-
     def getYieldScale(self,bin,process):
         if self.DC.isSignal[process]:
             scaling = 'scaling_%s' % process
