@@ -21,6 +21,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.energy = ''
         self.ggHatNLO = ''
         self.mssm_inputs = None
+        self.minTemplateMass = None
+        self.maxTemplateMass = None
         self.quantity_map = {
             "mass"          : {"name" : "m{HIGGS}", "access" : "{HIGGS}"},
             "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau"},
@@ -77,6 +79,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
                 print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
 
+            if po.startswith('minTemplateMass='):
+                self.minTemplateMass = float(po.replace('minTemplateMass=', ''))
+                print "Lower limit for mass histograms: {MINMASS}".format(MINMASS=self.minTemplateMass)
+
+            if po.startswith('maxTemplateMass='):
+                self.maxTemplateMass = float(po.replace('maxTemplateMass=', ''))
+                print "Upper limit for mass histograms: {MAXMASS}".format(MAXMASS=self.maxTemplateMass)
+
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
     def setModelBuilder(self, modelBuilder):
@@ -112,7 +122,30 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning) 
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
-                hist.SetBinContent(i_x+1, i_y+1, getattr(self.mssm_inputs, quantity)(accesskey, x, y))
+                value = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
+                if quantity == 'mass' and self.minTemplateMass:
+                    if value < self.minTemplateMass:
+                        print "[WARNING]: Found a value for {MH} below lower mass limit: {VALUE} < {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
+                            MH=name,
+                            VALUE=value,
+                            MINMASS=self.minTemplateMass,
+                            XNAME=x_parname,
+                            XVALUE=x,
+                            YNAME=y_parname,
+                            YVALUE=y)
+                        value = self.minTemplateMass
+                if quantity == 'mass' and self.maxTemplateMass:
+                    if value > self.maxTemplateMass:
+                        print "[WARNING]: Found a value for {MH} above upper mass limit: {VALUE} > {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
+                            MH=name,
+                            VALUE=value,
+                            MINMASS=self.maxTemplateMass,
+                            XNAME=x_parname,
+                            XVALUE=x,
+                            YNAME=y_parname,
+                            YVALUE=y)
+                        value = self.maxTemplateMass
+                hist.SetBinContent(i_x+1, i_y+1, value)
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncFromModelFile(self, higgs, quantity, varlist):
