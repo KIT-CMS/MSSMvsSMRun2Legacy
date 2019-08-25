@@ -149,6 +149,29 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 hist.SetBinContent(i_x+1, i_y+1, value)
         return self.doHistFunc(name, hist, varlist)
 
+    def doHistFuncFromXsecToolsForQQH(self, varlist):
+        # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
+        name  = "qqh_MSSM"
+        accesskey = self.quantity_map[quantity]['access'].format(HIGGS='H')
+        print "Computing 'qqh' scaling function from mssm_xs_tools..."
+
+        x_parname = varlist[0].GetName()
+        x_binning = self.binning[self.scenario][x_parname]
+
+        y_parname = varlist[1].GetName()
+        y_binning = self.binning[self.scenario][y_parname]
+
+        hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
+        for i_x, x in enumerate(x_binning):
+            for i_y, y in enumerate(y_binning):
+                beta = math.atan(y)
+                g_Htt = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
+                alpha = math.asin(g_Htt * math.sin(beta))
+                value = math.sin(beta-alpha)**2 # (g_HVV)**2
+                print "g_HVV ** 2 =",value,"for mA =",x,"tanb =",y
+                hist.SetBinContent(i_x+1, i_y+1, value)
+        return self.doHistFunc(name, hist, varlist)
+
     def doHistFuncFromModelFile(self, higgs, quantity, varlist):
         name  = self.quantity_map[quantity]['name']
         accesskey = self.quantity_map[quantity]['access']
@@ -249,6 +272,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     terms += ['Yb_MSSM_%s'%X, 'Ydeltab_MSSM']*2
                 elif re.match("gg(A|H|h)_i", proc):
                     terms += ['Yt_MSSM_%s'%X, 'Yb_MSSM_%s'%X, 'Ydeltab_MSSM']
+            elif proc == 'qqh':
+                terms = [self.sigNorms[True], 'qqh_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
@@ -274,6 +299,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         pars = [mA, tanb]
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
+
+        self.doHistFuncFromXsecToolsForQQH(pars)
+        self.PROC_SETS.append('qqh')
 
         for X in ['h', 'H']:
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
