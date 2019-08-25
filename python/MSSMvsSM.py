@@ -152,7 +152,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
     def doHistFuncFromXsecToolsForQQH(self, varlist):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
         name  = "qqh_MSSM"
-        accesskey = self.quantity_map[quantity]['access'].format(HIGGS='H')
+        accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
         print "Computing 'qqh' scaling function from mssm_xs_tools..."
 
         x_parname = varlist[0].GetName()
