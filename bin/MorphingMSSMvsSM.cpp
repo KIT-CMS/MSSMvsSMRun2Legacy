@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
-  string categories = "sm"; // "sm", "sm_nobtag", "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_new", "gof"
+  string categories = "sm"; // "sm", "sm_nobtag", "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
         { 8, "em_nobtag_2jethighmjjhighpt"},
     };
   }
-  else if(categories == "mssm" || categories == "mssm_vs_sm_standard"){
+  else if(categories == "mssm" || categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh"){
     cats["et"] = {
         {  1, "et_wjets_control"},
         { 32, "et_nobtag_tightmt"},
@@ -297,20 +297,18 @@ int main(int argc, char **argv) {
 
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
-    cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn],
-                    false);
+    cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
     if(categories == "sm" || categories == "sm_nobtag"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn],
-                      true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
-      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn],
-                      true);
-      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn],
-                      true);
-      if(categories == "mssm_vs_sm_standard"){
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn],
-                        true);
+    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh"){
+      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
+      cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
+      if(categories == "mssm_vs_sm_standard" || "mssm_vs_sm_qqh"){
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      }
+      if(categories == "mssm_vs_sm_qqh"){
+        cb.AddProcesses({"125"}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
       }
     }
   }
@@ -321,24 +319,23 @@ int main(int argc, char **argv) {
   // Extract shapes from input ROOT files
   for (string chn : chns) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-        "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+      input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     if(categories == "sm" || categories == "sm_nobtag"){
       cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-          "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
-    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
+    else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-          "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-          "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-      if(categories == "mssm_vs_sm_standard"){
+        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      if(categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh"){
         cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-            input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root",
-            "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      }
+      if(categories == "mssm_vs_sm_qqh"){
+        cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
       }
     }
   }
@@ -409,7 +406,7 @@ int main(int argc, char **argv) {
           obs->set_shape(total_procs_shape,true);
         });
       }
-      else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard"){
+      else if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -527,7 +524,7 @@ int main(int argc, char **argv) {
   }
 
 
-  if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard")
+  if(categories == "mssm" || categories == "mssm_btag" || categories == "mssm_vs_sm_standard" || categories == "mssm_vs_sm_qqh")
   {
     TFile morphing_demo("htt_mssm_morphing_demo.root", "RECREATE");
 

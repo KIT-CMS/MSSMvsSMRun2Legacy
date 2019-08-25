@@ -27,37 +27,37 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   std::vector<std::string> signals_ggH = {
       // STXS stage 0
-      "ggH",
+      "ggH125",
       // STXS stage 1.1
-      "ggH_GG2H_FWDH",
-      "ggH_GG2H_PTH_GT200",
-      "ggH_GG2H_0J_PTH_0_10",
-      "ggH_GG2H_0J_PTH_GT10",
-      "ggH_GG2H_1J_PTH_0_60",
-      "ggH_GG2H_1J_PTH_60_120",
-      "ggH_GG2H_1J_PTH_120_200",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_0_60",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_60_120",
-      "ggH_GG2H_GE2J_MJJ_0_350_PTH_120_200",
-      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25",
-      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25",
-      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25",
-      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_GT25",
+      "ggH_GG2H_FWDH125",
+      "ggH_GG2H_PTH_GT200125",
+      "ggH_GG2H_0J_PTH_0_10125",
+      "ggH_GG2H_0J_PTH_GT10125",
+      "ggH_GG2H_1J_PTH_0_60125",
+      "ggH_GG2H_1J_PTH_60_120125",
+      "ggH_GG2H_1J_PTH_120_200125",
+      "ggH_GG2H_GE2J_MJJ_0_350_PTH_0_60125",
+      "ggH_GG2H_GE2J_MJJ_0_350_PTH_60_120125",
+      "ggH_GG2H_GE2J_MJJ_0_350_PTH_120_200125",
+      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25125",
+      "ggH_GG2H_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25125",
+      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25125",
+      "ggH_GG2H_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_GT25125",
       };
   std::vector<std::string> signals_qqH = {
       // STXS stage 0
-      "qqH",
+      "qqH125",
       // STXS stage 1
-      "qqH_QQ2HQQ_FWDH",
-      "qqH_QQ2HQQ_0J",
-      "qqH_QQ2HQQ_1J",
-      "qqH_QQ2HQQ_GE2J_MJJ_0_60",
-      "qqH_QQ2HQQ_GE2J_MJJ_60_120",
-      "qqH_QQ2HQQ_GE2J_MJJ_120_350",
-      "qqH_QQ2HQQ_GE2J_MJJ_GT350_PTH_GT200",
-      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25",
-      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25",
-      "qqH_QQ2HQQ_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25",
+      "qqH_QQ2HQQ_FWDH125",
+      "qqH_QQ2HQQ_0J125",
+      "qqH_QQ2HQQ_1J125",
+      "qqH_QQ2HQQ_GE2J_MJJ_0_60125",
+      "qqH_QQ2HQQ_GE2J_MJJ_60_120125",
+      "qqH_QQ2HQQ_GE2J_MJJ_120_350125",
+      "qqH_QQ2HQQ_GE2J_MJJ_GT350_PTH_GT200125",
+      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_0_25125",
+      "qqH_QQ2HQQ_GE2J_MJJ_350_700_PTH_0_200_PTHJJ_GT25125",
+      "qqH_QQ2HQQ_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_0_25125",
       "qqH_QQ2HQQ_GE2J_MJJ_GT700_PTH_0_200_PTHJJ_GT25"
       };
   std::vector<std::string> signals_VH = {
@@ -69,7 +69,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_qqHToWW = {
      // STXS stage 0
      "qqHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh"}});
 
   std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh"};
