@@ -120,7 +120,7 @@ do
 done
 ```
 
-## Model-independent CLs 95% limits (asymptotic, SM as signal in 0-hypothesis)
+## Model-dependent CLs 95% limits (asymptotic, SM as signal in 0-hypothesis)
 
 **Computing limits:**
 
