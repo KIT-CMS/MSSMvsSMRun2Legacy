@@ -1,6 +1,13 @@
 # MSSMvsSMRun2Legacy
 Analysis specific software for MSSM (with SM categories) to be used within CombineHarvester
 
+# Setup software
+
+```bash
+wget https://raw.githubusercontent.com/KIT-CMS/MSSMvsSMRun2Legacy/master/scripts/checkout.sh
+bash ./checkout.sh
+```
+
 # Cut-based SM analysis
 
 ## Datacard creation
