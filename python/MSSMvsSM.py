@@ -8,6 +8,7 @@ import pprint
 import numpy as np
 import itertools
 import re
+import math
 from collections import defaultdict
 
 class MSSMvsSMHiggsModel(PhysicsModel):
@@ -119,7 +120,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_parname = varlist[1].GetName()
         y_binning = self.binning[self.scenario][y_parname]
 
-        hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning) 
+        hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
                 value = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
@@ -178,13 +179,13 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_parname = varlist[1].GetName()
         y_binning = self.binning[self.scenario][y_parname]
 
-        hist_hi = ROOT.TH2D(systname+"_hi", systname+"_hi", len(x_binning)-1, x_binning, len(y_binning)-1, y_binning) 
-        hist_lo = ROOT.TH2D(systname+"_lo", systname+"_lo", len(x_binning)-1, x_binning, len(y_binning)-1, y_binning) 
+        hist_hi = ROOT.TH2D(systname+"_hi", systname+"_hi", len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
+        hist_lo = ROOT.TH2D(systname+"_lo", systname+"_lo", len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
                 nominal  = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
-                value_hi = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='up'), x, y) 
-                value_lo = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='down'), x, y) 
+                value_hi = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='up'), x, y)
+                value_lo = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='down'), x, y)
                 if nominal == 0:
                     hist_hi.SetBinContent(i_x+1, i_y+1, 1.0)
                     hist_lo.SetBinContent(i_x+1, i_y+1, 1.0)
@@ -231,7 +232,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.sigNorms = { True:'x', False:'not_x' }
 
         self.modelBuilder.doSet('POI', 'r')
-        
+
         # We don't intend on actually floating these in any fits...
         self.modelBuilder.out.var('mA').setConstant(True)
         self.modelBuilder.out.var('tanb').setConstant(True)
@@ -243,9 +244,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms += ['r']
                 terms += [self.sigNorms[True]]
                 if re.match("gg(A|H|h)_t", proc):
-                    terms += ['Yt_MSSM_%s'%X]
+                    terms += ['Yt_MSSM_%s'%X]*2
                 elif re.match("gg(A|H|h)_b", proc):
-                    terms += ['Yb_MSSM_%s'%X, 'Ydeltab_MSSM']
+                    terms += ['Yb_MSSM_%s'%X, 'Ydeltab_MSSM']*2
+                elif re.match("gg(A|H|h)_i", proc):
+                    terms += ['Yt_MSSM_%s'%X, 'Yb_MSSM_%s'%X, 'Ydeltab_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
