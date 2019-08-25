@@ -114,7 +114,7 @@ done
 ## Workspace creation
 
 ```bash
-for model in mh125 mh125_ls mh125_lc mh125_alignment
+for model in mh125 mh125_ls mh125_lc mh125_align
 do
     combineTool.py -M T2W -o ws_${model}.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,${model}_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_MSSMvsSM_Run2_mssm_vs_sm_standard_mt_tot_puppi/Run2017/cmb/ --PO minTemplateMass=100.0 --PO maxTemplateMass=3200.0
 done
@@ -125,13 +125,13 @@ done
 **Computing limits:**
 
 ```bash
-for model in mh125 mh125_ls mh125_lc mh125_alignment
+for model in mh125 mh125_ls mh125_lc mh125_align
 do
     combineTool.py -M AsymptoticGrid CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${model}.json -d output_MSSMvsSM_Run2_mssm_vs_sm_standard_mt_tot_puppi/Run2017/cmb/ws_${model}.root --job-mode 'condor' --task-name 'mssm_${model}' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1
 done
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_${model}.{sh,sub}, submit to batch system:
-for model in mh125 mh125_ls mh125_lc mh125_alignment
+for model in mh125 mh125_ls mh125_lc mh125_align
 do
     condor_submit  condor_mssm_${model}.sub
 done
@@ -140,7 +140,7 @@ done
 **Collecting limits:**
 
 ```bash
-for model in mh125 mh125_ls mh125_lc mh125_alignment
+for model in mh125 mh125_ls mh125_lc mh125_align
 do
     combineTool.py -M AsymptoticGrid CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${model}.json -d output_MSSMvsSM_Run2_mssm_vs_sm_standard_mt_tot_puppi/Run2017/cmb/ws_${model}.root --job-mode 'condor' --task-name 'mssm_${model}' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1; mv asymptotic_grid.root asymptotic_grid_${model}.root
 done
@@ -152,5 +152,5 @@ done
 plotLimitGrid.py asymptotic_grid_mh125.root --scenario-label="M_{h}^{125} scenario (asimov)" --output mssm_2017_mh125_asymptotic --title-right="41.5 fb^{-1} (13 TeV)" --cms-sub="Private Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13.root
 plotLimitGrid.py asymptotic_grid_mh125_lc.root --scenario-label="M_{h}^{125}(#tilde#chi) scenario (asimov)" --output mssm_2017_mh125_lc_asymptotic --title-right="41.5 fb^{-1} (13 TeV)" --cms-sub="Private Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_lc_13.root
 plotLimitGrid.py asymptotic_grid_mh125_ls.root --scenario-label="M_{h}^{125}(#tilde#tau) scenario (asimov)" --output mssm_2017_mh125_ls_asymptotic --title-right="41.5 fb^{-1} (13 TeV)" --cms-sub="Private Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_ls_13.root
-plotLimitGrid.py asymptotic_grid_mh125_alignment.root --scenario-label="M_{h}^{125}(alignment) scenario (asimov)" --output mssm_2017_mh125_alignment_asymptotic --title-right="41.5 fb^{-1} (13 TeV)" --cms-sub="Private Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_alignment_13.root
+plotLimitGrid.py asymptotic_grid_mh125_align.root --scenario-label="M_{h}^{125}(alignment) scenario (asimov)" --output mssm_2017_mh125_align_asymptotic --title-right="41.5 fb^{-1} (13 TeV)" --cms-sub="Private Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_align_13.root
 ```
