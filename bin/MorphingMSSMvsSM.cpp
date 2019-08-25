@@ -308,7 +308,7 @@ int main(int argc, char **argv) {
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
       }
       if(categories == "mssm_vs_sm_qqh"){
-        cb.AddProcesses({"125"}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
       }
     }
   }
@@ -335,7 +335,7 @@ int main(int argc, char **argv) {
       }
       if(categories == "mssm_vs_sm_qqh"){
         cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
       }
     }
   }

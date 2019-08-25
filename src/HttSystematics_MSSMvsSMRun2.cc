@@ -957,7 +957,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   }
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH,signals_qqHToWW}))
+     .process(JoinStr({signals_qqH,signals_qqHToWW, {"qqh"}}))
       .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -979,7 +979,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "pdf_Higgs_gg", "lnN", SystMap<>::init(1.032));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH,signals_qqHToWW}))
+     .process(JoinStr({signals_qqH,signals_qqHToWW, {"qqh"}}))
       .AddSyst(cb, "pdf_Higgs_qq", "lnN", SystMap<>::init(1.021));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
