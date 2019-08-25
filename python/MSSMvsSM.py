@@ -49,7 +49,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 "tanb" : np.arange(1.0, 61.0, 1.0),
                 "mA" :   np.arange(70.0, 2605.0, 5.0),
             },
-            "mh125_alignment": {
+            "mh125_align": {
                 "tanb" : np.arange(1.0, 20.25, 0.25),
                 "mA" :   np.arange(120.0, 1005.0, 5.0),
             },
