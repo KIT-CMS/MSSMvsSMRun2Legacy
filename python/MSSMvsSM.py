@@ -8,7 +8,6 @@ import pprint
 import numpy as np
 import itertools
 import re
-import math
 from collections import defaultdict
 
 class MSSMvsSMHiggsModel(PhysicsModel):
@@ -149,11 +148,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 hist.SetBinContent(i_x+1, i_y+1, value)
         return self.doHistFunc(name, hist, varlist)
 
-    def doHistFuncFromXsecToolsForQQH(self, varlist):
+    def doHistFuncForQQH(self, varlist):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
         name  = "qqh_MSSM"
         accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
-        print "Computing 'qqh' scaling function from mssm_xs_tools..."
+        print "Computing 'qqh' scaling function from model file..."
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -161,15 +160,21 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_parname = varlist[1].GetName()
         y_binning = self.binning[self.scenario][y_parname]
 
+        F = ROOT.TFile.Open(self.filename, "read")
+        g_Htt_hist = F.Get(accesskey)
+
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
-                beta = math.atan(y)
-                g_Htt = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
-                alpha = math.asin(g_Htt * math.sin(beta))
-                value = math.sin(beta-alpha)**2 # (g_HVV)**2
-                print "g_HVV ** 2 =",value,"for mA =",x,"tanb =",y
+                beta = np.arctan(y)
+                g_Htt = g_Htt_hist.Interpolate(x,y)
+                sin_alpha = g_Htt * np.sin(beta)
+                if abs(sin_alpha) > 1:
+                    sin_alpha  = np.sign(sin_alpha)
+                alpha = np.arcsin(sin_alpha)
+                value = np.sin(beta-alpha)**2 # (g_HVV)**2
                 hist.SetBinContent(i_x+1, i_y+1, value)
+        print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncFromModelFile(self, higgs, quantity, varlist):
@@ -300,7 +305,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
-        self.doHistFuncFromXsecToolsForQQH(pars)
+        self.doHistFuncForQQH(pars)
         self.PROC_SETS.append('qqh')
 
         for X in ['h', 'H']:
