@@ -62,7 +62,7 @@ MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_pu
 ## Workspace creation
 
 ```bash
-combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_MSSMvsSM_Run2_mssm_mt_tot_puppi/Run2017/cmb/
+combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_MSSMvsSM_Run2_mssm_mt_tot_puppi/Run2017/cmb/ -m 100 --parallel 10
 ```
 
 ## Model-independent CLs 95% limits (asymptotic, SM Higgs in background hypothesis)
