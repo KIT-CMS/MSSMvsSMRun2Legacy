@@ -270,6 +270,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
+                terms += [self.sigNorms[True]]
             elif proc == 'qqh':
                 terms = [self.sigNorms[True], 'qqh_MSSM']
             else:
