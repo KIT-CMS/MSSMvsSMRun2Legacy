@@ -270,13 +270,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
-                terms += [self.sigNorms[True]]
-                if re.match("gg(A|H|h)_t", proc):
-                    terms += ['Yt_MSSM_%s'%X]*2
-                elif re.match("gg(A|H|h)_b", proc):
-                    terms += ['Yb_MSSM_%s'%X, 'Ydeltab_MSSM']*2
-                elif re.match("gg(A|H|h)_i", proc):
-                    terms += ['Yt_MSSM_%s'%X, 'Yb_MSSM_%s'%X, 'Ydeltab_MSSM']
             elif proc == 'qqh':
                 terms = [self.sigNorms[True], 'qqh_MSSM']
             else:
