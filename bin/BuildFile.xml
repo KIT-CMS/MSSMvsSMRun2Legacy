@@ -1,4 +1,5 @@
 <bin file="MorphingMSSMvsSM.cpp" name="MorphingMSSMvsSM"></bin>
+<bin file="etFES.cpp" name="etFES"></bin>
 <use name="root"/>
 <use name="rootmath"/>
 <use name="roofit"/>
