@@ -1,5 +1,6 @@
 from HiggsAnalysis.CombinedLimit.PhysicsModel import *
 from CombineHarvester.MSSMvsSMRun2Legacy.mssm_xs_tools import mssm_xs_tools
+import CombineHarvester.CombineTools.plotting as plot
 
 import os
 import ROOT
@@ -9,11 +10,14 @@ import numpy as np
 import itertools
 import re
 from collections import defaultdict
+from array import array
 
 class MSSMvsSMHiggsModel(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
         ROOT.gROOT.SetBatch(ROOT.kTRUE)
+        plot.ModTDRStyle(l=0.13, b=0.10, r=0.19)
+        ROOT.gStyle.SetNdivisions(510, "Z")
         self.filePrefix = ''
         self.modelFile = ''
         self.filename = ''
@@ -175,6 +179,17 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 value = np.sin(beta-alpha)**2 # (g_HVV)**2
                 hist.SetBinContent(i_x+1, i_y+1, value)
         print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
+        canv = ROOT.TCanvas()
+        canv.cd()
+        hist.SetContour(2000)
+        hist.GetXaxis().SetTitle('m_{A}')
+        hist.GetYaxis().SetTitle('tan#beta')
+        hist.Draw("colz")
+        canv.SetLogx()
+        canv.Update()
+        canv.SaveAs("qqh_MSSM_%s.pdf"%self.scenario)
+        canv.SaveAs("qqh_MSSM_%s.png"%self.scenario)
+
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncFromModelFile(self, higgs, quantity, varlist):
