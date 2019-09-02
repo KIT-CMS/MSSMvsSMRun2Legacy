@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals;
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
@@ -113,6 +113,7 @@ int main(int argc, char **argv) {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
   }
+  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
@@ -486,6 +487,10 @@ int main(int argc, char **argv) {
 
   // Delete processes with 0 yield
   cb.FilterProcs([&](ch::Process *p) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
+    {
+      return false;
+    }
     bool null_yield = !(p->rate() > 0.0);
     if (null_yield) {
       std::cout << "[WARNING] Removing process with null yield: \n ";
@@ -500,6 +505,10 @@ int main(int argc, char **argv) {
 
   // Delete systematics with 0 yield since these result in a bogus norm error in combine
   cb.FilterSysts([&](ch::Systematic *s) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+    {
+      return false;
+    }
     if (s->type() == "shape") {
       if (s->shape_u()->Integral() == 0.0) {
         std::cout << "[WARNING] Removing systematic with null yield in up shift:" << std::endl;
