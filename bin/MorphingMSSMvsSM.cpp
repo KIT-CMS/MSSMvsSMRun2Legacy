@@ -390,6 +390,7 @@ int main(int argc, char **argv) {
 
   // Create combine harverster object
   ch::CombineHarvester cb;
+  cb.SetFlag("workspaces-use-clone", true);
 
   // Add observations and processes
   std::string era_tag;
@@ -708,7 +709,8 @@ int main(int argc, char **argv) {
     ws.Write();
     morphing_demo.Close();
     cb.AddWorkspace(ws);
-    cb.cp().process(mssm_signals).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
 
@@ -743,7 +745,7 @@ int main(int argc, char **argv) {
       // make one directory per chn-cat, one per chn and cmb. In this code we only
       // store the individual datacards for each directory to be combined later.
       ch::CardWriter writer(output_folder + "/" + era_tag + "/$BIN/$BIN.txt",
-                            output_folder + "/" + era_tag + "/$BIN/common/$BIN_input_" + era_tag + ".root");
+                            output_folder + "/" + era_tag + "/$BIN/common/$BIN_input.root");
 
       // We're not using mass as an identifier - which we need to tell the
       // CardWriter
