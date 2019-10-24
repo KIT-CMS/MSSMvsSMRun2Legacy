@@ -4,7 +4,6 @@
 import ROOT
 import CombineHarvester.CombineTools.plotting as plot
 import argparse
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'input', nargs='+', help="""Input json files""")
@@ -14,7 +13,7 @@ parser.add_argument(
 parser.add_argument(
     '--show', default='exp,obs')
 parser.add_argument(
-    '--x-title', default='m_{#phi} (GeV)', help="""Title for the x-axis""")
+    '--x-title', default="m_{h'} (GeV)", help="""Title for the x-axis""")
 parser.add_argument(
     '--y-title', default=None, help="""Title for the y-axis""")
 parser.add_argument(
@@ -22,7 +21,7 @@ parser.add_argument(
 parser.add_argument(
     '--y-axis-max', default=None, help="""Maximum for y-axis range""")
 parser.add_argument(
-    '--process', choices=['gg#phi','bb#phi'], help='The process on which a limit has been calculated.', default="gg#phi")
+    '--process', choices=['gg#phi','bb#phi','nmssm'], help='The process on which a limit has been calculated.', default="gg#phi")
 parser.add_argument(
     '--cms-sub', default='Internal', help="""Text below the CMS logo""")
 parser.add_argument(
@@ -35,6 +34,8 @@ parser.add_argument(
     '--logx', action='store_true', help="""Draw x-axis in log scale""")
 parser.add_argument(
     '--ratio-to', default=None)
+parser.add_argument(
+    '--xmax', default=None, type=float)
 parser.add_argument(
     '--pad-style', default=None, help="""Extra style options for the pad, e.g. Grid=(1,1)""")
 parser.add_argument(
@@ -127,9 +128,11 @@ for src in args.input:
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
         plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw()
+
         has_band = True  # useful to know later if we want to do style settings
                          # based on whether or not the expected band has been drawn
 
@@ -167,12 +170,17 @@ for src in args.input:
 axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "bb#phi":
     axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
+if args.process == "nmssm":
+    axis[0].GetYaxis().SetTitle("#scale[0.6]{95% CL limit on #sigma#font[42]{(gg#rightarrow H)}#upoint#font[52]{B}#font[42]{(H#rightarrow hh')}#upoint#font[52]{B}#font[42]{(h#rightarrow#tau#tau)}#upoint#font[52]{B}#font[42]{(h'#rightarrow bb)}(pb)}")
+
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)
 axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
+if args.xmax is not None:
+    axis[0].GetXaxis().SetLimits(60.,args.xmax)
 
 if args.logy:
     axis[0].SetMinimum(0.1)  # we'll fix this later
@@ -223,9 +231,19 @@ if legend.GetNRows() == 1:
     legend.SetY1(legend.GetY2() - 0.5*(legend.GetY2()-legend.GetY1()))
 legend.Draw()
 
+channel_label = {"mt": "#mu#tau_{h}",
+                "tt": "#tau_{h}#tau_{h}",
+                "et":  "e#tau_{h}",
+                "em": "e#mu",
+                "all": "e#tau_{h}+#mu#tau_{h}+#tau_{h}#tau_{h}"
+                }
+for ch in channel_label.keys():
+    if ch in args.title_left:
+        title_left = args.title_left.replace(ch,channel_label[ch])
+        break
 plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
 plot.DrawTitle(pads[0], args.title_right, 3)
-plot.DrawTitle(pads[0], args.title_left, 1)
+plot.DrawTitle(pads[0], title_left, 1)
 
 canv.Print('.pdf')
 canv.Print('.png')
