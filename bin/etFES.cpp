@@ -294,7 +294,7 @@ int main(int argc, char** argv)
     // ?  CMS_eff_trigger_et: ZJ, TTJ, VVL, VVK, W, QCD
     if (!newera) // 2016
     {
-        cb.cp().process({"ZL"}).AddSyst(cb,"CMS_eFakeTau_13TeV", "lnN",SystMap<>::init(1.30)); // tight wp of anti-e discrim
+        // cb.cp().process({"ZL"}).AddSyst(cb,"CMS_eFakeTau_13TeV", "lnN", SystMap<>::init(1.30)); // tight wp of anti-e discrim; keep when running only FES
         cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "CMS_eff_e_13TeV", "lnN", SystMap<>::init(1.02));
         cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "lumi_13TeV", "lnN", SystMap<>::init(1.062));
         cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "CMS_eff_trigger_et_13TeV", "lnN", SystMap<>::init(1.02));
