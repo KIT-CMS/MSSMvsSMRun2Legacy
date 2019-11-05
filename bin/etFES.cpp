@@ -77,6 +77,7 @@ int main(int argc, char** argv)
     bool fakefactors = false;
     bool embedding = false;
     int binsize = 2;
+    vector<float> vbins = {};
     po::variables_map vm;
     po::options_description config("configuration");
     VString channels = {"et"};
@@ -84,6 +85,7 @@ int main(int argc, char** argv)
     config.add_options()  // Declare the supported options.
         ("mass,m",         po::value<string>(&mass)->default_value(mass))
         ("binsize",         po::value<int>(&binsize)->default_value(binsize))
+        ("vbins",         po::value<vector<float>>(&vbins)->multitoken(), "bins")
         ("input-folder",   po::value<string>(&input_folder)->default_value(input_folder))
         ("input-file,i",   po::value<string>(&input_file)->default_value(input_file))
         ("output-folder",  po::value<string>(&output_folder)->default_value(output_folder))
@@ -132,9 +134,20 @@ int main(int argc, char** argv)
     // vector<double> _nojets = {64,72,80,88,96,104,112,120,128,136,144};
     // vector<double> _nojets = {66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140};
     vector<double> _nojets;
-    if (binsize == 2)
+    if (vbins.size() > 0)
     {
-        double a [] = {70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140};
+        dout("the binning set manually:", vbins.size());
+        // for(auto v: vbins)
+        // {
+        //     dout(v, "->", vbins[v]);
+        // }
+        for (const auto v: vbins) dout(v);
+        _nojets.insert(_nojets.end(), std::begin(vbins), std::end(vbins));
+    }
+    else if (binsize == 2)
+    {
+        // double a [] = {70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140};
+        double a [] = {70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120};
         _nojets.insert(_nojets.end(), std::begin(a), std::end(a));
     }
     else if (binsize == 5)
