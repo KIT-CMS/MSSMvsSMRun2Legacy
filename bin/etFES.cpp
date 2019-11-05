@@ -183,14 +183,44 @@ int main(int argc, char** argv)
 
 
     std::map<string, int> cattegories_bins;
-    cattegories_bins["et_nojets_alldm"]=1;
-    cattegories_bins["et_njet0_alldm"]=1;
-    cattegories_bins["et_0jet_dm0"]=2;
-    cattegories_bins["et_njetN_dm0"]=2;
-    cattegories_bins["et_nojets_dm1"]=3;
-    cattegories_bins["et_njet0_dm1"]=3;
-    cattegories_bins["et_0jet_dm10"]=4;
-    cattegories_bins["et_njetN_dm10"]=4;
+    // cattegories_bins["et_nojets_alldm"]=1;
+    // cattegories_bins["et_njet0_alldm"]=1;
+    // cattegories_bins["et_0jet_dm0"]=2;
+    // cattegories_bins["et_njetN_dm0"]=2;
+    // cattegories_bins["et_nojets_dm1"]=3;
+    // cattegories_bins["et_njet0_dm1"]=3;
+    // cattegories_bins["et_0jet_dm10"]=4;
+    // cattegories_bins["et_njetN_dm10"]=4;
+    // new categories
+        // inclusive eta
+        cattegories_bins["et_inc_eta_2_njet0_alldm"] = 1;
+        cattegories_bins["et_inc_eta_2_njet0_dm0"] = 2;
+        cattegories_bins["et_inc_eta_2_njet0_dm1"] = 3;
+        cattegories_bins["et_inc_eta_2_njetN_alldm"] = 4;
+        cattegories_bins["et_inc_eta_2_njetN_dm0"] = 5;
+        cattegories_bins["et_inc_eta_2_njetN_dm1"] = 6;
+        // barel
+        cattegories_bins["et_eta_2_barel_real_njet0_alldm"] = 7;
+        cattegories_bins["et_eta_2_barel_real_njet0_dm0"] = 8;
+        cattegories_bins["et_eta_2_barel_real_njet0_dm1"] = 9;
+        cattegories_bins["et_eta_2_barel_real_njetN_alldm"] = 10;
+        cattegories_bins["et_eta_2_barel_real_njetN_dm0"] = 11;
+        cattegories_bins["et_eta_2_barel_real_njetN_dm1"] = 12;
+        //gap
+        cattegories_bins["et_eta_2_gap_njet0_alldm"] = 13;
+        cattegories_bins["et_eta_2_gap_njet0_dm0"] = 14;
+        cattegories_bins["et_eta_2_gap_njet0_dm1"] = 15;
+        cattegories_bins["et_eta_2_gap_njetN_alldm"] = 16;
+        cattegories_bins["et_eta_2_gap_njetN_dm0"] = 17;
+        cattegories_bins["et_eta_2_gap_njetN_dm1"] = 18;
+        //endcap
+        cattegories_bins["et_eta_2_endcap_real_njet0_alldm"] = 19;
+        cattegories_bins["et_eta_2_endcap_real_njet0_dm0"] = 20;
+        cattegories_bins["et_eta_2_endcap_real_njet0_dm1"] = 21;
+        cattegories_bins["et_eta_2_endcap_real_njetN_alldm"] = 22;
+        cattegories_bins["et_eta_2_endcap_real_njetN_dm0"] = 23;
+        cattegories_bins["et_eta_2_endcap_real_njetN_dm1"] = 24;
+
 
     for(auto c: catteg)
     {
@@ -199,7 +229,6 @@ int main(int argc, char** argv)
         binning[c] = _nojets;
     }
     dout("categzise", cattegories["et_13TeV"].size());
-
 
 
     // Create an empty CombineHarvester instance that will hold all of the
@@ -216,7 +245,6 @@ int main(int argc, char** argv)
             {channel},
             cattegories[channel + "_13TeV"]  // bin
         );
-
         cb.AddProcesses(
             {"*"},
             {"htt"},
