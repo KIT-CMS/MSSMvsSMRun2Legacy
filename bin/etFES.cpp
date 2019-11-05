@@ -279,9 +279,9 @@ int main(int argc, char** argv)
     // Example path : TH1 et_nobtag_tight/ZTT_CMS_scale_t_et_13TeVUp
 
     // TES
-    // cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_3prong_13TeV", "shape", SystMap<>::init(1.00));
-    // cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong_13TeV", "shape", SystMap<>::init(1.00));
-    // cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong1pizero_13TeV", "shape", SystMap<>::init(1.00));
+    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_3prong_13TeV", "shape", SystMap<>::init(1.00));
+    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong_13TeV", "shape", SystMap<>::init(1.00));
+    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong1pizero_13TeV", "shape", SystMap<>::init(1.00));
 
     /* missing shapes unc.
     db.add_shape_systematic("CMS_htt_ttbarShape_13TeV", 1.0, channels,["TTT", "TTJ"])
