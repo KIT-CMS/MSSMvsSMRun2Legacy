@@ -21,6 +21,7 @@ parser.add_argument('--category_list', required = True, help = "Category list, w
 parser.add_argument('--eras', required = True, help = "Eras list, which will be used for parallelization of morphing")
 parser.add_argument('--parallel', type=int, default=5, help = "Cores provided for parallel morphing")
 parser.add_argument('--additional_arguments', type=str, default="--auto_rebin=1 --binomial_bbb=1" , help = "Additional arguments to be passed to the Morphing executable")
+parser.add_argument('--dry_run',action='store_true', help = "Don't execute, only list Morphing commands")
 
 args = parser.parse_args()
 
@@ -40,7 +41,6 @@ for era in eras:
         commands.append(command)
         print command
 
-
-p = Pool(args.parallel)
-
-p.map(execute, commands)
+if not args.dry_run:
+    p = Pool(args.parallel)
+    p.map(execute, commands)

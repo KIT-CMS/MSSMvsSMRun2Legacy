@@ -268,18 +268,18 @@ int main(int argc, char **argv) {
     cats["et"] = {
         { 1, "et_wjets_control"},
 
-        {10, "et_nobtag_lowmsv_0jet_tightmt"},
+        {10, "et_nobtag_lowmsv_0jet_tightmt"}, // No bbA
         {11, "et_nobtag_lowmsv_0jet_loosemt"},
 
         {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
 
         {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"},
+        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"}, // No bbA
+        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"}, // No bbA
 
         {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
         {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
 
         {32, "et_nobtag_highmsv_tightmt"},
         {33, "et_nobtag_highmsv_loosemt"},
@@ -291,7 +291,7 @@ int main(int argc, char **argv) {
         { 1, "mt_wjets_control"},
 
         {10, "mt_nobtag_lowmsv_0jet_tightmt"},
-        {11, "mt_nobtag_lowmsv_0jet_loosemt"},
+        {11, "mt_nobtag_lowmsv_0jet_loosemt"}, // No bbA
 
         {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
 
@@ -299,9 +299,9 @@ int main(int argc, char **argv) {
         {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
         {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
 
-        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"}, // No bbA
+        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"}, // No bbA
+        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
 
         {32, "mt_nobtag_highmsv_tightmt"},
         {33, "mt_nobtag_highmsv_loosemt"},
@@ -312,14 +312,14 @@ int main(int argc, char **argv) {
     cats["tt"] = {
         {10, "tt_nobtag_lowmsv_highdeltar"},
 
-        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"},
+        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"}, // No bbA
 
         {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"},
-        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"},
+        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"}, // No bbA
+        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"}, // No bbA
 
         {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"},
+        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"}, // No bbA
         {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
 
         {32, "tt_nobtag_highmsv"},
@@ -329,22 +329,22 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_ttbar_control"},
 
-        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"},
-        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"},
+        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"}, // No bbA
+        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"}, // No bbA, bbH
         {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
         {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
 
         {14, "em_nobtag_lowmsv_1jet_lowpt"},
         {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
-        {16, "em_nobtag_lowmsv_1jet_highmediumpt"},
-        {17, "em_nobtag_lowmsv_1jet_highpt"},
+        {16, "em_nobtag_lowmsv_1jet_highmediumpt"}, // No bbA
+        {17, "em_nobtag_lowmsv_1jet_highpt"}, // No bbA
 
         {18, "em_nobtag_lowmsv_2jet_lowmjj"},
         {19, "em_nobtag_lowmsv_2jet_mediummjj"},
 
         {32, "em_nobtag_highmsv_highdzeta"},
         {33, "em_nobtag_highmsv_mediumdzeta"},
-        {34, "em_nobtag_highmsv_lowdzeta"},
+        {34, "em_nobtag_highmsv_lowdzeta"}, // No bbA
 
         {35, "em_btag_highdzeta"},
         {36, "em_btag_mediumdzeta"},
@@ -365,6 +365,12 @@ int main(int argc, char **argv) {
 
   else std::runtime_error("Given era is not implemented.");
 
+  // Introduce ordering of categories for the final discriminator in MSSM
+  std::vector<int> m_sv_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
+                                    11,12,13,14,15,16,17,18,19,20,
+                                    21,22,23,24,25,26,27,28,29,30,31}; // SM-like categories with m_sv as discriminator
+  std::vector<int> mt_tot_categories = {1,32,33,34,35,36,37}; // MSSM-like categories & control regions with mt_tot as discriminator
+
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
@@ -372,37 +378,31 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
     else if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
-      cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
       if(analysis != "mssm_vs_sm_qqh")
       {
+        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
         cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       }
       else
       {
-        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbH", "bbh"}, cats[chn], true);
-        Categories bbA_cats = cats[chn];
-        //if(chn == "tt")
-        //{
-        //  for (auto catit = bbA_cats.begin(); catit != bbA_cats.end(); ++catit)
-        //  {
-        //     if((*catit).first == 15) bbA_cats.erase(catit);
-        //  }
-        //}
-        //else if(chn == "et")
-        //{
-        //  for (auto catit = bbA_cats.begin(); catit != bbA_cats.end(); ++catit)
-        //  {
-        //     if((*catit).first == 17) bbA_cats.erase(catit);
-        //  }
-        //}
-        //else if(chn == "mt")
-        //{
-        //  for (auto catit = bbA_cats.begin(); catit != bbA_cats.end(); ++catit)
-        //  {
-        //     if((*catit).first == 19) bbA_cats.erase(catit);
-        //  }
-        //}
-        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbA"}, bbA_cats, true);
+        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, cats[chn], true);
+        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, cats[chn], true);
+        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbh"}, cats[chn], true);
+        Categories highmass_cats = cats[chn];
+        std::vector<int> failed_cats;
+        if(chn == "em")      failed_cats = {10,11,16,17,34};
+        else if(chn == "et") failed_cats = {10,14,15,18};
+        else if(chn == "mt") failed_cats = {11,16,17,18};
+        else if(chn == "tt") failed_cats = {11,13,14,16};
+        for (auto catit = highmass_cats.begin(); catit != highmass_cats.end(); ++catit)
+        {
+          //if(std::find(m_sv_categories.begin(), m_sv_categories.end(), (*catit).first) != m_sv_categories.end() ) highmass_cats.erase(catit);
+          if(std::find(failed_cats.begin(), failed_cats.end(), (*catit).first) != failed_cats.end()){
+            highmass_cats.erase(catit);
+            --catit;
+          }
+        }
+        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, highmass_cats, true);
       }
       if(analysis == "mssm_vs_sm_standard" || "mssm_vs_sm_qqh"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
@@ -425,10 +425,6 @@ int main(int argc, char **argv) {
   for (string chn : chns) {
     if(analysis == "mssm_vs_sm_qqh")
     {
-      std::vector<int> m_sv_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                        11,12,13,14,15,16,17,18,19,20,
-                                        21,22,23,24,25,26,27,28,29,30,31}; // SM-like categories with m_sv as discriminator
-      std::vector<int> mt_tot_categories = {1,32,33,34,35,36,37}; // MSSM-like categories & control regions with mt_tot as discriminator
 
       // Backgrounds
       cb.cp().channel({chn}).bin_id(m_sv_categories).backgrounds().ExtractShapes(
@@ -619,7 +615,7 @@ int main(int argc, char **argv) {
   // Perform auto-rebinning
   if (auto_rebin) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(1.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(10.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
