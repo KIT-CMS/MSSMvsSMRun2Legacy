@@ -73,12 +73,20 @@ int main(int argc, char** argv)
     string input_file = "/afs/desy.de/user/g/glusheno/RWTH/KIT/Shapes/ES-subanalysis/converted_shapes/htt_et.inputs-etFes.root";
     string postfix = "-mttot";
     bool newera = false;
+    bool nobbb = false;
     bool decorelate_emb = false;
     bool fakefactors = false;
     bool embedding = false;
     int dt = 0;
     int binsize = 2;
     int year = 2017;
+    // bool manual_rebin = true;
+    // bool auto_rebin = false;
+    bool manual_rebin = false;
+    bool auto_rebin = false;
+
+    cout << "manual_rebin: " << manual_rebin << "\n";
+    cout << "auto_rebin: " << auto_rebin << "\n";
     vector<float> vbins = {};
     vector<float> eshifts = {};
     po::variables_map vm;
@@ -96,10 +104,13 @@ int main(int argc, char** argv)
         ("input-file,i",   po::value<string>(&input_file)->default_value(input_file))
         ("output-folder",  po::value<string>(&output_folder)->default_value(output_folder))
         ("postfix",        po::value<string>(&postfix)->default_value(postfix))
+        ("manual-rebin",       po::bool_switch(&manual_rebin), "manual_rebin")
+        ("auto-rebin",         po::bool_switch(&auto_rebin), "auto_rebin")
         ("newera",         po::bool_switch(&newera), "2017 syst unc model")
         ("decorelate-emb",         po::bool_switch(&decorelate_emb), "use the values for decorelated with embedded parts")
         ("embedding",         po::bool_switch(&embedding), "used embedding")
         ("fakefactors",         po::bool_switch(&fakefactors), "used fakefactors")
+        ("nobbb",         po::bool_switch(&nobbb), "no bbb")
         ("SM125,h",        po::value<string>(&SM125)->default_value(SM125))
         ("help",           "produce help message")
         ("catteg",         po::value<vector<string>>(&catteg)->multitoken(), "cattegories: et_nojets_alldm et_0jet_dm0 et_0jet_dm1 et_0jet_dm10 ")
@@ -277,17 +288,20 @@ int main(int argc, char** argv)
     }
     else if (binsize == 2)
     {
+        dout("FALLBACK TO STANDART BINNING BINSIZE 2");
         // double a [] = {70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140};
         double a [] = {70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120};
         _nojets.insert(_nojets.end(), std::begin(a), std::end(a));
     }
     else if (binsize == 5)
     {
+        dout("FALLBACK TO STANDART BINNING BINSIZE 5");
         double a [] = {70,75,80,85,90,95,100,105,110,115,120,125,130,135,140}; // fit of m_vis > 70
         _nojets.insert(_nojets.end(), std::begin(a), std::end(a));
     }
     else
     {
+        dout("FALLBACK TO STANDART BINNING: 72,80,88,96,104,112,120,128,136,144");
         double a [] = {72,80,88,96,104,112,120,128,136,144};
         _nojets.insert(_nojets.end(), std::begin(a), std::end(a));
     }
@@ -310,7 +324,11 @@ int main(int argc, char** argv)
         std::copy(begin(newElements), end(newElements), std::back_inserter(bkg_procs["et"]));
     }
 
-    cattegories["et_13TeV"] = {};
+
+    string str_era = "Run" + std::to_string(year);
+    // string str_era = "13TeV"; // former
+
+    cattegories["et_" + str_era] = {};
 
 
     std::map<string, int> cattegories_bins;
@@ -337,6 +355,13 @@ int main(int argc, char** argv)
         cattegories_bins["et_eta_2_barel_real_njetN_alldm"] = 10;
         cattegories_bins["et_eta_2_barel_real_njetN_dm0"] = 11;
         cattegories_bins["et_eta_2_barel_real_njetN_dm1"] = 12;
+
+        cattegories_bins["et_eta_2_barel_njet0_alldm"] = 7;
+        cattegories_bins["et_eta_2_barel_njet0_dm0"] = 8;
+        cattegories_bins["et_eta_2_barel_njet0_dm1"] = 9;
+        cattegories_bins["et_eta_2_barel_njetN_alldm"] = 10;
+        cattegories_bins["et_eta_2_barel_njetN_dm0"] = 11;
+        cattegories_bins["et_eta_2_barel_njetN_dm1"] = 12;
         //gap
         cattegories_bins["et_eta_2_gap_njet0_alldm"] = 13;
         cattegories_bins["et_eta_2_gap_njet0_dm0"] = 14;
@@ -352,14 +377,21 @@ int main(int argc, char** argv)
         cattegories_bins["et_eta_2_endcap_real_njetN_dm0"] = 23;
         cattegories_bins["et_eta_2_endcap_real_njetN_dm1"] = 24;
 
+        cattegories_bins["et_eta_2_endcap_njet0_alldm"] = 19;
+        cattegories_bins["et_eta_2_endcap_njet0_dm0"] = 20;
+        cattegories_bins["et_eta_2_endcap_njet0_dm1"] = 21;
+        cattegories_bins["et_eta_2_endcap_njetN_alldm"] = 22;
+        cattegories_bins["et_eta_2_endcap_njetN_dm0"] = 23;
+        cattegories_bins["et_eta_2_endcap_njetN_dm1"] = 24;
+
 
     for(auto c: catteg)
     {
         dout(c, "->", cattegories_bins[c]);
-        cattegories["et_13TeV"].push_back({cattegories_bins[c], c});
+        cattegories["et_" + str_era].push_back({cattegories_bins[c], c});
         binning[c] = _nojets;
     }
-    dout("categzise", cattegories["et_13TeV"].size());
+    dout("categzise", cattegories["et_" + str_era].size());
 
 
     // Create an empty CombineHarvester instance that will hold all of the
@@ -372,26 +404,26 @@ int main(int argc, char** argv)
         cb.AddObservations(  // data_obs
             {"*"},  // masspoint
             {"htt"},  // analysis
-            {"13TeV"},  // era
+            {str_era},  // era
             {channel},
-            cattegories[channel + "_13TeV"]  // bin
+            cattegories[channel + "_" + str_era]  // bin
         );
         cb.AddProcesses(
             {"*"},
             {"htt"},
-            {"13TeV"},
+            {str_era},
             {channel},
             bkg_procs[channel],
-            cattegories[channel + "_13TeV"],
+            cattegories[channel + "_" + str_era],
             false  // background
         );
         cb.AddProcesses(  // Example : TH1 <channel>/<proc>_<masspoint>
             {energy_scales},
             {"htt"},
-            {"13TeV"},
+            {str_era},
             {channel},
             {"ZL"},
-            cattegories[channel + "_13TeV"],
+            cattegories[channel + "_" + str_era],
             true
         );
     }
@@ -410,102 +442,111 @@ int main(int argc, char** argv)
     // Example path : TH1 et_nobtag_tight/ZTT_CMS_scale_t_et_13TeVUp
 
     // TES
-    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_3prong_13TeV", "shape", SystMap<>::init(1.00));
-    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong_13TeV", "shape", SystMap<>::init(1.00));
-    cb.cp().process({"ZTT", "TTT", "VVT"}).AddSyst(cb,"CMS_scale_t_1prong1pizero_13TeV", "shape", SystMap<>::init(1.00));
+    cb.cp().process({
+        "ZTT", "TTT", "VVT",
+        "QCD",
+    }).AddSyst(cb,"CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp().process({
+        "ZTT", "TTT", "VVT",
+        "QCD",
+    }).AddSyst(cb,"CMS_scale_t_1prong_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp().process({
+        "ZTT", "TTT", "VVT",
+        "QCD",
+    }).AddSyst(cb,"CMS_scale_t_1prong1pizero_$ERA", "shape", SystMap<>::init(1.00));
 
     /* missing shapes unc.
-    db.add_shape_systematic("CMS_htt_ttbarShape_13TeV", 1.0, channels,["TTT", "TTJ"])
-    db.add_shape_systematic("CMS_htt_jetToTauFake_13TeV", 1.0, channels,["ZJ", "W", "TTJ", "VVJ"])
-    db.add_shape_systematic("CMS_eFakeTau_1prong_13TeV", 1.0, "et", ["ZL"])
-    db.add_shape_systematic("CMS_eFakeTau_1prong1pizero_13TeV", 1.0, "et", ["ZL"])
-    db.add_shape_systematic("CMS_ZLShape_et_1prong_13TeV", 1.0, "et", ["ZL"])
-    db.add_shape_systematic("CMS_ZLShape_et_1prong1pizero_13TeV", 1.0, "et", ["ZL"])
+        db.add_shape_systematic("CMS_htt_ttbarShape_13TeV", 1.0, channels,["TTT", "TTJ"])
+        db.add_shape_systematic("CMS_htt_jetToTauFake_13TeV", 1.0, channels,["ZJ", "W", "TTJ", "VVJ"])
+        db.add_shape_systematic("CMS_eFakeTau_1prong_13TeV", 1.0, "et", ["ZL"])
+        db.add_shape_systematic("CMS_eFakeTau_1prong1pizero_13TeV", 1.0, "et", ["ZL"])
+        db.add_shape_systematic("CMS_ZLShape_et_1prong_13TeV", 1.0, "et", ["ZL"])
+        db.add_shape_systematic("CMS_ZLShape_et_1prong1pizero_13TeV", 1.0, "et", ["ZL"])
     */
     // ?  CMS_eff_trigger_et: ZJ, TTJ, VVL, VVK, W, QCD
-    if (!newera) // 2016
+    if (!newera) // use this
     {
+        std::vector<std::string> mc_processes =
+        JoinStr({
+              // signals,
+              // signals_ggHToWW,
+              // signals_qqHToWW,
+              // mssm_signals,
+              //was:
+            {"ZL_0", "ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "VV", "VVT", "VVL", "VVJ", "ST"}
+                //need: {"ZL", "ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "VV", "VVT", "VVL", "VVJ", "ST"}
+
+        });
+
+        // Lumi
+            float lumi_unc = 1.025; // was 1!
+            if (year == 2016)      lumi_unc = 1.025;
+            else if (year == 2017) lumi_unc = 1.023;
+            cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "lumi", "lnN", SystMap<>::init(lumi_unc));
+
+        // Prefiring
+            if (year != 2018) cb.cp().process(mc_processes).AddSyst(cb, "CMS_prefiring_$ERA", "shape", SystMap<>::init(1.00));
+
+        // Trigger efficiency
+          if (year == 2016)
+          {
+            cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_trigger_et", "lnN", SystMap<>::init(1.02));
+          }
+          else if (year == 2017)
+          {
+            cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_trigger_et_$ERA", "shape", SystMap<>::init(1.00));
+            cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_xtrigger_et_$ERA", "shape", SystMap<>::init(1.00));
+          }
+
+        // Uncertainty: Electron energy scale and smearing
+            cb.cp().process(mc_processes).AddSyst(cb, "CMS_scale_mc_e", "shape", SystMap<>::init(1.00));
+            cb.cp().process(mc_processes).AddSyst(cb, "CMS_reso_mc_e", "shape", SystMap<>::init(1.00));
+
+        // Uncertainty: Electron, muon and tau ID efficiency
+            // Electron ID
+                cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "CMS_eff_e", "lnN", SystMap<>::init(1.02));
+
+            // Tau ID
+                if (year == 2016)
+                {
+                    cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT"}).AddSyst(cb, "CMS_eff_t_et", "lnN", SystMap<>::init(1.08));
+                }
+                else if (year == 2017)
+                {
+                    cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT"}).AddSyst(cb, "CMS_eff_t_et", "lnN", SystMap<>::init(1.04));
+                }
+
+        // Uncertainty: Background normalizations : OK
+          cb.cp().process({"VVT", "VVJ", "VVL", "VV", "ST"}).AddSyst(cb, "CMS_htt_VVNorm", "lnN", SystMap<>::init(1.10)); // was in htt  5%
+          cb.cp().process({"TTT", "TTJ", "TTL", "TT"}).AddSyst(cb, "CMS_htt_TTNorm", "lnN", SystMap<>::init(1.10)); // was in htt  6%
+          cb.cp().process({"W"}).AddSyst(cb, "CMS_htt_WNorm", "lnN", SystMap<>::init(1.10)); // was in htt  4%
+          cb.cp().process({"ZL",  "ZJ", "ZTT"}).AddSyst(cb, "CMS_htt_zttNorm", "lnN", SystMap<>::init(1.20));// was in htt  4%
+          cb.cp().process({"QCD", "W"}).AddSyst(cb, "CMS_ExtrapSSOS", "lnN", SystMap<>::init(1.10)); // was in htt  5%
+
+        // Uncertainty: Drell-Yan LO->NLO reweighting
+            cb.cp()
+                  .process({"ZTT", "ZL_0", "ZJ"})
+                  .AddSyst(cb, "CMS_htt_dyShape_$ERA", "shape", SystMap<>::init(1.00)); // was 0.1!!
+
+        // Uncertainty: Theory uncertainties
+            // Uncertainty on branching ratio for HWW at 125 GeV
+            cb.cp().process({"ZH125"}).AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.009));
+            cb.cp().process({"WH125"}).AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.008));
+            cb.cp().process({"ttH125"}).AddSyst(cb, "QCDScale_ttH", "lnN", SystMap<>::init(1.08));
+            // PDF
+            cb.cp().process({"ZH125"}).AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
+            cb.cp().process({"WH125"}).AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
+
+
+      // Uncertainty: TT shape reweighting
+          cb.cp()
+              .process({"TTT", "TTL", "TTJ", "TT"})
+              .AddSyst(cb, "CMS_htt_ttbarShape_$ERA", "shape", SystMap<>::init(1.00));
+
         // cb.cp().process({"ZL"}).AddSyst(cb,"CMS_eFakeTau_13TeV", "lnN", SystMap<>::init(1.30)); // tight wp of anti-e discrim; keep when running only FES
-        cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "CMS_eff_e_13TeV", "lnN", SystMap<>::init(1.02));
-        cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "lumi_13TeV", "lnN", SystMap<>::init(1.062));
-        cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W"}).AddSyst(cb, "CMS_eff_trigger_et_13TeV", "lnN", SystMap<>::init(1.02));
-        cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT"}).AddSyst(cb, "CMS_eff_t_et_13TeV", "lnN", SystMap<>::init(1.08));
 
-        cb.cp().process({"ZL",  "ZJ", "ZTT"}).AddSyst(cb, "CMS_htt_zttNorm_13TeV", "lnN", SystMap<>::init(1.20));
-        cb.cp().process({"VVT", "VVJ", "VVL"}).AddSyst(cb, "CMS_htt_VVNorm_13TeV", "lnN", SystMap<>::init(1.10));
-        cb.cp().process({"TTT", "TTJ", "TTL"}).AddSyst(cb, "CMS_htt_TTNorm_13TeV", "lnN", SystMap<>::init(1.10));
-        cb.cp().process({"W"}).AddSyst(cb, "CMS_htt_WNorm_13TeV", "lnN", SystMap<>::init(1.10));
 
-        cb.cp().process({"QCD", "W"}).AddSyst(cb, "CMS_ExtrapSSOS_13TeV", "lnN", SystMap<>::init(1.10));
-    }
-    else // 2017 : https://github.com/KIT-CMS/CombineHarvester/blob/SMHTT2017-dev/HTTSM2017/src/HttSystematics_SMRun2.cc#L144-L153
-    {
-        cb.cp().process({"ZL"}).AddSyst(cb,"CMS_eFakeTau_13TeV", "lnN",SystMap<>::init(1.16));  // https://github.com/KIT-CMS/CombineHarvester/blame/ce6a51be625aca1fa270b9f67c5dd0758ebf9262/HTTSM2017/src/HttSystematics_SMRun2.cc#L553
-        cb.cp().process({"ZTT", "ZJ", "ZL", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W", "QCD"}).AddSyst(cb, "CMS_eff_e_13TeV", "lnN", SystMap<>::init(1.02));  // https://github.com/KIT-CMS/CombineHarvester/blame/62ed47b40ca2c0a69c22abb9eb6f99e3b0e62ebd/HTTSM2017/src/HttSystematics_SMRun2.cc#L142
-        cb.cp().process({"ZTT", "ZJ", "ZL", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W", "QCD"}).AddSyst(cb, "lumi_13TeV", "lnN", SystMap<>::init(1.023));  // https://github.com/KIT-CMS/CombineHarvester/blame/29942200e5df5aef905335f8e1b52b4d22b31e68/HTTSM2017/src/HttSystematics_SMRun2.cc#L74
-        cb.cp().process({"ZTT", "ZL", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W", "QCD"}).AddSyst(cb, "CMS_eff_trigger_et_13TeV", "lnN", SystMap<>::init(1.02));  // https://github.com/KIT-CMS/CombineHarvester/blame/ad54b4d0d626cb14d988088c5efaf90922e2e079/HTTSM2017/src/HttSystematics_SMRun2.cc#L91
-        cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT",                         }).AddSyst(cb, "CMS_eff_t_13TeV", "lnN", SystMap<>::init(1.045));  // https://github.com/KIT-CMS/CombineHarvester/blame/62ed47b40ca2c0a69c22abb9eb6f99e3b0e62ebd/HTTSM2017/src/HttSystematics_SMRun2.cc#L154
-        cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT",                         }).AddSyst(cb, "CMS_eff_t_et_13TeV", "lnN", SystMap<>::init(1.02));  // https://github.com/KIT-CMS/CombineHarvester/blame/62ed47b40ca2c0a69c22abb9eb6f99e3b0e62ebd/HTTSM2017/src/HttSystematics_SMRun2.cc#L159
 
-    if (fakefactors)
-    {
-        // https://github.com/KIT-CMS/CombineHarvester/blame/ce6a51be625aca1fa270b9f67c5dd0758ebf9262/HTTSM2017/src/HttSystematics_SMRun2.cc
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_qcd_dm0_njet0_$CHANNEL_stat_$ERA", "shape", SystMap<>::init(1.00));
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_qcd_dm0_njet1_$CHANNEL_stat_$ERA", "shape", SystMap<>::init(1.00));
-        // W shape stat.
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_w_dm0_njet0_$CHANNEL_stat_$ERA", "shape", SystMap<>::init(1.00));
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_w_dm0_njet1_$CHANNEL_stat_$ERA", "shape", SystMap<>::init(1.00));
-        // TT shape stat.
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_tt_dm0_njet0_stat_$ERA", "shape", SystMap<>::init(1.00));
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_tt_dm0_njet1_stat_$ERA", "shape", SystMap<>::init(1.00));
-        // Shape syst. of different contributions (QCD/W/tt)
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_qcd_$CHANNEL_syst_$ERA", "shape", SystMap<>::init(1.00));
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_w_syst_$ERA", "shape", SystMap<>::init(1.00));
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_tt_syst_$ERA", "shape", SystMap<>::init(1.00));
-        // Shape syst. in tautau due to using QCD FF also for W / tt
-        // PASS
-
-        // https://github.com/KIT-CMS/CombineHarvester/blame/79a6f18c55eefe19c9021029fa504831071a326b/HTTSM2017/src/HttSystematics_SMRun2.cc#L781
-        // Stat. norm (uncorrelated across years)
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$BIN_$ERA", "lnN", SystMap<>::init(1.05));
-        // Syst. norm: Bin-correlated
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_norm_syst_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.05));
-        // Syst. norm: Bin-dependent ?: what are the bins?
-        cb.cp().channel({"et"}).process({"jetFakes"}).AddSyst(cb, "CMS_ff_sub_syst_$CHANNEL_$BIN_$ERA", "lnN", SystMap<>::init(1.05));
-    }
-
-    // Cross-sections
-    // https://github.com/KIT-CMS/CombineHarvester/blame/29942200e5df5aef905335f8e1b52b4d22b31e68/HTTSM2017/src/HttSystematics_SMRun2.cc#L687
-    cb.cp().process({"ZTT", "ZL", "ZJ"}).AddSyst(cb, "CMS_htt_zjXsec_13TeV", "lnN", SystMap<>::init(1.04));
-    cb.cp().process({"VVT", "VVJ", "VVL", "VV", "ST"}).AddSyst(cb, "CMS_htt_vvXsec_13TeV", "lnN", SystMap<>::init(1.05));
-    cb.cp().process({"TTT", "TTL", "TTJ", "TT"}).AddSyst(cb, "CMS_htt_tjXsec_13TeV", "lnN", SystMap<>::init(1.06));
-    cb.cp().process({"W"}).AddSyst(cb, "CMS_htt_wjXsec_13TeV", "lnN", SystMap<>::init(1.04));
-
-    // Method-dependant
-    cb.cp().process({"QCD"}).AddSyst(cb, "CMS_ExtrapSSOS_13TeV", "lnN", SystMap<>::init(1.05));
-    //
-    // recoil correction : https://github.com/KIT-CMS/CombineHarvester/commit/78bd81120ffde206febbe46eeeae74d835cb409d#diff-28d11c464d5b138c4ab8c83502ca62ef
-
-    if (embedding)  // https://github.com/cms-analysis/CombineHarvester/blob/SMHTT2017-dev/HTTSM2017/src/HttSystematics_SMRun2.cc#L505
-    {
-        // uncertainty of hadronic tau track efficiency correction
-        // cb.cp().process({"ZL", "TTT", "VVT", "EWKZ",  "ZJ", "W", "TTJ", "VVJ", "QCD"}).AddSyst(cb,"CMS_3ProngEff_13TeV", "shape", SystMap<>::init(1.00));
-        // cb.cp().process({"ZL", "TTT", "VVT", "EWKZ",  "ZJ", "W", "TTJ", "VVJ", "QCD"}).AddSyst(cb,"CMS_1ProngPi0Eff_13TeV", "shape", SystMap<>::init(1.00));
-        // cb.cp().process({}).AddSyst(cb,"", "shape", SystMap<>::init(1.00));
-        cb.cp().process({"EMB"}).AddSyst(cb, "CMS_eff_trigger_et_2017", "lnN", SystMap<>::init(1.02));
-        cb.cp().process({"EMB"}).AddSyst(cb, "CMS_eff_trigger_emb_et", "lnN", SystMap<>::init(1.02));
-
-        // if args.embedding:
-        // db.add_shape_systematic("CMS_htt_dyShape_13TeV", 1.0, channels, ["ZL", "ZJ"])
-        // db.add_shape_systematic("CMS_htt_mistag_b_13TeV", 1.0, channels, ["ZL", "TTT", "VVT", "EWKZ" + "ZJ", "W", "TTJ", "VVJ", "QCD")
-        // db.add_shape_systematic( "CMS_scale_j_13TeV", 1.0, channels, ["ZL", "TTT", "VVT", "EWKZ"] +  "ZJ", "W", "TTJ", "VVJ", "QCD")
-        // db.add_shape_systematic( "CMS_scale_met_unclustered_13TeV", 1.0, channels, ["ZL", "TTT", "VVT", "EWKZ"] +  "ZJ", "W", "TTJ", "VVJ", "QCD")
-    }
-
-    if (decorelate_emb)
-    {
-        // https://github.com/KIT-CMS/CombineHarvester/blob/29942200e5df5aef905335f8e1b52b4d22b31e68/HTTSM2017/bin/MorphingSM2017.cpp
-    }
     }
 
     //! [part7]
@@ -541,14 +582,9 @@ int main(int argc, char** argv)
     //         dout(p);
     //         dout(cb.cp().bin({b}).process({"ZL"}).mass({"0"}).GetRate());
     //       }};exit(1);
-
-
-
     //   }
     dout("bin_set...");
     auto bins = cb.cp().bin_set();
-    bool manual_rebin = true;
-    bool auto_rebin = false;
     std::map<std::string, TH1F> before_rebin;
     std::map<std::string, TH1F> after_rebin;
     std::map<std::string, TH1F> after_rebin_neg;
@@ -569,18 +605,21 @@ int main(int argc, char** argv)
         }
     }
 
-    cout << "Generating bbb uncertainties...";
-    auto bbb = ch::BinByBinFactory()
-    .SetAddThreshold(0.)
-    .SetMergeThreshold(0.4)
-    .SetFixNorm(false);
-    bbb.MergeAndAdd(cb.cp().process({"ZTT", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W", "QCD", "EMB", "jetFakes"}), cb);
-    // auto bbbsig = ch::BinByBinFactory()
-    //   .SetAddThreshold(0.)
-    //   .SetMergeThreshold(0.4)
-    //   .SetFixNorm(false);
-    // bbbsig.MergeAndAdd(cb.cp().process({"QCD"}), cb);
-    cout << " done\n";
+    if (!nobbb)
+    {
+        cout << "Generating bbb uncertainties...";
+        auto bbb = ch::BinByBinFactory()
+        .SetAddThreshold(0.)
+        .SetMergeThreshold(0.4)
+        .SetFixNorm(false);
+        bbb.MergeAndAdd(cb.cp().process({"ZTT", "ZJ", "TTT", "TTL", "TTJ", "VVT", "VVL", "VVJ", "W", "QCD", "EMB", "jetFakes"}), cb);
+        // auto bbbsig = ch::BinByBinFactory()
+        //   .SetAddThreshold(0.)
+        //   .SetMergeThreshold(0.4)
+        //   .SetFixNorm(false);
+        // bbbsig.MergeAndAdd(cb.cp().process({"QCD"}), cb);
+        cout << " done\n";
+    }
 
     // This function modifies every entry to have a standardised bin name of
     // the form: {analysis}_{channel}_{bin_id}_{era}
@@ -603,6 +642,7 @@ int main(int argc, char** argv)
             {
                 // ws, cb, std::string const& bin, std::string const& process, RooAbsReal& mass_var, std::string norm_postfix, bool allow_morph, bool verbose, bool force_template_limit, TFile * file) {
                 ch::BuildRooMorphing(ws, cb, b, p, faketaues, "norm", true, true, false, NULL);
+                // ch::BuildRooMorphing(ws, cb, b, p, faketaues, "norm", true, true, true, NULL);
             }
         }
     }
@@ -653,5 +693,5 @@ int main(int argc, char** argv)
             outputchncat.Close();
         }
     }
-    dout("done");
+    dout("done", "manual_rebin:", manual_rebin, "auto_rebin:", auto_rebin);
 }
