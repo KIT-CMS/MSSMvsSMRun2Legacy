@@ -76,8 +76,11 @@ int main(int argc, char** argv)
     bool decorelate_emb = false;
     bool fakefactors = false;
     bool embedding = false;
+    int dt = 0;
     int binsize = 2;
+    int year = 2017;
     vector<float> vbins = {};
+    vector<float> eshifts = {};
     po::variables_map vm;
     po::options_description config("configuration");
     VString channels = {"et"};
@@ -85,7 +88,10 @@ int main(int argc, char** argv)
     config.add_options()  // Declare the supported options.
         ("mass,m",         po::value<string>(&mass)->default_value(mass))
         ("binsize",         po::value<int>(&binsize)->default_value(binsize))
-        ("vbins",         po::value<vector<float>>(&vbins)->multitoken(), "bins")
+        ("dt",         po::value<int>(&dt)->default_value(dt))
+        ("year",         po::value<int>(&year)->default_value(year))
+        ("vbins",           po::value<vector<float>>(&vbins)->multitoken(), "bins")
+        ("eshifts",         po::value<vector<float>>(&eshifts)->multitoken(), "eshifts")
         ("input-folder",   po::value<string>(&input_folder)->default_value(input_folder))
         ("input-file,i",   po::value<string>(&input_file)->default_value(input_file))
         ("output-folder",  po::value<string>(&output_folder)->default_value(output_folder))
@@ -119,13 +125,138 @@ int main(int argc, char** argv)
         boost::filesystem::create_directories(output_dir);
     // Prepering the combine run
     RooRealVar faketaues("faketaues", "faketaues", 0.0, -4.0, 18.0);
-    vector<string> energy_scales = {
-        "-4","-3","-2","-1.75","-1.5","-1.25","-1","-0.75","-0.5","-0.25",
-        "0",
-        "0.25","0.5","0.75","1","1.25","1.5","1.75","2","2.25","2.5",
-        "2.75","3","3.25","3.5","3.75","4","5","6","7","8",
-        "9","10","11","12","13","14","15","16","17","18"
-    };
+    vector<string> energy_scales;
+    if (eshifts.size() == 0)  // old standart
+    {
+        if (year == 2016)
+        {
+            string a [] = {
+            "-4.0","-3.0","-2.0", "-1.0",
+            "0",
+            "1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0",
+            "8.0"
+            };
+            energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+        else if (year == 2017)
+        {
+            string a [] = {
+            "-4.0","-3.0","-2.0", "-1.0",
+            "0",
+            "1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0",
+            "8.0"
+            };
+            energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+        else if (year == 2018)
+        {
+            string a [] = {
+            "-4.0","-3.0","-2.0", "-1.0",
+            "0",
+            "1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0",
+            "8.0"
+            };
+            energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+        else
+        {
+            string a [] = {
+            "-4.0","-3.0","-2.0","-1.75","-1.5","-1.25","-1.0","-0.75","-0.5","-0.25",
+            "0",
+            "0.25","0.5","0.75","1.0","1.25","1.5","1.75","2.0","2.25","2.5",
+            "2.75","3.0","3.25","3.5","3.75","4.0","5.0","6.0","7.0","8.0",
+            "9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0"
+            };
+            energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+    }
+    else
+    {
+        if (dt == 0)  // mva
+        {
+            if (year == 2016)
+            {
+                string a [] = {
+                "-4.0","-3.0","-2.0","-1.75","-1.5","-1.25","-1.0","-0.75","-0.5","-0.25",
+                "0",
+                "0.25","0.5","0.75","1.0","1.25","1.5","1.75","2.0","2.25","2.5",
+                "2.75","3.0","3.25","3.5","3.75",
+                "4.0", "4.25", "4.5", "4.75",
+                "5.0","5.25", "5.5", "5.75",
+                "6.0","6.25", "6.5", "6.75",
+                "7.0","7.25", "7.5", "7.75",
+                "8.0",
+                "9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0"
+                };
+                energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+            }
+            else if (year == 2017)
+            {
+                string a [] = {
+                    "-6.0", "-5.75", "-5.5", "-5.25",
+                    "-5.0", "-4.75", "-4.5", "-4.25",
+                "-4.0","-3.0","-2.0","-1.75","-1.5","-1.25","-1.0","-0.75","-0.5","-0.25",
+                "0",
+                "0.25","0.5","0.75","1.0","1.25","1.5","1.75","2.0","2.25","2.5",
+                "2.75","3.0","3.25","3.5","3.75","4.0","5.0","6.0","7.0","8.0",
+                "9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0"
+                };
+                energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+            }
+            else if (year == 2018)
+            {
+                string a [] = {
+                "-4.0",
+                "-3.75", "-3.5", "-3.25", "-3.0",
+                "-2.75", "-2.5", "-2.25", "-2.0",
+                "-1.75","-1.5","-1.25","-1.0","-0.75","-0.5","-0.25",
+                "0",
+                "0.25","0.5","0.75","1.0","1.25","1.5","1.75","2.0","2.25","2.5",
+                "2.75","3.0","3.25","3.5","3.75",
+                "4.0", "4.25", "4.5", "4.75",
+                "5.0","5.25", "5.5", "5.75",
+                "6.0","6.25", "6.5", "6.75",
+                "7.0","7.25", "7.5", "7.75",
+                "8.0",
+                "9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0"
+                };
+                energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+            }
+            else
+            {
+                string a [] = {
+                "-4.0","-3.0","-2.0","-1.75","-1.5","-1.25","-1.0","-0.75","-0.5","-0.25",
+                "0",
+                "0.25","0.5","0.75","1.0","1.25","1.5","1.75","2.0","2.25","2.5",
+                "2.75","3.0","3.25","3.5","3.75","4.0","5.0","6.0","7.0","8.0",
+                "9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0"
+                };
+                energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+            }
+        }
+        else if (dt == 1)
+        {
+            string a [] = {
+                "-4.0", "-3.0", "-2.0", "-1.0",
+                "0.0",
+                "1.0", "2.0", "3.0", "4.0", "5.0",
+                "6.0", "7.0", "8.0", "9.0", "10.0"
+            };
+            energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+        else if (dt == 2) // deeptau
+        {
+                string a [] = {
+                "-4.5", "-4.0", "-3.5", "-3.0", "-2.5",
+                "-2.0", "-1.5", "-1.0", "-0.5",
+                "0.0",
+                "0.5", "1.0", "1.5", "2.0", "3.0",
+                "4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10.0"
+                };
+                energy_scales.insert(energy_scales.end(), std::begin(a), std::end(a));
+        }
+    }
+
     map<string, VString> bkg_procs;
     map<string, Categories> cattegories;
     map<string, vector<double> > binning;
