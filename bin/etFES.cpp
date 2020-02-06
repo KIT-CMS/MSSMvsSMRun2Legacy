@@ -85,6 +85,8 @@ int main(int argc, char** argv)
     bool manual_rebin = false;
     bool auto_rebin = false;
 
+    bool morph_bg = false;
+
     cout << "manual_rebin: " << manual_rebin << "\n";
     cout << "auto_rebin: " << auto_rebin << "\n";
     vector<float> vbins = {};
@@ -106,6 +108,7 @@ int main(int argc, char** argv)
         ("postfix",        po::value<string>(&postfix)->default_value(postfix))
         ("manual-rebin",       po::bool_switch(&manual_rebin), "manual_rebin")
         ("auto-rebin",         po::bool_switch(&auto_rebin), "auto_rebin")
+        ("morph-bg",         po::bool_switch(&morph_bg), "morph_bg")
         ("newera",         po::bool_switch(&newera), "2017 syst unc model")
         ("decorelate-emb",         po::bool_switch(&decorelate_emb), "use the values for decorelated with embedded parts")
         ("embedding",         po::bool_switch(&embedding), "used embedding")
@@ -492,15 +495,23 @@ int main(int argc, char** argv)
           {
             cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_trigger_et", "lnN", SystMap<>::init(1.02));
           }
-          else if (year == 2017)
+          else if (year == 2017 || year == 2018)
           {
             cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_trigger_et_$ERA", "shape", SystMap<>::init(1.00));
             cb.cp().process(mc_processes).AddSyst(cb, "CMS_eff_xtrigger_et_$ERA", "shape", SystMap<>::init(1.00));
           }
 
         // Uncertainty: Electron energy scale and smearing
+          if (morph_bg)
+          {
+            cb.cp().process(JoinStr({mc_processes, {"ZL"}})).AddSyst(cb, "CMS_scale_mc_e", "shape", SystMap<>::init(1.00));
+            cb.cp().process(JoinStr({mc_processes, {"ZL"}})).AddSyst(cb, "CMS_reso_mc_e", "shape", SystMap<>::init(1.00));
+          }
+          else
+          {
             cb.cp().process(mc_processes).AddSyst(cb, "CMS_scale_mc_e", "shape", SystMap<>::init(1.00));
             cb.cp().process(mc_processes).AddSyst(cb, "CMS_reso_mc_e", "shape", SystMap<>::init(1.00));
+          }
 
         // Uncertainty: Electron, muon and tau ID efficiency
             // Electron ID
@@ -511,7 +522,7 @@ int main(int argc, char** argv)
                 {
                     cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT"}).AddSyst(cb, "CMS_eff_t_et", "lnN", SystMap<>::init(1.08));
                 }
-                else if (year == 2017)
+                else if (year == 2017 || year == 2018)
                 {
                     cb.cp().process({"ZTT", "ZL",       "TTT",               "VVT"}).AddSyst(cb, "CMS_eff_t_et", "lnN", SystMap<>::init(1.04));
                 }
@@ -598,7 +609,7 @@ int main(int argc, char** argv)
 
     if (manual_rebin)
     {
-        for(auto b : bins)
+        for(auto b : bins) // each bin is a category
         {
             std::cout << "Rebinning by hand for bin: " << b <<  std::endl;
             cb.cp().bin({b}).VariableRebin(binning[b]);
