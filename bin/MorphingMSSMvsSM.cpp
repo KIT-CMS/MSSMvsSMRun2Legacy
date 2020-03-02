@@ -414,7 +414,7 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, era);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era);
 
   // Define restriction to the desired category
   if(category != "all"){
