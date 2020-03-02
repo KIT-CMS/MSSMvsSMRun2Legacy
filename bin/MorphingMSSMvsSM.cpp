@@ -359,9 +359,9 @@ int main(int argc, char **argv) {
 
   // Add observations and processes
   std::string era_tag;
-  if (era == 2016) era_tag = "Run2016";
-  else if (era == 2017) era_tag = "Run2017";
-  else if (era == 2018) era_tag = "Run2018";
+  if (era == 2016) era_tag = "2016";
+  else if (era == 2017) era_tag = "2017";
+  else if (era == 2018) era_tag = "2018";
 
   else std::runtime_error("Given era is not implemented.");
 
