@@ -554,49 +554,63 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta0to3_$ERA", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_Absolute_$ERA", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta0to5_$ERA", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_BBEC1_$ERA", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta3to5_$ERA", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_EC2_$ERA", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_RelativeBal_$ERA", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_HF_$ERA", "shape", SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_RelativeSample_$ERA", "shape", SystMap<>::init(1.00));
   // correlated between eras
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta0to3", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_Absolute", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta0to5", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_BBEC1", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_eta3to5", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_EC2", "shape", SystMap<>::init(1.00));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_scale_j_RelativeBal", "shape", SystMap<>::init(0.71));
+      .AddSyst(cb, "CMS_scale_j_HF", "shape", SystMap<>::init(1.00));
 
-  if (era == 2017) {
-    cb.cp()
-        .channel({"et", "mt", "tt", "em"})
-        .process(mc_processes)
-        .AddSyst(cb, "CMS_scale_j_RelativeSample_$ERA", "shape", SystMap<>::init(1.00));
-  }
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_FlavorQCD", "shape", SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_scale_j_RelativeBal", "shape", SystMap<>::init(1.00));
+
+  // JER
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_res_j_$ERA", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: MET energy scale and Recoil
