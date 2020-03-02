@@ -282,130 +282,124 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: References?
   // ##########################################################################
 
-  float tauID_corr = 1.0; //correlated between channels
-  float tauID_uncorr = 1.0;
-  float ditauID_corr = 1.0;
-  float ditauID_uncorr = 1.0;
-  if (era == 2016) {
-      tauID_corr = 1.0275; //using recommendation divided by 2 for 50% correlation between eras as well as 50% correlation between embedded and mc
-      tauID_uncorr = 1.01;
-      ditauID_corr = 1.045;
-      ditauID_uncorr = 1.02;
-  } else if (era == 2017) {
-      tauID_corr = 1.0135;
-      tauID_uncorr = 1.006;
-      ditauID_corr = 1.027;
-      ditauID_uncorr = 1.012;
+  std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "500-1000", "1000-inf"};
+  std::string tauIDdmbins[4] = {"0", "1", "10", "11"};
+
+  // Common component acting on MC
+  
+  // Electron ID
+  cb.cp()
+      .channel({"et", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_eff_e", "lnN", SystMap<>::init(1.02));
+
+  // Muon ID
+  cb.cp()
+      .channel({"mt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
+
+  // Tau ID: et and mt with 1 real tau
+      
+  for (auto tauIDbin : tauIDptbins){ //first part correlated between channels for IDvsJets
+    cb.cp()
+        .channel({"et", "mt"})
+        .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
-
-  // MC uncorrelated uncertainty
-
-  // Electron ID
-  cb.cp()
-      .channel({"et", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_e", "lnN", SystMap<>::init(1.014));
-
-  // Muon ID
-  cb.cp()
-      .channel({"mt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_m", "lnN", SystMap<>::init(1.014));
-
-  // Tau ID: et and mt with 1 real tau
-  cb.cp()
+  cb.cp() //second part uncorrelated between channels for IDvsLep
       .channel({"et", "mt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$ERA", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(tauID_uncorr));
+      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: tt with 2 real taus
+  for (auto tauIDbin : tauIDdmbins){
+    cb.cp()
+        .channel({"tt"})
+        .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
+  }
   cb.cp()
       .channel({"tt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$ERA", "lnN", SystMap<>::init(ditauID_corr));
+      .process(mc_processes)  // TODO: Cross check this 
+      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.014));
 
-  cb.cp()
-      .channel({"tt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(ditauID_uncorr));
-
-  // Embedded uncorrelated uncertainty
+  // Component for EMB only
 
   // Electron ID
   cb.cp()
       .channel({"et", "em"})
       .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_e", "lnN", SystMap<>::init(1.014));
+      .AddSyst(cb, "CMS_eff_e_emb", "lnN", SystMap<>::init(1.017));
 
   // Muon ID
   cb.cp()
       .channel({"mt", "em"})
       .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_m", "lnN", SystMap<>::init(1.014));
+      .AddSyst(cb, "CMS_eff_m_emb", "lnN", SystMap<>::init(1.017));
 
   // Tau ID: et and mt with 1 real tau
+  for (auto tauIDbin : tauIDptbins){
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"EMB"})
+        .AddSyst(cb, "CMS_eff_t_emb_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.866));
+  }
   cb.cp()
       .channel({"et", "mt"})
       .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$ERA", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(tauID_uncorr));
+      .AddSyst(cb, "CMS_eff_t_emb_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.005));
 
   // Tau ID: tt with 2 real taus
+  for (auto tauIDbin : tauIDdmbins){
+    cb.cp()
+        .channel({"tt"})
+        .process({"EMB"})
+        .AddSyst(cb, "CMS_eff_t_emb_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.866));
+  }
   cb.cp()
       .channel({"tt"})
       .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$ERA", "lnN", SystMap<>::init(ditauID_corr));
-
-  cb.cp()
-      .channel({"tt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(ditauID_uncorr));
+      .AddSyst(cb, "CMS_eff_t_emb_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.007));
 
 
-  // MC + embedded correlated uncertainty
+  // Common NP acting on EMB
 
   // Electron ID
   cb.cp()
       .channel({"et", "em"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_e", "lnN", SystMap<>::init(1.014));
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_e", "lnN", SystMap<>::init(1.01));
 
   // Muon ID
   cb.cp()
       .channel({"mt", "em"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.014));
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: et and mt with 1 real tau
+  for (auto tauIDbin : tauIDptbins){
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"EMB"})
+        .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
+  }
   cb.cp()
       .channel({"et", "mt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$ERA", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(tauID_uncorr));
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.0087));
 
   // Tau ID: tt with 2 real taus
+  for (auto tauIDbin : tauIDdmbins){
+    cb.cp()
+        .channel({"tt"})
+        .process({"EMB"})
+        .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
+  }
   cb.cp()
       .channel({"tt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$ERA", "lnN", SystMap<>::init(ditauID_corr));
-
-  cb.cp()
-      .channel({"tt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(ditauID_uncorr));
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.012));
 
   // Tau ID: tt with 1 real taus and 1 jet fake
   cb.cp()
@@ -419,87 +413,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.02));
 
 
-  // repeat tt channel for correlated part between 2016 and 2017
-
-  // MC uncorrelated uncertainty
-  // Tau ID: et and mt with 1 real tau
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$CHANNEL", "lnN", SystMap<>::init(tauID_uncorr));
-
-  // Tau ID: tt with 2 real taus
-  cb.cp()
-      .channel({"tt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t", "lnN", SystMap<>::init(ditauID_corr));
-
-  cb.cp()
-      .channel({"tt"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_eff_mc_t_$CHANNEL", "lnN", SystMap<>::init(ditauID_uncorr));
-
-  // Embedded uncorrelated uncertainty
-  // Tau ID: et and mt with 1 real tau
-  cb.cp()
-      .channel({"et", "mt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$CHANNEL", "lnN", SystMap<>::init(tauID_uncorr));
-
-  // Tau ID: tt with 2 real taus
-  cb.cp()
-      .channel({"tt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t", "lnN", SystMap<>::init(ditauID_corr));
-
-  cb.cp()
-      .channel({"tt"})
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_eff_emb_t_$CHANNEL", "lnN", SystMap<>::init(ditauID_uncorr));
-
-  // MC + embedded correlated uncertainty
-  // Tau ID: et and mt with 1 real tau
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t", "lnN", SystMap<>::init(tauID_corr));
-
-  cb.cp()
-      .channel({"et", "mt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL", "lnN", SystMap<>::init(tauID_uncorr));
-
-  // Tau ID: tt with 2 real taus
-  cb.cp()
-      .channel({"tt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t", "lnN", SystMap<>::init(ditauID_corr));
-
-  cb.cp()
-      .channel({"tt"})
-      .process(JoinStr({mc_processes, {"EMB"}}))
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL", "lnN", SystMap<>::init(ditauID_uncorr));
-
-  // Tau ID: tt with 1 real taus and 1 jet fake
-  cb.cp()
-      .channel({"tt"})
-      .process({"W", "ZJ", "TTJ", "VVJ"})
-      .AddSyst(cb, "CMS_eff_t", "lnN", SystMap<>::init(1.06));
-
-  cb.cp()
-      .channel({"tt"})
-      .process({"W", "ZJ", "TTJ", "VVJ"})
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL", "lnN", SystMap<>::init(1.02));
 
   // ##########################################################################
   // Uncertainty: b-tag and mistag efficiency
@@ -554,116 +467,79 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty: Tau energy scale
   // References:
   // Notes:
-  // - Tau energy scale is splitted by decay mode.
+  // - Tau energy scale is split by decay mode.
   // - FIXME: References?
   // - FIXME: Need it for H->WW in mt, et, (and tt)?
   // ##########################################################################
 
 
-  //// per ERA
-  // MC uncorrelated uncertainty
+  // Common component acting on MC
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_1prong_$ERA", "shape", SystMap<>::init(0.5));
+      .AddSyst(cb, "CMS_scale_t_1prong_$ERA", "shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_1prong1pizero_$ERA", "shape",
-               SystMap<>::init(0.5));
+      .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA", "shape",
+               SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_3prong_$ERA", "shape", SystMap<>::init(0.5));
+      .AddSyst(cb, "CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(1.0));
 
-  // Embedded uncorrelated uncertainty
+  cb.cp()
+      .channel({"et", "mt", "tt"})
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .AddSyst(cb, "CMS_scale_t_3prong1pizero_$ERA", "shape",
+               SystMap<>::init(1.0));
+
+  // Component for EMB only
+  if(embedding){
+  cb.cp()
+      .channel({"et", "mt", "tt"})
+      .process({"EMB", "jetFakes"})
+      .AddSyst(cb, "CMS_scale_t_emb_1prong_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_1prong_$ERA", "shape", SystMap<>::init(0.5));
+      .AddSyst(cb, "CMS_scale_t_emb_1prong1pizero_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_1prong1pizero_$ERA", "shape", SystMap<>::init(0.5));
+      .AddSyst(cb, "CMS_scale_t_emb_3prong_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_3prong_$ERA", "shape", SystMap<>::init(0.5));
-
-  // MC + embedded correlated uncertainty
+      .AddSyst(cb, "CMS_scale_t_emb_3prong1pizero_$ERA", "shape", SystMap<>::init(0.866));
+  }
+  // Common component acting on EMB
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_1prong_$ERA", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA", "shape", SystMap<>::init(0.5));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(0.5));
 
-  //// correlated part between ERAs
-  // MC uncorrelated uncertainty
-
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_1prong", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_1prong1pizero", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
-      .AddSyst(cb, "CMS_scale_mc_t_3prong", "shape", SystMap<>::init(0.5));
-
-  // Embedded uncorrelated uncertainty
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_1prong", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_1prong1pizero", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
-      .AddSyst(cb, "CMS_scale_emb_t_3prong", "shape", SystMap<>::init(0.5));
-
-  // MC + embedded correlated uncertainty
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
-      .AddSyst(cb, "CMS_scale_t_1prong", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
-      .AddSyst(cb, "CMS_scale_t_1prong1pizero", "shape", SystMap<>::init(0.5));
-
-  cb.cp()
-      .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}, {"EMB"}}))
-      .AddSyst(cb, "CMS_scale_t_3prong", "shape", SystMap<>::init(0.5));
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_scale_t_3prong1pizero_$ERA", "shape", SystMap<>::init(0.5));
 
   // ##########################################################################
   // Uncertainty: Jet energy scale
