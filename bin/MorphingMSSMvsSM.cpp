@@ -11,6 +11,7 @@
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_MSSMvsSMRun2.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
+#include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
 #include "RooRealVar.h"
 #include "RooWorkspace.h"
 #include "TF1.h"
@@ -33,6 +34,7 @@ using namespace std;
 using boost::starts_with;
 namespace po = boost::program_options;
 
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -46,16 +48,21 @@ int main(int argc, char **argv) {
   string chan = "all";
   string category = "all";
   string variable = "m_sv_puppi";
+
   bool auto_rebin = false;
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
+  bool mva(false), no_emb(false);
+
+  vector<string> mass_susy_ggH({}), mass_susy_qqH({});
+
   string analysis = "sm"; // "sm", "sm_standard"  "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
-      ("base_path", po::value<string>(&base_path)->default_value(base_path))
+      ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path))
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
@@ -66,9 +73,20 @@ int main(int argc, char **argv) {
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
       ("binomial_bbb", po::value<bool>(&binomial_bbb)->default_value(binomial_bbb))
-      ("era", po::value<int>(&era)->default_value(era));
+      ("era", po::value<int>(&era)->default_value(era))
+      ("help", "produce help message")
+      ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
+      ("debug,d", po::bool_switch(&debug), "debug printout")
+      ("mva", po::bool_switch(&mva), "mva tau id is used")
+      ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
+      ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
+  if (vm.count("help"))
+  {
+      cout << config << "\n";
+      return 0;
+  }
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
@@ -98,6 +116,8 @@ int main(int argc, char **argv) {
     boost::split(category_split, category, boost::is_any_of("_"));
     chns = {category_split.at(0)};
   }
+  doutnonl("Channels:\n\t");
+  dprintVector(chns);
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
@@ -117,19 +137,37 @@ int main(int argc, char **argv) {
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
-
+  if (no_emb) {
+    dout("WARNING: the EMB process is removed from backgrounds");
+    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
+    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
+  }
   VString SUSYggH_masses = {"100", "110", "120", "130", "140", "180", "200", "250", "300", "350", "400", "450", "600", "700", "800", "900", "1200", "1400", "1500", "1600", "1800", "2000", "2300", "2600", "2900", "3200"};
   VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
 
+  if (mass_susy_ggH.size() > 0)
+  {
+      doutnonl("WARNING: The masses for SUSY ggH are set manually:");
+      SUSYggH_masses.clear();
+      SUSYggH_masses.insert(SUSYggH_masses.end(), std::begin(mass_susy_ggH), std::end(mass_susy_ggH));
+      dprintVector(SUSYggH_masses);
+  }
+  if (mass_susy_qqH.size() > 0)
+  {
+      doutnonl("WARNING: The masses for SUSY ggH are set manually:");
+      SUSYbbH_masses.clear();
+      SUSYbbH_masses.insert(SUSYbbH_masses.end(), std::begin(mass_susy_qqH), std::end(mass_susy_ggH));
+      dprintVector(SUSYbbH_masses);
+  }
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
   if (chan.find("em") != std::string::npos || chan.find("all") != std::string::npos) {
-    std::cout << "For em channel : \n";
-    for (unsigned int i=0; i < bkgs_em.size(); i++) std::cout << bkgs_em[i] << std::endl;
+    std::cout << "For em channel : \n\t";
+    printVector(bkgs_em);
   }
   if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
-    std::cout << "For et,mt,tt channels : \n";
-    for (unsigned int i=0; i < bkgs.size(); i++) std::cout << bkgs[i] << std::endl;
+    std::cout << "For et,mt,tt channels : \n\t";
+    printVector(bkgs);
   }
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
