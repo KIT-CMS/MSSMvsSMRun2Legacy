@@ -13,7 +13,7 @@ bash ./checkout.sh
 ## Datacard creation
 
 ```bash
-MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=m_sv_puppi --categories=sm_nobtag
+MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=m_sv_puppi --analysis=sm_nobtag
 ```
 
 ## Workspace creation
@@ -63,7 +63,7 @@ done;
 ## Datacard creation
 
 ```bash
-MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --categories=mssm
+MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --analysis=mssm
 ```
 
 ## Workspace creation
@@ -115,7 +115,7 @@ done
 ## Datacard creation
 
 ```bash
- MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --categories=mssm_vs_sm_standard
+ MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --analysis=mssm_vs_sm_standard
 ```
 
 ## Workspace creation
