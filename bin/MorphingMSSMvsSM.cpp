@@ -40,18 +40,18 @@ int main(int argc, char **argv) {
   using ch::JoinStr;
 
   // Define program options
-  string output_folder = "output";
+  string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root";
   string chan = "all";
-  string heavy_mass = "all";
   string category = "all";
-  string variable = "m_sv_puppi";
+  string heavy_mass = "all";
+  string variable = "m_ttvisbb";
   bool auto_rebin = false;
   bool real_data = false;
   bool binomial_bbb = false;
   bool verbose = false;
-  string analysis = "sm"; // "sm", "sm_standard"  "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
+  string analysis = "nmssm"; // "sm", "sm_standard"  "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
-      ("heavy_mass", po::value<string>(&heavy_mass)->default_value(heavy_mass))
       ("category", po::value<string>(&category)->default_value(category))
+      ("heavy_mass", po::value<string>(&heavy_mass)->default_value(heavy_mass))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
-  output_folder = output_folder + "_" + analysis + "_" + variable + "_" + heavy_mass;
+  output_folder = output_folder + "_" + analysis + "_" + variable;
   std::map<string, string> input_dir;
   input_dir["mt"] = base_path;
   input_dir["et"] = base_path;
@@ -103,10 +103,12 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals;
+  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
+
+  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
@@ -126,44 +128,98 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs;
   bkg_procs["em"] = bkgs_em;
 
-  if(analysis == "nmssm"){
+if(analysis == "nmssm"){
     for(auto chn : chns){
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
   }
 
-  // // Define MSSM model-dependent mass parameters mA, mH, mh
-  // RooRealVar mA("mA", "mA", 125., 90., 4000.);
-  // RooRealVar mH("mH", "mH", 125., 90., 4000.);
-  // RooRealVar mh("mh", "mh", 125., 90., 4000.);
-  // mA.setConstant(true);
 
-  // Define MSSM model-independent mass parameter MH
-  RooRealVar MH("MH", "MH", 125., 60., 1000.);
-  MH.setConstant(true);
+  // vector<string> heavy_masses = {"240", "280", "320", "360", "400", "450", "500", "550", "600", "700", "800", "900", "1000", "1200", "1400", "1600", "1800", "2000", "2500", "3000"};
+  vector<string> light_mass_coarse = {"60", "70", "80", "90", "100", "120", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "800", "900", "1000", "1100", "1200", "1300", "1400", "1600", "1800", "2000", "2200", "2400", "2600", "2800"};
+  vector<string> light_mass_fine = {"60", "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "750", "800", "850"};
+
+  vector<string> masses;
+  vector<string> light_masses_list;
+
+  int hm;
+  int lm;
+  // for(int i=0;i<heavy_masses.size();i++) {
+  //   sig_procs.push_back({});
+  //   light_masses_list.push_back({});
+  //   hm = std::stoi(heavy_masses[i]);
+  //   if(hm>1001) {
+  //     for(int j=0;j<light_mass_coarse.size();j++) {
+  //       lm = std::stoi(light_mass_coarse[i]);
+  //       if((lm+125)>hm) {
+  //         continue;
+  //       }
+  //         sig_procs[i].push_back("NMSSM_"+heavy_masses[i]+"_125_"+light_mass_coarse[i]);
+  //         light_masses_list.push_back(lm);
+  //     }
+  //   }
+  //   else {
+  //     for(int j=0;j<light_mass_fine.size();j++) {
+  //       lm = std::stoi(light_mass_fine[i]);
+  //       if((lm+125)>hm) {
+  //         continue;
+  //       }
+  //         sig_procs[i].push_back("NMSSM_"+heavy_masses[i]+"_125_"+light_mass_fine[i]);
+  //         light_masses_list.push_back(lm);
+  //     }
+  //   }
+    hm = std::stoi(heavy_mass);
+    if(hm>1001) {
+      for(uint i=0;i<light_mass_coarse.size();i++) {
+        lm = std::stoi(light_mass_coarse[i]);
+        if((lm+125)>hm) {
+          continue;
+        }
+          light_masses_list.push_back(light_mass_coarse[i]);
+      }
+    }
+    else {
+      for(uint i=0;i<light_mass_fine.size();i++) {
+        lm = std::stoi(light_mass_fine[i]);
+        if((lm+125)>hm) {
+          continue;
+        }
+          light_masses_list.push_back(light_mass_fine[i]);
+      }
+    }
+
+  // Specify signal processes and masses
+  vector<string> sig_procs;
+  // STXS stage 0: ggH and VBF processes
+  sig_procs = {
+      "NMSSM_"+heavy_mass+"_125"
+  };
+  // Define NMSSM model-dependent mass parameters mH, mhprime, mh
+  RooRealVar mH("mH", "mH", 125., 240., 3000.);
+  RooRealVar mhprime("mhprime", "mhprime", 170., 60., 2800.);
+  RooRealVar mh("mh", "mh", 125., 124.9, 125.1);
+  mh.setConstant(true);
+
 
   // Define categories
   map<string, Categories> cats;
+  // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "nmssm"){
-      cats["mt"] = {
-        { 1, "mt_signal_unboosted"},
-        { 2, "mt_boosted"},
-        { 3, "mt_background"},
+    cats["et"] = {
+        {  1, "et_1btag"},
+        {  2, "et_2btag"},
     };
-      cats["tt"] = {
-        { 1, "tt_signal_unboosted"},
-        { 2, "tt_boosted"},
-        { 3, "tt_background"},
+    cats["mt"] = {
+        {  1, "mt_1btag"},
+        {  2, "mt_2btag"},
     };
-      cats["et"] = {
-        { 1, "et_signal_unboosted"},
-        { 2, "et_boosted"},
-        { 3, "et_background"},
+    cats["tt"] = {
+        {  1, "tt_1btag"},
+        {  2, "tt_2btag"},
     };
-      cats["em"] = {
-        { 1, "em_signal_unboosted"},
-        { 2, "em_boosted"},
-        { 3, "em_background"},
+    cats["em"] = {
+        {  1, "em_1btag"},
+        {  2, "em_2btag"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
@@ -174,58 +230,43 @@ int main(int argc, char **argv) {
 
   // Add observations and processes
   std::string era_tag;
-  if (era == 2016) era_tag = "Run2016";
-  else if (era == 2017) era_tag = "Run2017";
-  else if (era == 2018) era_tag = "Run2018";
+  if (era == 2016) era_tag = "2016";
+  else if (era == 2017) era_tag = "2017";
+  else if (era == 2018) era_tag = "2018";
+
   else std::runtime_error("Given era is not implemented.");
 
-  vector<string> all_masses = {"60", "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "750", "800", "850"};
-  vector<string> masses;
-  int m_2 = std::stoi( heavy_mass );
-  for(uint i=0;i<all_masses.size();i++) {
-    int m_1 = std::stoi( all_masses[i] );
-    if((m_1+125)>m_2) {
-      continue;
-      }
-      masses.push_back(all_masses[i]);
-    }
-  // Specify signal processes and masses
-  vector<string> sig_procs;
-  // STXS stage 0: ggH and VBF processes
-  sig_procs = {
-      "NMSSM_"+heavy_mass+"_125_"
-  };
+  std::vector<int> mttbb_categories = {1,2}; // MSSM-like categories & control regions with mt_tot as discriminator
+
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn],
                     false);
-    cb.AddProcesses(masses, {"htt"}, {era_tag}, {chn}, sig_procs, cats[chn],
+    cb.AddProcesses(light_masses_list, {"htt"}, {era_tag}, {chn}, sig_procs, cats[chn],
                     true);
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, era, heavy_mass);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era, heavy_mass);
 
   // Define restriction to the desired category
-  if(category != "all"){
-    cb = cb.bin({category});
-  }
+  // if(category != "all"){
+  //   cb = cb.bin({category});
+  // }
+
   // Extract shapes from input ROOT files
   for (string chn : chns) {
-      std::cout << input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-diBJetMass.root" << std::endl;
-  }
-  for (string chn : chns) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag  + "-diBJetMass.root",
-        "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag  + "-diBJetMass.root",
-        "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-  }
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+    if(analysis == "nmssm"){
+      cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      }
+    }
 
   // Delete processes with 0 yield
   cb.FilterProcs([&](ch::Process *p) {
-    if (std::find(sig_procs.begin(), sig_procs.end(), p->process()) != sig_procs.end())
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
     {
       return false;
     }
@@ -243,7 +284,7 @@ int main(int argc, char **argv) {
 
   // Delete systematics with 0 yield since these result in a bogus norm error in combine
   cb.FilterSysts([&](ch::Systematic *s) {
-    if (std::find(sig_procs.begin(), sig_procs.end(), s->process()) != sig_procs.end())
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
     {
       return false;
     }
@@ -271,6 +312,7 @@ int main(int argc, char **argv) {
       auto background_shape = cb.cp().bin({b}).backgrounds().GetShape();
       auto total_procs_shape = cb.cp().bin({b}).data().GetShape();
       total_procs_shape.Scale(0.0);
+      if(analysis == "nmssm"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         bool no_sm_signal = (sm_signal_shape.GetNbinsX() == 1 && sm_signal_shape.Integral() == 0.0);
@@ -295,6 +337,7 @@ int main(int argc, char **argv) {
         cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
           obs->set_shape(total_procs_shape,true);
         });
+      }
     }
   }
 
@@ -307,7 +350,7 @@ int main(int argc, char **argv) {
       p->set_shape(std::move(newhist), false);
     }
   });
-                              
+
   cb.ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
@@ -324,12 +367,8 @@ int main(int argc, char **argv) {
   // Perform auto-rebinning
   if (auto_rebin) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(1.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(10.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
-  }
-  for (auto b : cb.cp().bin_set()) {   
-    std::cout << "A+3" << std::endl;
-    std::cout << cb.cp().bin({b}).backgrounds().GetShape().Integral() << std::endl;
   }
 
   // Merge bins and set bin-by-bin uncertainties if no autoMCStats is used.
@@ -346,7 +385,7 @@ int main(int argc, char **argv) {
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
-  ch::CombineHarvester cb_obs = cb.deep().backgrounds();
+  // ch::CombineHarvester cb_obs = cb.deep().backgrounds();
 
   // Adding bin-by-bin uncertainties
   std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
@@ -355,18 +394,24 @@ int main(int argc, char **argv) {
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
 
-  std::map<std::string, RooAbsReal *> mass_var = {};
+  std::map<std::string, RooAbsReal *> mass_var = {
+    {"NMSSM_"+heavy_mass+"_125", &mhprime}
+  };
 
-  std::map<std::string, std::string> process_norm_map = {};
+  std::map<std::string, std::string> process_norm_map = {
+    {"NMSSM_"+heavy_mass+"_125", "prenorm"}
+  };
+
+
 
   if(analysis == "nmssm")
   {
     mass_var = {
-      {"NMSSM_"+heavy_mass+"_125_", &MH}
+      {"NMSSM_"+heavy_mass+"_125", &mhprime}
     };
 
     process_norm_map = {
-      {"NMSSM_"+heavy_mass+"_125_", "prenorm"}
+      {"NMSSM_"+heavy_mass+"_125", "prenorm"}
     };
   }
 
@@ -410,58 +455,26 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
 
   // Decide, how to write out the datacards depending on --category option
-  if(category == "all") {
-      // Write out datacards. Naming convention important for rest of workflow. We
-      // make one directory per chn-cat, one per chn and cmb. In this code we only
-      // store the individual datacards for each directory to be combined later.
-      ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
-                            output_folder + "/" + era_tag + "/$TAG/common/htt_input_" + era_tag + ".root");
+  // Write out datacards. Naming convention important for rest of workflow. We
+  // make one directory per chn-cat, one per chn and cmb. In this code we only
+  // store the individual datacards for each directory to be combined later.
+  ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
+                        output_folder + "/" + era_tag + "/$TAG/common/htt_input_" + era_tag + ".root");
 
-      // We're not using mass as an identifier - which we need to tell the
-      // CardWriter
-      // otherwise it will see "*" as the mass value for every object and skip it
-      writer.SetWildcardMasses({});
-      // Set verbosity
-      if (verbose)
-        writer.SetVerbosity(1);
+  // We're not using mass as an identifier - which we need to tell the
+  // CardWriter
+  // otherwise it will see "*" as the mass value for every object and skip it
+  writer.SetWildcardMasses({});
 
-      // Write datacards combined and per channel
-      writer.WriteCards("cmb", cb);
-      for (auto chn : chns) {
-        writer.WriteCards(chn, cb.cp().channel({chn}));
-      }
-  }
-  else {
-      // Write out datacards. Naming convention important for rest of workflow. We
-      // make one directory per chn-cat, one per chn and cmb. In this code we only
-      // store the individual datacards for each directory to be combined later.
-      ch::CardWriter writer(output_folder + "/" + era_tag + "/$BIN/$BIN.txt",
-                            output_folder + "/" + era_tag + "/$BIN/common/$BIN_input.root");
+  // Set verbosity
+  if (verbose)
+    writer.SetVerbosity(1);
 
-      // We're not using mass as an identifier - which we need to tell the
-      // CardWriter
-      // otherwise it will see "*" as the mass value for every object and skip it
-      writer.SetWildcardMasses({});
+  // Write datacards combined and per channel
+  writer.WriteCards("cmb", cb);
 
-      // Set verbosity
-      if (verbose)
-        writer.SetVerbosity(1);
-
-      writer.WriteCards("", cb);
-
-      ch::CardWriter writer_restore(output_folder + "/" + era_tag + "/restore_binning/$BIN/$BIN.txt",
-                                    output_folder + "/" + era_tag + "/restore_binning/$BIN/common/$BIN_input.root");
-
-      // We're not using mass as an identifier - which we need to tell the
-      // CardWriter
-      // otherwise it will see "*" as the mass value for every object and skip it
-      writer_restore.SetWildcardMasses({});
-
-      // Set verbosity
-      if (verbose)
-        writer_restore.SetVerbosity(1);
-
-      writer_restore.WriteCards("", cb_obs);
+  for (auto chn : chns) {
+    writer.WriteCards(chn, cb.cp().channel({chn}));
   }
 
   if (verbose)
