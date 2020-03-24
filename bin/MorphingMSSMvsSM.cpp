@@ -92,6 +92,7 @@ int main(int argc, char **argv) {
   // source the input files containing the datacard shapes
   output_folder = output_folder + "_" + analysis + "_" + variable;
   std::map<string, string> input_dir;
+  if (base_path.back() != '/' ) base_path += "/";
   input_dir["mt"] = base_path;
   input_dir["et"] = base_path;
   input_dir["tt"] = base_path;
@@ -148,15 +149,13 @@ int main(int argc, char **argv) {
   if (mass_susy_ggH.size() > 0)
   {
       doutnonl("WARNING: The masses for SUSY ggH are set manually:");
-      SUSYggH_masses.clear();
-      SUSYggH_masses.insert(SUSYggH_masses.end(), std::begin(mass_susy_ggH), std::end(mass_susy_ggH));
+      SUSYggH_masses = mass_susy_ggH;
       dprintVector(SUSYggH_masses);
   }
   if (mass_susy_qqH.size() > 0)
   {
-      doutnonl("WARNING: The masses for SUSY ggH are set manually:");
-      SUSYbbH_masses.clear();
-      SUSYbbH_masses.insert(SUSYbbH_masses.end(), std::begin(mass_susy_qqH), std::end(mass_susy_ggH));
+      doutnonl("WARNING: The masses for SUSY qqH are set manually:");
+      SUSYbbH_masses = mass_susy_qqH;
       dprintVector(SUSYbbH_masses);
   }
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
