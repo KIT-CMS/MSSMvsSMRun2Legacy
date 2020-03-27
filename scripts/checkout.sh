@@ -30,7 +30,7 @@ git clone https://github.com/KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSS
 git clone https://github.com/KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
 
 # Install LHCHXSWGMSSMNeutral packages
-wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.py_v2.3
+wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.py_v2.2
 sed -i "s!./mssm_xs_tools_C.so!${CMSSW_BASE}/lib/${SCRAM_ARCH}/libCombineHarvesterMSSMvsSMRun2Legacy.so!g" CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py
 sed -i "s!root_files/mh125_13.root!${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13.root!g" CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py
 wget -O CombineHarvester/MSSMvsSMRun2Legacy/src/mssm_xs_tools.cc https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.C_v2.3
