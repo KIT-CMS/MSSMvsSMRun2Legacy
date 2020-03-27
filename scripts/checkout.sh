@@ -17,17 +17,17 @@ eval `scramv1 runtime -sh`
 #git fetch origin
 #git checkout v8.0.1
 #cd -
-git clone https://github.com/KIT-CMS/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+git clone git@github.com:KIT-CMS/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 
 # CombineHarvester (current master for 102X)
 #git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
-git clone https://github.com/KIT-CMS/CombineHarvester.git CombineHarvester # fixes & extensions for morphing (22.08.2019)
+git clone git@github.com:KIT-CMS/CombineHarvester.git CombineHarvester # fixes & extensions for morphing (22.08.2019)
 
 # MSSM vs SM analysis specific code
-git clone https://github.com/KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
+git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
 
 # SM analysis specific code
-git clone https://github.com/KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
+git clone git@github.com:KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
 
 # Install LHCHXSWGMSSMNeutral packages
 wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWGMSSMNeutral/mssm_xs_tools.py_v2.2
