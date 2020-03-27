@@ -436,17 +436,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"EMB"})
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.007));
 
-  // Tau ID: tt with 1 real taus and 1 jet fake
-  cb.cp()
-      .channel({"tt"})
-      .process({"W", "ZJ", "TTJ", "VVJ"})
-      .AddSyst(cb, "CMS_eff_t_$ERA", "lnN", SystMap<>::init(1.06));
-
-  cb.cp()
-      .channel({"tt"})
-      .process({"W", "ZJ", "TTJ", "VVJ"})
-      .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.02));
-
 
 
   // ##########################################################################
