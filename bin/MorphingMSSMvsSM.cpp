@@ -45,26 +45,23 @@ int main(int argc, char **argv) {
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root";
-  string chan = "all";
-  string category = "all";
-  string variable = "m_sv_puppi";
+  string chan = "mt";
+  string category = "mt_nobtag_lowmsv_0jet_tightmt";
 
   bool auto_rebin = false;
   bool real_data = false;
-  bool binomial_bbb = false;
   bool verbose = false;
   bool mva(false), no_emb(false);
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({});
 
-  string analysis = "sm"; // "sm", "sm_standard"  "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
+  string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_standard", "mssm_vs_sm_qqh"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
       ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path))
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
-      ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("category", po::value<string>(&category)->default_value(category))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
@@ -72,14 +69,13 @@ int main(int argc, char **argv) {
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
-      ("binomial_bbb", po::value<bool>(&binomial_bbb)->default_value(binomial_bbb))
       ("era", po::value<int>(&era)->default_value(era))
-      ("help", "produce help message")
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
-      ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH");
+      ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
+      ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
   if (vm.count("help"))
@@ -90,13 +86,19 @@ int main(int argc, char **argv) {
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
-  output_folder = output_folder + "_" + analysis + "_" + variable;
+  std::string era_tag;
+  if (era == 2016) era_tag = "2016";
+  else if (era == 2017) era_tag = "2017";
+  else if (era == 2018) era_tag = "2018";
+  else std::runtime_error("Given era is not implemented.");
+
+  output_folder = output_folder + "_" + analysis;
   std::map<string, string> input_dir;
   if (base_path.back() != '/' ) base_path += "/";
-  input_dir["mt"] = base_path;
-  input_dir["et"] = base_path;
-  input_dir["tt"] = base_path;
-  input_dir["em"] = base_path;
+  input_dir["mt"] = base_path + "/" +era_tag + "/mt/";
+  input_dir["et"] = base_path + "/" +era_tag + "/et/";
+  input_dir["tt"] = base_path + "/" +era_tag + "/tt/";
+  input_dir["em"] = base_path + "/" +era_tag + "/em/";
 
   // Define channels
   VString chns;
@@ -108,8 +110,6 @@ int main(int argc, char **argv) {
     chns.push_back("tt");
   if (chan.find("em") != std::string::npos)
     chns.push_back("em");
-  if (chan == "all")
-    chns = {"mt", "et", "tt", "em"};
 
   // Define restriction to the channel defined by '--category' option
   if(category != "all"){
@@ -136,27 +136,43 @@ int main(int argc, char **argv) {
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
-  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
-  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
+  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if (no_emb) {
     dout("WARNING: the EMB process is removed from backgrounds");
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
     bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
   }
-  VString SUSYggH_masses = {"100", "110", "120", "130", "140", "180", "200", "250", "300", "350", "400", "450", "600", "700", "800", "900", "1200", "1400", "1500", "1600", "1800", "2000", "2300", "2600", "2900", "3200"};
-  VString SUSYbbH_masses = {"90", "110", "120", "125", "130", "140", "160", "180", "200", "250", "350", "400", "450", "500", "600", "700", "800", "900", "1000", "1200", "1400", "1800", "2000", "2300", "2600", "3200"};
+  //      "2016": {
+  //          "bbH_nlo": [80, 90, 110, 120, 130, 140, 160, 180, 200, 250, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200],
+  //      },
+  //      "2017": {
+  //          "bbH_nlo": [80, 90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200, 3500],
+  //      },
+  //      "2018": {
+  //          "bbH_nlo": [80, 90, 100, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200, 3500],
+  //      }
+  map<int, VString> SUSYggH_masses;
+  SUSYggH_masses[2016] = {"80","90","100","110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYggH_masses[2017] = {"80","90","100","110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYggH_masses[2018] = {"80","90","100","110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+
+  map<int, VString> SUSYbbH_masses;
+  SUSYbbH_masses[2016] = {"80","90","110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYbbH_masses[2017] = {"80","90","110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  SUSYbbH_masses[2018] = {"80","90","100","110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
 
   if (mass_susy_ggH.size() > 0)
   {
       doutnonl("WARNING: The masses for SUSY ggH are set manually:");
-      SUSYggH_masses = mass_susy_ggH;
-      dprintVector(SUSYggH_masses);
+      SUSYggH_masses[era] = mass_susy_ggH;
+      dprintVector(SUSYggH_masses[era]);
   }
   if (mass_susy_qqH.size() > 0)
   {
       doutnonl("WARNING: The masses for SUSY qqH are set manually:");
-      SUSYbbH_masses = mass_susy_qqH;
-      dprintVector(SUSYbbH_masses);
+      SUSYbbH_masses[era] = mass_susy_qqH;
+      dprintVector(SUSYbbH_masses[era]);
   }
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
@@ -173,12 +189,12 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs;
   bkg_procs["em"] = bkgs_em;
 
-  if(analysis == "sm" || analysis == "sm_standard"){
+  if(analysis == "sm"){
     for(auto chn : chns){
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-  else if(analysis == "mssm" || analysis == "mssm_btag"){
+  else if(analysis == "mssm"){
     for(auto chn : chns){
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
@@ -226,82 +242,70 @@ int main(int argc, char **argv) {
         { 37, "em_btag_lowdzeta"},
     };
   }
-  else if(analysis == "sm_standard"){
+  else if(analysis == "sm"){
     cats["et"] = {
         { 1, "et_wjets_control"},
 
-        {10, "et_nobtag_0jet_tightmt"},
-        {11, "et_nobtag_0jet_loosemt"},
+        {10, "et_nobtag_lowmsv_0jet_tightmt"},
+        {11, "et_nobtag_lowmsv_0jet_loosemt"},
 
-        {12, "et_nobtag_geq1jet_highdeltar"},
+        {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
 
-        {13, "et_nobtag_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_1jet_lowdeltar_mediumpt"},
-        {15, "et_nobtag_1jet_lowdeltar_highpt"},
+        {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
+        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
+        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"},
 
-        {16, "et_nobtag_2jet_lowdeltar_lowmjj"},
-        {17, "et_nobtag_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_2jet_lowdeltar_highmjj"},
-
-        {35, "et_btag_tightmt"},
-        {36, "et_btag_loosemt"},
+        {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
+        {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
+        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
     };
     cats["mt"] = {
         { 1, "mt_wjets_control"},
 
-        {10, "mt_nobtag_0jet_tightmt"},
-        {11, "mt_nobtag_0jet_loosemt"},
+        {10, "mt_nobtag_lowmsv_0jet_tightmt"},
+        {11, "mt_nobtag_lowmsv_0jet_loosemt"},
 
-        {12, "mt_nobtag_geq1jet_highdeltar"},
+        {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
 
-        {13, "mt_nobtag_1jet_lowdeltar_lowpt"},
-        {14, "mt_nobtag_1jet_lowdeltar_mediumpt"},
-        {15, "mt_nobtag_1jet_lowdeltar_highpt"},
+        {13, "mt_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
+        {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
+        {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
 
-        {16, "mt_nobtag_2jet_lowdeltar_lowmjj"},
-        {17, "mt_nobtag_2jet_lowdeltar_mediummjj"},
-        {18, "mt_nobtag_2jet_lowdeltar_highmjj"},
-
-        {35, "mt_btag_tightmt"},
-        {36, "mt_btag_loosemt"},
+        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
+        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
+        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
     };
     cats["tt"] = {
-        {10, "tt_nobtag_highdeltar"},
+        {10, "tt_nobtag_lowmsv_highdeltar"},
 
-        {11, "tt_nobtag_0jet_lowmediumdeltar"},
+        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"},
 
-        {12, "tt_nobtag_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_1jet_lowpt_mediumdeltar"},
-        {14, "tt_nobtag_1jet_highpt_lowmediumdeltar"},
+        {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
+        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"},
+        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"},
 
-        {15, "tt_nobtag_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_2jet_lowdeltar_highmjj_lowjdeta"},
-        {17, "tt_nobtag_2jet_lowdeltar_highmjj_highjdeta"},
-
-        {35, "tt_btag"},
+        {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
+        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"},
+        {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
     };
     cats["em"] = {
         { 1, "em_ttbar_control"},
 
-        {10, "em_nobtag_0jet_lowpt_mediumdzeta"},
-        {11, "em_nobtag_0jet_lowpt_lowdzeta"},
-        {12, "em_nobtag_0jet_highpt_mediumdzeta"},
-        {13, "em_nobtag_0jet_highpt_lowdzeta"},
+        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"},
+        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"},
+        {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
+        {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
 
-        {14, "em_nobtag_1jet_lowpt"},
-        {15, "em_nobtag_1jet_lowmediumpt"},
-        {16, "em_nobtag_1jet_highmediumpt"},
-        {17, "em_nobtag_1jet_highpt"},
+        {14, "em_nobtag_lowmsv_1jet_lowpt"},
+        {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
+        {16, "em_nobtag_lowmsv_1jet_highmediumpt"},
+        {17, "em_nobtag_lowmsv_1jet_highpt"},
 
-        {18, "em_nobtag_2jet_lowmjj"},
-        {19, "em_nobtag_2jet_mediummjj"},
-
-        {35, "em_btag_highdzeta"},
-        {36, "em_btag_mediumdzeta"},
-        {37, "em_btag_lowdzeta"},
+        {18, "em_nobtag_lowmsv_2jet_lowmjj"},
+        {19, "em_nobtag_lowmsv_2jet_mediummjj"},
     };
   }
-  else if(analysis == "mssm_vs_sm_qqh" || analysis == "sm"){
+  else if(analysis == "mssm_vs_sm_qqh"){
     cats["et"] = {
         { 1, "et_wjets_control"},
 
@@ -394,13 +398,6 @@ int main(int argc, char **argv) {
   ch::CombineHarvester cb;
   cb.SetFlag("workspaces-use-clone", true);
 
-  // Add observations and processes
-  std::string era_tag;
-  if (era == 2016) era_tag = "2016";
-  else if (era == 2017) era_tag = "2017";
-  else if (era == 2018) era_tag = "2018";
-
-  else std::runtime_error("Given era is not implemented.");
 
   // Introduce ordering of categories for the final discriminator in MSSM
   std::vector<int> m_sv_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -411,20 +408,20 @@ int main(int argc, char **argv) {
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
-    if(analysis == "sm" || analysis == "sm_standard"){
+    if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
+    else if(analysis == "mssm" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
       if(analysis != "mssm_vs_sm_qqh")
       {
-        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       }
       else
       {
-        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, cats[chn], true);
-        cb.AddProcesses(SUSYggH_masses, {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, cats[chn], true);
-        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbh"}, cats[chn], true);
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, cats[chn], true);
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, cats[chn], true);
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, cats[chn], true);
         Categories highmass_cats = cats[chn];
         std::vector<int> failed_cats;
         if(chn == "em")      failed_cats = {10,11,16,17,34};
@@ -439,7 +436,7 @@ int main(int argc, char **argv) {
             --catit;
           }
         }
-        cb.AddProcesses(SUSYbbH_masses, {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, highmass_cats, true);
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, highmass_cats, true);
       }
       if(analysis == "mssm_vs_sm_standard" || "mssm_vs_sm_qqh"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
@@ -504,20 +501,20 @@ int main(int argc, char **argv) {
         input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
     else{
-      cb.cp().channel({chn}).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-      if(analysis == "sm" || analysis == "sm_standard"){
+      if(analysis == "sm"){
+        cb.cp().channel({chn}).backgrounds().ExtractShapes(
+          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
         cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
       }
       else if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard"){
         cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
         if(analysis == "mssm_vs_sm_standard"){
           cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-            input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+            input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
         }
       }
     }
@@ -571,7 +568,7 @@ int main(int argc, char **argv) {
       auto background_shape = cb.cp().bin({b}).backgrounds().GetShape();
       auto total_procs_shape = cb.cp().bin({b}).data().GetShape();
       total_procs_shape.Scale(0.0);
-      if(analysis == "sm" || analysis == "sm_standard"){
+      if(analysis == "sm"){
         auto signal_shape = cb.cp().bin({b}).signals().GetShape();
         bool no_signal = (signal_shape.GetNbinsX() == 1 && signal_shape.Integral() == 0.0);
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
@@ -597,7 +594,7 @@ int main(int argc, char **argv) {
           obs->set_shape(total_procs_shape,true);
         });
       }
-      else if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
+      else if(analysis == "mssm" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         bool no_sm_signal = (sm_signal_shape.GetNbinsX() == 1 && sm_signal_shape.Integral() == 0.0);
@@ -656,17 +653,6 @@ int main(int argc, char **argv) {
     rebin.Rebin(cb, cb);
   }
 
-  // Merge bins and set bin-by-bin uncertainties if no autoMCStats is used.
-  if (binomial_bbb) {
-    std::cout << "[INFO] Adding binomial bbb.\n";
-    auto bbb = ch::BinomialBinByBinFactory()
-                   .SetPattern("CMS_$ANALYSIS_$CHANNEL_$BIN_$ERA_$PROCESS_binomial_bin_$#")
-                   .SetBinomialP(0.022)
-                   .SetBinomialN(1000.0)
-                   .SetFixNorm(false);
-    bbb.AddBinomialBinByBin(cb.cp().channel({"em"}).process({"EMB"}), cb);
-  }
-
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
@@ -697,7 +683,7 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
-  if(analysis == "mssm" || analysis == "mssm_btag")
+  if(analysis == "mssm")
   {
     mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
@@ -728,7 +714,7 @@ int main(int argc, char **argv) {
   }
 
 
-  if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh")
+  if(analysis == "mssm" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh")
   {
     TFile morphing_demo(("htt_mssm_morphing_" + category+ "_demo.root").c_str(), "RECREATE");
 
@@ -739,7 +725,7 @@ int main(int argc, char **argv) {
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
 
-    if(analysis == "mssm" || analysis == "mssm_btag"){
+    if(analysis == "mssm"){
       // Adding 'norm' terms into workspace according to desired signals
       for (auto bin : cb.cp().bin_set())
       {
