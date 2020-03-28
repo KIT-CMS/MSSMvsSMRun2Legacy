@@ -44,9 +44,10 @@ int main(int argc, char **argv) {
   // Define program options
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
-  string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root";
+  string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root";
   string chan = "mt";
   string category = "mt_nobtag_lowmsv_0jet_tightmt";
+  string variable = "m_sv_puppi";
 
   bool auto_rebin = false;
   bool real_data = false;
@@ -64,6 +65,7 @@ int main(int argc, char **argv) {
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("category", po::value<string>(&category)->default_value(category))
+      ("variable", po::value<string>(&variable)->default_value(variable))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
@@ -501,22 +503,22 @@ int main(int argc, char **argv) {
         input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
     else{
-      if(analysis == "sm"){
         cb.cp().channel({chn}).backgrounds().ExtractShapes(
-          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-      }
-      else if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard"){
-        cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+        if(analysis == "sm"){
+          cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
+            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        }
+        if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard"){
+          cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
+            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        }
         if(analysis == "mssm_vs_sm_standard"){
           cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
             input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
         }
-      }
     }
   }
 
@@ -545,12 +547,12 @@ int main(int argc, char **argv) {
       return false;
     }
     if (s->type() == "shape") {
-      if (s->shape_u()->Integral() == 0.0) {
+      if (s->shape_u()->Integral() <= 0.0) {
         std::cout << "[WARNING] Removing systematic with null yield in up shift:" << std::endl;
         std::cout << ch::Systematic::PrintHeader << *s << "\n";
         return true;
       }
-      if (s->shape_d()->Integral() == 0.0) {
+      if (s->shape_d()->Integral() <= 0.0) {
         std::cout << "[WARNING] Removing systematic with null yield in down shift:" << std::endl;
         std::cout << ch::Systematic::PrintHeader << *s << "\n";
         return true;
