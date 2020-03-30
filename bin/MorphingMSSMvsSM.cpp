@@ -708,7 +708,7 @@ int main(int argc, char **argv) {
 
   if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm")
   {
-    TFile morphing_demo(("htt_mssm_morphing_" + category+ "_" + analysis + "_demo.root").c_str(), "RECREATE");
+    TFile morphing_demo(("htt_mssm_morphing_" + category+ "_" + "_" + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
     // Perform morphing
     auto mssm_signals = ch::JoinStr({mssm_ggH_signals,mssm_bbH_signals});
