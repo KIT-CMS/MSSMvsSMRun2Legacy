@@ -443,7 +443,7 @@ int main(int argc, char **argv) {
 
   // Add systematics
   dout("Add systematics AddMSSMvsSMRun2Systematics :", ! no_emb);
-  ch::AddMSSMvsSMRun2Systematicstemp(cb, true, ! no_emb, true, true, true, era, mva);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva);
 
   // Define restriction to the desired category
   if(category != "all"){
