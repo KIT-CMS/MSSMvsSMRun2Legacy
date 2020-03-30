@@ -156,6 +156,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
         name  = "qqh_MSSM"
         accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
+        accesskey_br = self.quantity_map['br']['access'].format(HIGGS='h')
         print "Computing 'qqh' scaling function from model file..."
 
         x_parname = varlist[0].GetName()
@@ -166,17 +167,21 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         F = ROOT.TFile.Open(self.filename, "read")
         g_Htt_hist = F.Get(accesskey)
+        br_htautau_hist = F.Get(accesskey_br)
+        br_htautau_SM_125 = 0.06272 # Value for 125 GeV SM Higgs from YR4
 
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
                 beta = np.arctan(y)
                 g_Htt = g_Htt_hist.Interpolate(x,y)
+                br_htautau = br_htautau_hist.Interpolate(x,y)
                 sin_alpha = g_Htt * np.sin(beta)
                 if abs(sin_alpha) > 1:
                     sin_alpha  = np.sign(sin_alpha)
                 alpha = np.arcsin(sin_alpha)
                 value = np.sin(beta-alpha)**2 # (g_HVV)**2
+                value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
                 hist.SetBinContent(i_x+1, i_y+1, value)
         print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
         canv = ROOT.TCanvas()
