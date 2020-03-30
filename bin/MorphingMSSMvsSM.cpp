@@ -452,65 +452,69 @@ int main(int argc, char **argv) {
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
+    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag;
+    if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag;
+
     if(analysis == "mssm_vs_sm_qqh")
     {
 
       // Backgrounds
       cb.cp().channel({chn}).bin_id(m_sv_categories).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+        input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+        //input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
       cb.cp().channel({chn}).bin_id(mt_tot_categories).backgrounds().ExtractShapes(
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+        //input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+        input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
 
       // ggH MSSM signals
       cb.cp().channel({chn}).bin_id(m_sv_categories).process(mssm_ggH_signals).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        //input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).bin_id(mt_tot_categories).process(mssm_ggH_signals).ExtractShapes(
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        //input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
 
       // bbH MSSM signals
       cb.cp().channel({chn}).bin_id(m_sv_categories).process(mssm_bbH_signals).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        input_file_base + "-m_sv_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        //input_file_base + "-mt_tot_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).bin_id(mt_tot_categories).process(mssm_bbH_signals).ExtractShapes(
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        //input_file_base + "-m_sv_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        input_file_base + "-mt_tot_puppi.root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
 
       // SM signals
       cb.cp().channel({chn}).bin_id(m_sv_categories).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        //input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).bin_id(mt_tot_categories).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        //input_file_base + "-m_sv_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        input_file_base + "-mt_tot_puppi.root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
 
       // qqH MSSM signals
       cb.cp().channel({chn}).bin_id(m_sv_categories).process({"qqh"}).ExtractShapes(
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        input_file_base + "-m_sv_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        //input_file_base + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).bin_id(mt_tot_categories).process({"qqh"}).ExtractShapes(
-        //input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-m_sv_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-        input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        //input_file_base + "-m_sv_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        input_file_base + "-mt_tot_puppi.root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
     else{
+        string input_file = input_file_base + "-" + variable + ".root";
         cb.cp().channel({chn}).backgrounds().ExtractShapes(
-          input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+          input_file, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
         if(analysis == "sm"){
           cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
-            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+            input_file, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
         }
         if(analysis == "mssm" || analysis == "mssm_btag" || analysis == "mssm_vs_sm_standard"){
           cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+            input_file, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
           cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-            input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+            input_file, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
         }
         if(analysis == "mssm_vs_sm_standard"){
           cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-            input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+            input_file, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
         }
     }
   }
