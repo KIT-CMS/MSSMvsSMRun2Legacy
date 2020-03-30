@@ -593,27 +593,27 @@ int main(int argc, char **argv) {
           obs->set_shape(total_procs_shape,true);
         });
       }
-      else if(analysis == "mssm" || analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
+      else if(analysis == "mssm"){
+        bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
+        if(no_background)
+        {
+          std::cout << "\t[WARNING] No background available in bin " << b << std::endl;
+        }
+        else
+        {
+          total_procs_shape = total_procs_shape + background_shape;
+        }
+        cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
+          obs->set_shape(total_procs_shape,true);
+        });
+      }
+      else if(analysis == "mssm_vs_sm_standard" || analysis == "mssm_vs_sm_qqh"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         bool no_sm_signal = (sm_signal_shape.GetNbinsX() == 1 && sm_signal_shape.Integral() == 0.0);
         if(no_sm_signal && no_background)
         {
           std::cout << "\t[WARNING] No signal and no background available in bin " << b << std::endl;
-        }
-        else if(no_background)
-        {
-          std::cout << "\t[WARNING] No background available in bin " << b << std::endl;
-          total_procs_shape = total_procs_shape + sm_signal_shape;
-        }
-        else if(no_sm_signal)
-        {
-          std::cout << "\t[WARNING] No signal available in bin " << b << std::endl;
-          total_procs_shape = total_procs_shape + background_shape;
-        }
-        else
-        {
-          total_procs_shape = total_procs_shape + background_shape + sm_signal_shape;
         }
         cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
           obs->set_shape(total_procs_shape,true);
