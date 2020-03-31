@@ -36,8 +36,12 @@ void ddout(Head H, Tail... T) {
 
 template<typename T>
 void printVector(const T& t) {
-    std::copy(t.cbegin(), t.cend() - 1, std::ostream_iterator<typename T::value_type>(std::cout, ", "));
-    dout(t.back());
+    if (t.size() > 0)
+    {
+        std::copy(t.cbegin(), t.cend() - 1, std::ostream_iterator<typename T::value_type>(std::cout, ", "));
+        dout(t.back());
+    }
+    else dout("{}");
 }
 template<typename T>
 void printVectorInVector(const T& t) {
@@ -48,8 +52,12 @@ template<typename T>
 void dprintVector(const T& t) {
     if (debug)
     {
-      std::copy(t.cbegin(), t.cend() -1, std::ostream_iterator<typename T::value_type>(std::cout, ", "));
-      dout(t.back());
+        if (t.size() > 0)
+        {
+          std::copy(t.cbegin(), t.cend() -1, std::ostream_iterator<typename T::value_type>(std::cout, ", "));
+          dout(t.back());
+        }
+        else dout("{}");
     }
 }
 template<typename T>
