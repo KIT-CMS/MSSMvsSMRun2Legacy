@@ -29,7 +29,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.maxTemplateMass = None
         self.quantity_map = {
             "mass"          : {"name" : "m{HIGGS}", "access" : "{HIGGS}"},
-            "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau"},
+            "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau", "access2" : "br_{HIGGS}_tautau"},
             "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}"},
             "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
             "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
@@ -156,7 +156,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
         name  = "qqh_MSSM"
         accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
-        accesskey_br = self.quantity_map['br']['access'].format(HIGGS='h')
+        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
         print "Computing 'qqh' scaling function from model file..."
 
         x_parname = varlist[0].GetName()
