@@ -463,8 +463,10 @@ int main(int argc, char **argv) {
         input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
     if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
-      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals, {"qqh"}})).ExtractShapes(
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+        input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root", "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
   }
 
