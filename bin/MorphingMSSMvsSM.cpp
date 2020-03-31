@@ -34,6 +34,15 @@ using namespace std;
 using boost::starts_with;
 namespace po = boost::program_options;
 
+template<typename T>
+void update_vector_by_byparser(T& parameter, const T& parser, const string name="") {
+    if (parser.size() > 0)
+    {
+        doutnonl("WARNING: The", name, "are set manually:");
+        parameter = parser;
+        dprintVector(parameter);
+    }
+}
 
 int main(int argc, char **argv) {
   typedef vector<string> VString;
@@ -54,7 +63,7 @@ int main(int argc, char **argv) {
   bool verbose = false;
   bool mva(false), no_emb(false);
 
-  vector<string> mass_susy_ggH({}), mass_susy_qqH({});
+  vector<string> mass_susy_ggH({}), mass_susy_qqH({}), bg({}), bgem({});
 
   string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm"
   int era = 2016; // 2016, 2017 or 2018
@@ -77,6 +86,8 @@ int main(int argc, char **argv) {
       ("mva", po::bool_switch(&mva), "mva tau id is used")
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
+      ("bg", po::value<vector<string>>(&bg)->multitoken(), "backgrounds")
+      ("bgem", po::value<vector<string>>(&bgem)->multitoken(), "backgrounds-em")
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -143,6 +154,9 @@ int main(int argc, char **argv) {
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  update_vector_by_byparser(bkgs, bg, "bkgs");
+  update_vector_by_byparser(bkgs_em, bgem, "bkgs_em");
+
   if (no_emb) {
     dout("WARNING: the EMB process is removed from backgrounds");
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
@@ -158,18 +172,9 @@ int main(int argc, char **argv) {
   SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
   SUSYbbH_masses[2018] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
 
-  if (mass_susy_ggH.size() > 0)
-  {
-      doutnonl("WARNING: The masses for SUSY ggH are set manually:");
-      SUSYggH_masses[era] = mass_susy_ggH;
-      dprintVector(SUSYggH_masses[era]);
-  }
-  if (mass_susy_qqH.size() > 0)
-  {
-      doutnonl("WARNING: The masses for SUSY qqH are set manually:");
-      SUSYbbH_masses[era] = mass_susy_qqH;
-      dprintVector(SUSYbbH_masses[era]);
-  }
+  update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
+  update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
+
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
   if (chan.find("em") != std::string::npos || chan.find("all") != std::string::npos) {
