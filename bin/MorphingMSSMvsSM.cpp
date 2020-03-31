@@ -581,11 +581,14 @@ int main(int argc, char **argv) {
     for (auto b : cb.cp().bin_set()) {
       std::cout << "[INFO] Replacing data with asimov in bin " << b << "\n";
       auto background_shape = cb.cp().bin({b}).backgrounds().GetShape();
+      std::cout << "[INFO] Integral of background shape in bin " << b << ": " << background_shape.Integral()  << "\n";
       auto total_procs_shape = cb.cp().bin({b}).data().GetShape();
-      total_procs_shape.Scale(0.0);
+      total_procs_shape.Reset("M");
+      std::cout << "[INFO] Integral of initial asimov data shape in bin " << b << ": " << total_procs_shape.Integral()  << "\n";
       // Desired Asimov model: BG + Higgs. Since ggH and qqH H->tautau treated as signal, remaining Higgs processes as BG. Need to access the signals() + bg shapes
       if(analysis == "sm"){
         auto signal_shape = cb.cp().bin({b}).signals().GetShape();
+        std::cout << "[INFO] Integral of SM HTT shapes treated as signal  in bin " << b << ": " << signal_shape.Integral()  << "\n";
         bool no_signal = (signal_shape.GetNbinsX() == 1 && signal_shape.Integral() == 0.0);
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_signal && no_background)
@@ -604,6 +607,7 @@ int main(int argc, char **argv) {
         }
         else
         {
+          std::cout << "[INFO] Setting sum of background and SM HTT signal shapes to asimov data in bin " << b << "\n";
           total_procs_shape = total_procs_shape + background_shape + signal_shape;
         }
       }
@@ -616,12 +620,14 @@ int main(int argc, char **argv) {
         }
         else
         {
+          std::cout << "[INFO] Setting background to asimov data in bin " << b << "\n";
           total_procs_shape = total_procs_shape + background_shape;
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
       else if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
+        std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         bool no_sm_signal = (sm_signal_shape.GetNbinsX() == 1 && sm_signal_shape.Integral() == 0.0);
         if(no_sm_signal && no_background)
@@ -640,9 +646,11 @@ int main(int argc, char **argv) {
         }
         else
         {
+          std::cout << "[INFO] Setting sum of background and SM HTT signal shapes to asimov data in bin " << b << "\n";
           total_procs_shape = total_procs_shape + background_shape + sm_signal_shape;
         }
       }
+      std::cout << "[INFO] Integral of final asimov data in bin " << b << ": " << total_procs_shape.Integral()  << "\n";
       cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
         obs->set_shape(total_procs_shape,true);
       });
