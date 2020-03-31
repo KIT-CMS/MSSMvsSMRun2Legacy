@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
   output_folder = output_folder + "_" + analysis;
   std::map<string, string> input_dir;
   if (base_path.back() != '/' ) base_path += "/";
-  if (!boost::filesystem::exists(base_path)) boost::filesystem::create_directories(base_path);
+  if (!boost::filesystem::exists(output_folder)) boost::filesystem::create_directories(output_folder);
   input_dir["mt"] = base_path + "/" +era_tag + "/mt/";
   input_dir["et"] = base_path + "/" +era_tag + "/et/";
   input_dir["tt"] = base_path + "/" +era_tag + "/tt/";
