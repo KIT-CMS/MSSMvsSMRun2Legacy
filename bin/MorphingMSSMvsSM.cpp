@@ -38,8 +38,14 @@ template<typename T>
 void update_vector_by_byparser(T& parameter, const T& parser, const string name="") {
     if (parser.size() > 0)
     {
+        const std::string lower_str = boost::algorithm::to_lower_copy(parser[0]);
         doutnonl("WARNING: The", name, "are set manually:");
-        parameter = parser;
+
+        if (parser.size() == 1 && (lower_str == "none" || lower_str == "null" || lower_str == "pass"))
+          parameter = {};
+        else
+          parameter = parser;
+
         dprintVector(parameter);
     }
 }
@@ -63,16 +69,16 @@ int main(int argc, char **argv) {
   bool verbose = false;
   bool mva(false), no_emb(false);
 
-  vector<string> mass_susy_ggH({}), mass_susy_qqH({}), bg({}), bgem({});
+  vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
   string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
-      ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path))
+      ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path), "inputs, expected to contain a subdirectory <era>/<channel>")
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
-      ("channel", po::value<string>(&chan)->default_value(chan))
+      ("channel", po::value<string>(&chan)->default_value(chan), "single channel to process")
       ("category", po::value<string>(&category)->default_value(category))
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
@@ -86,8 +92,10 @@ int main(int argc, char **argv) {
       ("mva", po::bool_switch(&mva), "mva tau id is used")
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
-      ("bg", po::value<vector<string>>(&bg)->multitoken(), "backgrounds")
-      ("bgem", po::value<vector<string>>(&bgem)->multitoken(), "backgrounds-em")
+      ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
+      ("bkgs_em", po::value<vector<string>>(&parser_bkgs_em)->multitoken(), "backgrounds-em")
+      ("sm_signals", po::value<vector<string>>(&parser_sm_signals)->multitoken(), "sm_signals")
+      ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -140,6 +148,8 @@ int main(int argc, char **argv) {
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
+  update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
+  update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
   mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
   mssm_bbH_signals = {"bbA", "bbH", "bbh"};
@@ -152,8 +162,8 @@ int main(int argc, char **argv) {
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  update_vector_by_byparser(bkgs, bg, "bkgs");
-  update_vector_by_byparser(bkgs_em, bgem, "bkgs_em");
+  update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
+  update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
     dout("WARNING: the EMB process is removed from backgrounds");
@@ -445,12 +455,14 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era);
+  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva);
 
   // Define restriction to the desired category
   if(category != "all"){
     cb = cb.bin({category});
   }
+  // cb.PrintAll();
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
@@ -725,6 +737,7 @@ int main(int argc, char **argv) {
   }
 
 
+  dout("[INFO] Prepare demo.");
   if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm")
   {
     TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
