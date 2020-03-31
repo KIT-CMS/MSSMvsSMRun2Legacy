@@ -113,6 +113,8 @@ int main(int argc, char **argv) {
     chns.push_back("tt");
   if (chan.find("em") != std::string::npos)
     chns.push_back("em");
+  if (chan == "all")
+    chns = {"mt", "et", "tt", "em"};
 
   // Define restriction to the channel defined by '--category' option
   if(category != "all"){
