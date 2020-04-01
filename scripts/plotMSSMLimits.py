@@ -90,7 +90,7 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.33, 0.25, 3, 0.015)
+legend = plot.PositionedLegend(0.48, 0.25, 3, 0.015)
 legend.SetTextSize(0.03)
 
 axis = None
@@ -164,9 +164,9 @@ for src in args.input:
 
 
 
-axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
+axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
 if args.process == "bb#phi":
-    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
+    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)
