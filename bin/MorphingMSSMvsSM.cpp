@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
   bool auto_rebin = false;
   bool real_data = false;
   bool verbose = false;
+  bool use_automc = true;
   bool mva(false), no_emb(false);
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
+      ("use_automc", po::value<bool>(&use_automc)->default_value(use_automc))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
@@ -543,7 +545,7 @@ int main(int argc, char **argv) {
   cb.ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
     {
-      if(p->rate() < 0.0){
+      if(p->rate() <= 0.0){
         std::cout << "[WARNING] Setting mssm signal with negative yield to 0: \n ";
         std::cout << ch::Process::PrintHeader << *p << "\n";
         auto newhist = p->ClonedShape();
@@ -689,9 +691,10 @@ int main(int argc, char **argv) {
   ch::CombineHarvester cb_obs = cb.deep().backgrounds();
 
   // Adding bin-by-bin uncertainties
-  std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-  cb.SetAutoMCStats(cb, 0.0);
-
+  if (use_automc) {
+    std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
+    cb.SetAutoMCStats(cb, 0.0);
+  }
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
 
