@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
-  string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm"
+  string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm_heavy", "mssm_vs_sm"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
@@ -160,6 +160,11 @@ int main(int argc, char **argv) {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
   }
+  else if(analysis == "mssm_vs_sm_heavy")
+  {
+    mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i","ggA_t", "ggA_b", "ggA_i"};
+    mssm_bbH_signals = {"bbH", "bbA"};
+  }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
@@ -224,7 +229,7 @@ int main(int argc, char **argv) {
   // Define categories
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic"){
+  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy"){
     cats["et"] = {
         {  1, "et_wjets_control"},
         { 32, "et_nobtag_tightmt"},
@@ -423,7 +428,7 @@ int main(int argc, char **argv) {
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
+    else if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
       //if(analysis != "mssm_vs_sm")
       //{
         cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
@@ -450,7 +455,7 @@ int main(int argc, char **argv) {
         //}
         //cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, highmass_cats, true);
       //}
-      if(analysis == "mssm_vs_sm_classic" || "mssm_vs_sm"){
+      if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals, {"qqh"}}), cats[chn], true);
       }
     }
@@ -477,13 +482,13 @@ int main(int argc, char **argv) {
       cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
-    if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
+    if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
         input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
-    if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
+    if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
       cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
@@ -639,7 +644,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
-      else if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
+      else if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
@@ -740,7 +745,7 @@ int main(int argc, char **argv) {
 
 
   dout("[INFO] Prepare demo.");
-  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm")
+  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm")
   {
     TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
