@@ -456,7 +456,10 @@ int main(int argc, char **argv) {
         //cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, highmass_cats, true);
       //}
       if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals, {"qqh"}}), cats[chn], true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      }
+      if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
       }
     }
   }
@@ -491,6 +494,8 @@ int main(int argc, char **argv) {
     if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm"){
       cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+    }
+    if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm"){
       cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
         input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
