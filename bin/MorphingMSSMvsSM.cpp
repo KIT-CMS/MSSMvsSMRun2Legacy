@@ -421,7 +421,8 @@ int main(int argc, char **argv) {
   std::vector<int> sm_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
                                     11,12,13,14,15,16,17,18,19,20,
                                     21,22,23,24,25,26,27,28,29,30,31}; // SM-like categories with m_sv as discriminator
-  std::vector<int> mssm_categories = {32,33,34,35,36,37}; // MSSM-like categories with mt_tot as discriminator
+  std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
+  std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> control_region_categories = {1}; // control regions with mt_tot as discriminator
 
   for (auto chn : chns) {
@@ -438,8 +439,9 @@ int main(int argc, char **argv) {
       }
       else
       {
-        Categories sm_cats = cats[chn];
-        Categories mssm_cats = cats[chn];
+        Categories sm_and_btag_cats = cats[chn]; // contain 1-31
+        Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
+        Categories mssm_cats = cats[chn]; // contain 1, 32-37
 
         for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
         {
@@ -448,21 +450,37 @@ int main(int argc, char **argv) {
             --catit;
           }
         }
-        for (auto catit = sm_cats.begin(); catit != sm_cats.end(); ++catit)
+
+        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
         {
-          if(std::find(mssm_categories.begin(), mssm_categories.end(), (*catit).first) != mssm_categories.end()){
-            sm_cats.erase(catit);
+          if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+            mssm_btag_cats.erase(catit);
+            --catit;
+          }
+        }
+        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+        {
+          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+            mssm_btag_cats.erase(catit);
             --catit;
           }
         }
 
-        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_cats, true);
-        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
+        for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
+        {
+          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+            sm_and_btag_cats.erase(catit);
+            --catit;
+          }
+        }
 
-        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, sm_cats, true);
-        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true);
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true); // high mass categories only (== all mssm categories)
 
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_cats, true);
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
+
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
       }
       if(analysis == "mssm_vs_sm_classic"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
