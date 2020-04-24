@@ -41,23 +41,36 @@ combineTool.py -M T2W -i output_sm/{2016,2017,2018,combined}/cmb --parallel 4 -o
 **inclusive:**
 
 ```bash
-combineTool.py -M MultiDimFit -d output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/inclusive.root --algo singles --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --floatOtherPOIs 1 -t -1 --expectSignal 1 -n .inclusive -v1 --there --parallel 10 --setParameterRanges r=-3.0,5.0
+combineTool.py -M MultiDimFit -d output_sm/combined/cmb/inclusive.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --alignEdges 1 --setParameterRanges r=0.85,1.15 --points 41 --split-points 1 -n .inclusive --job-mode condor --task-name r_1Dscan --dry-run
+
+# after adapting the condor configuration, submit to batch system:
+condor_submit condor_r_1Dscan.sub
 ```
 
 **stage 0:**
 
 ```bash
-combineTool.py -M MultiDimFit -d output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/stage0.root --algo singles --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --floatOtherPOIs 1 -t -1 --expectSignal 1 -n .stage0 -v1 --there --parallel 10
+# ggH
+combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_ggH --alignEdges 1 -M MultiDimFit -d stage0.root --setParameterRanges r_ggH=0.65,1.35:r_qqH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_ggH --job-mode condor --task-name r_ggH_1Dscan --dry-run
+
+# qqH
+combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_qqH --alignEdges 1 -M MultiDimFit -d stage0.root --setParameterRanges r_qqH=0.65,1.35:r_ggH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_qqH --job-mode condor --task-name r_qqH_1Dscan --dry-run
+
+# after adapting the condor configuration, submit to batch system:
+condor_submit condor_r_ggH_1Dscan.sub
+condor_submit condor_r_qqH_1Dscan.sub
 ```
 
-**Plotting likelihood scans:**
+**Collecting results & plotting likelihood scans:**
 
 ```bash
-for result in output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/higgsCombine.*.MultiDimFit*.root;
-do
-    print_fitresult.py ${result};
-    echo;
-done;
+hadd output_sm/combined/cmb/higgsCombine.inclusive.MultiDimFit.mH120.root output_sm/combined/cmb/higgsCombine.inclusive.POINTS*.root
+hadd output_sm/combined/cmb/higgsCombine.stage0_r_ggH.MultiDimFit.mH120.root output_sm/combined/cmb/higgsCombine.stage0_r_ggH.POINTS*.root
+hadd output_sm/combined/cmb/higgsCombine.stage0_r_qqH.MultiDimFit.mH120.root output_sm/combined/cmb/higgsCombine.stage0_r_qqH.POINTS*.root
+
+plot1DScan.py output_sm/combined/cmb/higgsCombine.inclusive.MultiDimFit.mH120.root -o r_1Dscan
+plot1DScan.py output_sm/combined/cmb/higgsCombine.stage0_r_ggH.MultiDimFit.mH120.root -o r_ggH_1Dscan --POI r_ggH
+plot1DScan.py output_sm/combined/cmb/higgsCombine.stage0_r_qqH.MultiDimFit.mH120.root -o r_qqH_1Dscan --POI r_qqH
 ```
 
 ## Prefit shapes
