@@ -87,8 +87,8 @@ done;
 ## Datacard creation
 
 ```bash
-morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
-morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --additional_arguments "--auto_rebin=1 ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root" --parallel 5
+morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --additional_arguments "--auto_rebin=1 ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root" --parallel 5
 
 for era in 2016 2017 2018;
 do
