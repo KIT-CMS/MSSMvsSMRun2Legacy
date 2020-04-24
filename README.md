@@ -31,11 +31,12 @@ mkdir -p output_sm/combined/cmb/; rsync -av --progress output_sm/201?/htt_*/*  o
 **inclusive and stage 0:**
 
 ```bash
-combineTool.py -M T2W -i output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/* --parallel 10 -o inclusive.root
-combineTool.py -M T2W -i output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/* --parallel 10 -o stage0.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggH125.?$:r_ggH[1,-9,11]"' --PO '"map=^.*/qqH125.?$:r_qqH[1,-9,11]"'
+ulimit -s unlimited
+combineTool.py -M T2W -i output_sm/{2016,2017,2018,combined}/cmb --parallel 4 -o inclusive.root
+combineTool.py -M T2W -i output_sm/{2016,2017,2018,combined}/cmb --parallel 4 -o stage0.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggH125.?$:r_ggH[1,-9,11]"' --PO '"map=^.*/qqH125.?$:r_qqH[1,-9,11]"'
 ```
 
-## Signal strength fits
+## Signal strength scans
 
 **inclusive:**
 
@@ -49,7 +50,7 @@ combineTool.py -M MultiDimFit -d output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/i
 combineTool.py -M MultiDimFit -d output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/stage0.root --algo singles --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --floatOtherPOIs 1 -t -1 --expectSignal 1 -n .stage0 -v1 --there --parallel 10
 ```
 
-**Printing out fit results:**
+**Plotting likelihood scans:**
 
 ```bash
 for result in output_MSSMvsSM_Run2_sm_nobtag_m_sv_puppi/*/*/higgsCombine.*.MultiDimFit*.root;
@@ -86,7 +87,8 @@ mkdir -p output_mssm/combined/cmb/; rsync -av --progress output_mssm/201?/htt_*/
 ## Workspace creation
 
 ```bash
-combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_MSSMvsSM_Run2_mssm_mt_tot_puppi/Run2017/cmb/ -m 100 --parallel 10
+ulimit -s unlimited
+combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_mssm/{2016,2017,2018,combined}/cmb -m 110 --parallel 4
 ```
 
 ## Model-independent CLs 95% limits (asymptotic, SM Higgs in background hypothesis)
