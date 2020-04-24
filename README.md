@@ -7,6 +7,9 @@ Analysis specific software for MSSM (with SM categories) to be used within Combi
 wget https://raw.githubusercontent.com/KIT-CMS/MSSMvsSMRun2Legacy/master/scripts/checkout.sh
 bash ./checkout.sh
 ```
+After this, please put the datacard inputs into the folder [shapes](shapes) folder in the following structure:
+
+`<year>/<channel>/htt_<category>.inputs-mssm-vs-sm-Run<year>-<variable>.root`
 
 # Cut-based SM analysis
 
