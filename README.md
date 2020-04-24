@@ -16,7 +16,14 @@ After this, please put the datacard inputs into the [shapes](shapes) folder in t
 ## Datacard creation
 
 ```bash
-MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=m_sv_puppi --analysis=sm_nobtag
+morph_parallel.py --output output --analysis sm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis sm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5
+
+for era in 2016 2017 2018;
+do
+    mkdir -p output_sm/${era}/cmb/; rsync -av --progress output_sm/${era}/htt_*/*  output_sm/${era}/cmb/
+done;
+mkdir -p output_sm/combined/cmb/; rsync -av --progress output_sm/201?/htt_*/*  output_sm/combined/cmb/
 ```
 
 ## Workspace creation
@@ -66,7 +73,14 @@ done;
 ## Datacard creation
 
 ```bash
-MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --analysis=mssm
+morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
+
+for era in 2016 2017 2018;
+do
+    mkdir -p output_mssm/${era}/cmb/; rsync -av --progress output_mssm/${era}/htt_*/*  output_mssm/${era}/cmb/
+done;
+mkdir -p output_mssm/combined/cmb/; rsync -av --progress output_mssm/201?/htt_*/*  output_mssm/combined/cmb/
 ```
 
 ## Workspace creation
