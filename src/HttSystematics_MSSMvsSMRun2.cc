@@ -72,7 +72,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh"}});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh"}});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
   std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
@@ -876,7 +876,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // PDF
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_ggH,signals_ggHToWW}))
+     .process(JoinStr({signals_ggH,signals_ggHToWW, {"ggh"}}))
       .AddSyst(cb, "pdf_Higgs_gg", "lnN", SystMap<>::init(1.032));
   cb.cp()
      .channel({"et", "mt", "tt", "em"})
@@ -898,88 +898,88 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Gluon-fusion WG1 uncertainty scheme
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_Mig01", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_Mig12", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_Mu", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_PT120", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_PT60", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_Res", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_VBF2j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_VBF3j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-       .process({signals_ggH})
+      .process(JoinStr({signals_ggH, {"ggh"}}))
       .AddSyst(cb, "THU_ggH_qmtop", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process({signals_ggHToWW})
+      .process({signals_ggHToWW})
       .AddSyst(cb, "QCDScale_ggHWW", "lnN", SystMap<>::init(1.039));
  // VBF WG1 uncertainty scheme
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_TOT", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_PTH200", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj60", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj120", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj350", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj700", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj1000", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_Mjj1500", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_25", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqH})
+     .process(JoinStr({signals_qqH, {"qqh"}}))
      .AddSyst(cb, "THU_qqH_JET01", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-      .process({signals_qqHToWW})
+     .process({signals_qqHToWW})
      .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
   // ##########################################################################
   // Uncertainty: Embedded events

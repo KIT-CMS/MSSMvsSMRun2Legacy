@@ -30,7 +30,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.quantity_map = {
             "mass"          : {"name" : "m{HIGGS}", "access" : "{HIGGS}"},
             "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau", "access2" : "br_{HIGGS}_tautau"},
-            "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}"},
+            "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}", "access2" : "xs_{PROD}_{HIGGS}"},
             "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
             "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
             "yukawa_deltab" : {"name" : "Ydeltab_MSSM", "access" : "rescale_deltab"},
@@ -76,7 +76,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 self.energy = cfgSplit[0]
                 self.era = cfgSplit[1]
                 self.modelFile = cfgSplit[2]
-                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'')
+                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'').replace('_fixed','').replace('_original','').replace('_intermediate','')
                 print "Importing scenario '%s' for sqrt(s) = '%s TeV' and '%s' data-taking period from '%s'"%(self.scenario, self.energy, self.era, self.modelFile)
 
             if po.startswith('MSSM-NLO-Workspace='):
@@ -197,6 +197,46 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         return self.doHistFunc(name, hist, varlist)
 
+    def doHistFuncForGGH(self, varlist):
+        # Computing scaling function for ggh contribution (little Higgs) in context of MSSM
+        name  = "ggh_MSSM"
+        accesskey_xs = self.quantity_map['xsec']['access2'].format(HIGGS='h',PROD='gg')
+        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
+        print "Computing 'ggh' scaling function from model file..."
+
+        x_parname = varlist[0].GetName()
+        x_binning = self.binning[self.scenario][x_parname]
+
+        y_parname = varlist[1].GetName()
+        y_binning = self.binning[self.scenario][y_parname]
+
+        F = ROOT.TFile.Open(self.filename, "read")
+        xs_ggh_hist = F.Get(accesskey_xs)
+        br_htautau_hist = F.Get(accesskey_br)
+        br_htautau_SM_125 = 0.06272 # Value for 125 GeV SM Higgs from YR4
+        xs_ggh_SM_125 = 48.58 #Value for 125 GeV SM Higgs from YR4
+
+        hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
+        for i_x, x in enumerate(x_binning):
+            for i_y, y in enumerate(y_binning):
+                xs_ggh = xs_ggh_hist.Interpolate(x,y)
+                br_htautau = br_htautau_hist.Interpolate(x,y)
+                value =  xs_ggh / xs_ggh_SM_125 * br_htautau / br_htautau_SM_125 # xs * BR / (xs * BR of SM 125)
+                hist.SetBinContent(i_x+1, i_y+1, value)
+        print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
+        canv = ROOT.TCanvas()
+        canv.cd()
+        hist.SetContour(2000)
+        hist.GetXaxis().SetTitle('m_{A}')
+        hist.GetYaxis().SetTitle('tan#beta')
+        hist.Draw("colz")
+        canv.SetLogx()
+        canv.Update()
+        canv.SaveAs("ggh_MSSM_%s.pdf"%self.scenario)
+        canv.SaveAs("ggh_MSSM_%s.png"%self.scenario)
+
+        return self.doHistFunc(name, hist, varlist)
+
     def doHistFuncFromModelFile(self, higgs, quantity, varlist):
         name  = self.quantity_map[quantity]['name']
         accesskey = self.quantity_map[quantity]['access']
@@ -292,7 +332,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqh':
-                terms = [self.sigNorms[True], 'qqh_MSSM']
+                terms = [self.sigNorms[True], 'r', 'qqh_MSSM']
+            elif proc == 'ggh':
+                terms = [self.sigNorms[True], 'r', 'ggh_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
@@ -321,6 +363,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         self.doHistFuncForQQH(pars)
         self.PROC_SETS.append('qqh')
+
+        self.doHistFuncForGGH(pars)
+        self.PROC_SETS.append('ggh')
 
         for X in ['h', 'H']:
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
