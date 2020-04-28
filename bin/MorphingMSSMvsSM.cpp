@@ -40,12 +40,13 @@ int main(int argc, char **argv) {
   using ch::JoinStr;
 
   // Define program options
-  string output_folder = "output_MSSMvsSM_Run2";
+  string output_folder = "output";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root";
   string chan = "all";
   string category = "all";
   string heavy_mass = "all";
+  string light_mass = "all";
   string variable = "m_ttvisbb";
   bool auto_rebin = false;
   bool real_data = false;
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("category", po::value<string>(&category)->default_value(category))
       ("heavy_mass", po::value<string>(&heavy_mass)->default_value(heavy_mass))
+      ("light_mass", po::value<string>(&light_mass)->default_value(light_mass))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
-  output_folder = output_folder + "_" + analysis + "_" + variable;
+  output_folder = output_folder + "_" + analysis + "_" + variable + "_" + heavy_mass + "_" + light_mass;
   std::map<string, string> input_dir;
   input_dir["mt"] = base_path;
   input_dir["et"] = base_path;
@@ -134,10 +136,10 @@ if(analysis == "nmssm"){
     }
   }
 
-
+  /*
   // vector<string> heavy_masses = {"240", "280", "320", "360", "400", "450", "500", "550", "600", "700", "800", "900", "1000", "1200", "1400", "1600", "1800", "2000", "2500", "3000"};
-  vector<string> light_mass_coarse = {"60", "70", "80", "90", "100", "120", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "800", "900", "1000", "1100", "1200", "1300", "1400", "1600", "1800", "2000", "2200", "2400", "2600", "2800"};
-  vector<string> light_mass_fine = {"60", "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "750", "800", "850"};
+  vector<string> light_mass_coarse = {"60"};//, "70", "80", "90", "100", "120", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "800", "900", "1000", "1100", "1200", "1300", "1400", "1600", "1800", "2000", "2200", "2400", "2600", "2800"};
+  vector<string> light_mass_fine = {"60"};//, "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "750", "800", "850"};
 
   vector<string> masses;
   vector<string> light_masses_list;
@@ -187,18 +189,20 @@ if(analysis == "nmssm"){
           light_masses_list.push_back(light_mass_fine[i]);
       }
     }
-
+  */
   // Specify signal processes and masses
   vector<string> sig_procs;
   // STXS stage 0: ggH and VBF processes
   sig_procs = {
-      "NMSSM_"+heavy_mass+"_125"
+      "NMSSM_"+heavy_mass+"_125_"+light_mass
   };
   // Define NMSSM model-dependent mass parameters mH, mhprime, mh
   RooRealVar mH("mH", "mH", 125., 240., 3000.);
   RooRealVar mhprime("mhprime", "mhprime", 170., 60., 2800.);
   RooRealVar mh("mh", "mh", 125., 124.9, 125.1);
   mh.setConstant(true);
+  mH.setConstant(true);
+  mhprime.setConstant(true);
 
 
   // Define categories
@@ -206,20 +210,44 @@ if(analysis == "nmssm"){
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "nmssm"){
     cats["et"] = {
-        {  1, "et_1btag"},
-        {  2, "et_2btag"},
+        {  1, "et_1btag_boosted"},
+        {  2, "et_1btag_signal_unboosted"},
+        {  3, "et_1btag_signal_unboosted"},
+        {  4, "et_1btag_background"},
+        {  5, "et_2btag_boosted"},
+        {  6, "et_2btag_signal_unboosted"},
+        {  7, "et_2btag_signal_unboosted"},
+        {  8, "et_2btag_background"},
     };
     cats["mt"] = {
-        {  1, "mt_1btag"},
-        {  2, "mt_2btag"},
+        {  1, "mt_1btag_boosted"},
+        {  2, "mt_1btag_signal_unboosted"},
+        {  3, "mt_1btag_signal_unboosted"},
+        {  4, "mt_1btag_background"},
+        {  5, "mt_2btag_boosted"},
+        {  6, "mt_2btag_signal_unboosted"},
+        {  7, "mt_2btag_signal_unboosted"},
+        {  8, "mt_2btag_background"},
     };
     cats["tt"] = {
-        {  1, "tt_1btag"},
-        {  2, "tt_2btag"},
+        {  1, "tt_1btag_boosted"},
+        {  2, "tt_1btag_signal_unboosted"},
+        {  3, "tt_1btag_signal_unboosted"},
+        {  4, "tt_1btag_background"},
+        {  5, "tt_2btag_boosted"},
+        {  6, "tt_2btag_signal_unboosted"},
+        {  7, "tt_2btag_signal_unboosted"},
+        {  8, "tt_2btag_background"},
     };
     cats["em"] = {
-        {  1, "em_1btag"},
-        {  2, "em_2btag"},
+        {  1, "em_1btag_boosted"},
+        {  2, "em_1btag_signal_unboosted"},
+        {  3, "em_1btag_signal_unboosted"},
+        {  4, "em_1btag_background"},
+        {  5, "em_2btag_boosted"},
+        {  6, "em_2btag_signal_unboosted"},
+        {  7, "em_2btag_signal_unboosted"},
+        {  8, "em_2btag_background"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
@@ -236,18 +264,18 @@ if(analysis == "nmssm"){
 
   else std::runtime_error("Given era is not implemented.");
 
-  std::vector<int> mttbb_categories = {1,2}; // MSSM-like categories & control regions with mt_tot as discriminator
+  std::vector<int> mttbb_categories = {1,2}; 
 
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn],
                     false);
-    cb.AddProcesses(light_masses_list, {"htt"}, {era_tag}, {chn}, sig_procs, cats[chn],
+    cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, sig_procs, cats[chn],
                     true);
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era, heavy_mass);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era, heavy_mass, light_mass);
 
   // Define restriction to the desired category
   // if(category != "all"){
@@ -260,13 +288,13 @@ if(analysis == "nmssm"){
           input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     if(analysis == "nmssm"){
       cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
       }
     }
 
   // Delete processes with 0 yield
   cb.FilterProcs([&](ch::Process *p) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
+    if (std::find(sig_procs.begin(), sig_procs.end(), p->process()) != sig_procs.end())
     {
       return false;
     }
@@ -284,7 +312,7 @@ if(analysis == "nmssm"){
 
   // Delete systematics with 0 yield since these result in a bogus norm error in combine
   cb.FilterSysts([&](ch::Systematic *s) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+    if (std::find(sig_procs.begin(), sig_procs.end(), s->process()) != sig_procs.end())
     {
       return false;
     }
@@ -385,25 +413,21 @@ if(analysis == "nmssm"){
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
-  // ch::CombineHarvester cb_obs = cb.deep().backgrounds();
+  ch::CombineHarvester cb_obs = cb.deep().backgrounds();
 
   // Adding bin-by-bin uncertainties
   std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
   cb.SetAutoMCStats(cb, 0.0);
-
+  
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
 
-  std::map<std::string, RooAbsReal *> mass_var = {
-    {"NMSSM_"+heavy_mass+"_125", &mhprime}
-  };
+  std::map<std::string, RooAbsReal *> mass_var = {};
 
-  std::map<std::string, std::string> process_norm_map = {
-    {"NMSSM_"+heavy_mass+"_125", "prenorm"}
-  };
+  std::map<std::string, std::string> process_norm_map = {};
 
-
-
+  /*
+  
   if(analysis == "nmssm")
   {
     mass_var = {
@@ -414,8 +438,8 @@ if(analysis == "nmssm"){
       {"NMSSM_"+heavy_mass+"_125", "prenorm"}
     };
   }
-
-  if(analysis == "nmssm")
+  
+  if(analysis == "nmssm" && false)
   {
     TFile morphing_demo(("htt_mssm_morphing_" + category+ "_demo.root").c_str(), "RECREATE");
 
@@ -447,11 +471,11 @@ if(analysis == "nmssm"){
     ws.Write();
     morphing_demo.Close();
     cb.AddWorkspace(ws);
-    cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     cb.ExtractData("htt", "$BIN_data_obs");
-    std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
+    cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    std::cout << "[INFO] Finished template morphing.\n";
   }
-
+  */
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
 
   // Decide, how to write out the datacards depending on --category option
@@ -460,7 +484,7 @@ if(analysis == "nmssm"){
   // store the individual datacards for each directory to be combined later.
   ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
                         output_folder + "/" + era_tag + "/$TAG/common/htt_input_" + era_tag + ".root");
-
+  std::cout << "after writer" << std::endl;
   // We're not using mass as an identifier - which we need to tell the
   // CardWriter
   // otherwise it will see "*" as the mass value for every object and skip it

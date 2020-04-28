@@ -40,11 +40,15 @@ parser.add_argument(
     '--pad-style', default=None, help="""Extra style options for the pad, e.g. Grid=(1,1)""")
 parser.add_argument(
     '--auto-style', nargs='?', const='', default=None, help="""Take line colors and styles from a pre-defined list""")
+# parser.add_argument(
+#     '--legend-label', default='Expected')
 args = parser.parse_args()
+
+
 
 style_dict_hig_17_020 = {
         'style' : {
-            'exp0' : { 'LineColor' : ROOT.kBlack, 'LineStyle' : 2},
+            'exp0' : { 'LineColor' : ROOT.kBlack, 'LineStyle' : 1},
             'exp1' : { 'FillColor' : ROOT.kGreen+1}, 
             'exp2' : { 'FillColor' : ROOT.kOrange}
             },
@@ -157,7 +161,14 @@ for src in args.input:
         graph = plot.LimitTGraphFromJSONFile(file, splitsrc[1])
         graphs.append(graph)
         if len(splitsrc) >= 3:
-            settings.update({x.split('=')[0]: eval(x.split('=')[1]) for x in splitsrc[2].split(',')})
+            update_dict={}
+            for x in splitsrc[2].split(','):
+                if x.split('=')[0]=="Title":
+                    update_dict[x.split('=')[0]] = x.split('=')[1]
+                else:
+                    update_dict[x.split('=')[0]] = eval(x.split('=')[1])
+
+            settings.update(update_dict)
         plot.Set(graphs[-1], **settings)
         if axis is None:
             axis = plot.CreateAxisHists(len(pads), graphs[-1], True)
@@ -165,12 +176,11 @@ for src in args.input:
         graphs[-1].Draw('PLSAME')
         legend.AddEntry(graphs[-1], '', 'PL')
 
+theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
+theory_graph = theory_file.Get("g_bbtautau")
+
 mass = [int(s) for s in args.output.split("_") if s.isdigit()][0]
-
-
-if (mass>399 and mass<750):
-    theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
-    theory_graph = theory_file.Get("g_bbtautau")
+if mass<750 and mass>399:
     theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
     theory_line.SetLineColor(1)
     theory_line.SetLineStyle(2)
@@ -181,6 +191,7 @@ if (mass>399 and mass<750):
     theory_line_solid.SetLineStyle(1)
     theory_line_solid.Draw("SAME")
     legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
+    # theory_graph.Draw("SAME")
 
 axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "bb#phi":
@@ -195,6 +206,7 @@ axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
 if args.xmax is not None:
+    print args.xmax
     axis[0].GetXaxis().SetLimits(60.,args.xmax)
 
 if args.logy:
