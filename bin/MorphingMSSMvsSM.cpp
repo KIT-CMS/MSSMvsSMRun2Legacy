@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
   bool real_data = false;
   bool verbose = false;
   bool use_automc = true;
-  bool mva(false), no_emb(false);
+  bool mva(false), no_emb(false), base_path_full(false);
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -92,6 +92,7 @@ int main(int argc, char **argv) {
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
+      ("base_path_full", po::bool_switch(&base_path_full), "base_path is full")
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
       ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
@@ -123,6 +124,12 @@ int main(int argc, char **argv) {
   input_dir["et"] = base_path + "/" +era_tag + "/et/";
   input_dir["tt"] = base_path + "/" +era_tag + "/tt/";
   input_dir["em"] = base_path + "/" +era_tag + "/em/";
+  if (base_path_full) {
+    input_dir["mt"] = base_path;
+    input_dir["et"] = base_path;
+    input_dir["tt"] = base_path;
+    input_dir["em"] = base_path;
+  }
 
   // Define channels
   VString chns;
