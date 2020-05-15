@@ -412,6 +412,17 @@ int main(int argc, char **argv) {
   }
   else throw std::runtime_error("Given categorization is not known.");
 
+  // check the category is among empected ones
+  if (category != "all")
+  {
+    for (auto chn : chns)
+    {
+      if (! std::any_of(cats[chn].begin(), cats[chn].end(),
+         [&category](const pair<short, string>& p)
+         { return p.second == category; }))
+        throw std::runtime_error("Category not among expected:" + category);
+    }
+  }
   // Create combine harverster object
   ch::CombineHarvester cb;
   cb.SetFlag("workspaces-use-clone", true);
