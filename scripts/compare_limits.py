@@ -95,7 +95,7 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.33, 0.25, 3, 0.015)
+legend = plot.PositionedLegend(0.33, 0.3, 3, 0.015)
 legend.SetTextSize(0.03)
 
 axis = None
