@@ -822,6 +822,21 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: References?
   // ##########################################################################
 
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(nmssm_signals)
+      .AddSyst(cb, "MG_scale_choice", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(nmssm_signals)
+      .AddSyst(cb, "MG_scale_norm", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(nmssm_signals)
+      .AddSyst(cb, "PDF_scale", "shape", SystMap<>::init(1.00));
+
+
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
