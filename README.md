@@ -303,4 +303,4 @@ RequestCpus = 1
 accounting_group = cms
 ```
 
-**No additions needed for CERN/NAF/NAF/NAF/NAF/NAF/NAF/NAF batch system**
+**No additions needed for CERN or NAF batch systems**
