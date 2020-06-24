@@ -300,7 +300,7 @@ docker_image = mschnepf/slc7-condocker
 +ExperimentalJob = True
 RequestMemory = 2000
 RequestCpus = 1
-accounting_group = cms
+accounting_group = cms.higgs
 ```
 
 **No additions needed for CERN or NAF batch systems**
