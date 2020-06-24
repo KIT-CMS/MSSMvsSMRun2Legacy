@@ -148,10 +148,13 @@ In case of the calculation of model-dependent limits, several choices of signal 
 The full BSM (in this case, MSSM) signal model consists of three neutral Higgs bosons, the light scalar `h`, the heavy scalar `H`, and the heavy pseudoscalar `A`. The
 production modes `ggphi` and `bbphi` are considered for all three Higgs bosons, whereas the `qqphi` production mode is accounted for only for the light scalar `h`.
 
-The different analysis setups are listed in the following
+The different analysis setups are listed in the following:
 
  * `mssm_vs_sm_classic`: using classic categorization (similar to HIG-17-020) with the **full** signal model for the BSM prediction. The corresponding hypothesis is then compared with the SM prediction.
+ * `mssm_vs_sm_classic_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
  * `mssm_vs_sm_heavy`: using classic categorization (similar to HIG-17-020), but using only the heavy Higgs boson predictions `H` and `A` added on top of the background and SM prediction. This hypothesis
+ * `mssm_vs_sm`: using SM categorization in addition to classic categories, with the **full** signal model for the BSM prediction. The corresponding hypothesis is then compared with the SM prediction.
+ * `mssm_vs_sm_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
 is compared with the SM prediction.
 
 ## Datacard creation
