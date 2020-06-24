@@ -1,4 +1,5 @@
 <bin file="MorphingMSSMvsSM.cpp" name="MorphingMSSMvsSM"></bin>
+<bin file="MorphingCatVariables.cpp" name="MorphingCatVariables"></bin>
 <bin file="PreFitSignalShapes.cpp" name="PreFitSignalShapes"></bin>
 <bin file="etFES.cpp" name="etFES"></bin>
 <use name="root"/>
