@@ -154,9 +154,9 @@ The different analysis setups are listed in the following:
  * `mssm_vs_sm_classic_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
  * `mssm_vs_sm_heavy`: using classic categorization (similar to HIG-17-020), but using only the heavy Higgs boson predictions `H` and `A` added on top of the background and SM prediction. This hypothesis
  * `mssm_vs_sm`: using SM categorization in addition to classic categories, with the **full** signal model for the BSM prediction. The corresponding hypothesis is then compared with the SM prediction. The BSM signal modelling is dependent on the categories:
-  * for SM categories, only ggh and qqh are taken into account
-  * high mass no-btag categories contain only bbH, bbA and ggH, ggA
-  * btag categories common control regions contain the full BSM signal model
+   * for SM categories, only ggh and qqh are taken into account
+   * high mass no-btag categories contain only bbH, bbA and ggH, ggA
+   * btag categories common control regions contain the full BSM signal model
  * `mssm_vs_sm_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
 
 ## Datacard creation for `mssm_vs_sm_classic_h125`
