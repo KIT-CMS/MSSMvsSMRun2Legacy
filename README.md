@@ -287,7 +287,7 @@ plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (H,
 
 ## Adaptions needed for job submission via htcondor
 
-The following line file [CombineToolBase.py](https://github.com/KIT-CMS/CombineHarvester/blob/master/CombineTools/python/combine/CombineToolBase.py#L33) from the CombineHarvester package needs to be
+The following line in file [CombineToolBase.py](https://github.com/KIT-CMS/CombineHarvester/blob/master/CombineTools/python/combine/CombineToolBase.py#L33) from the CombineHarvester package needs to be
 updated to be able to run on htcondor batch systems with the following configuration snippet:
 
 **ETP batch system**
