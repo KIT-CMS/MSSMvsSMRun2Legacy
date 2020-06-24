@@ -163,10 +163,6 @@ is compared with the SM prediction.
 morph_parallel.py --output output --analysis mssm_vs_sm_classic_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
 morph_parallel.py --output output --analysis mssm_vs_sm_classic_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
 
-for era in 2016 2017 2018;
-do
-    mkdir -p output_mssm_vs_sm_classic_h125/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_classic_h125/${era}/htt_*/*  output_output_mssm_vs_sm_classic_h125/${era}/cmb/
-done;
 mkdir -p output_mssm_vs_sm_classic_h125/combined/cmb/; rsync -av --progress output_mssm_vs_sm_classic_h125/201?/htt_*/*  output_mssm_vs_sm_classic_h125/combined/cmb/
 ```
 
@@ -176,10 +172,6 @@ mkdir -p output_mssm_vs_sm_classic_h125/combined/cmb/; rsync -av --progress outp
 morph_parallel.py --output output --analysis mssm_vs_sm_heavy --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
 morph_parallel.py --output output --analysis mssm_vs_sm_heavy --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
 
-for era in 2016 2017 2018;
-do
-    mkdir -p output_mssm_vs_sm_heavy/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_heavy/${era}/htt_*/*  output_output_mssm_vs_sm_heavy/${era}/cmb/
-done;
 mkdir -p output_mssm_vs_sm_heavy/combined/cmb/; rsync -av --progress output_mssm_vs_sm_heavy/201?/htt_*/*  output_mssm_vs_sm_heavy/combined/cmb/
 ```
 
@@ -190,10 +182,6 @@ morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,20
 morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt --variable mt_tot_puppi --parallel 5
 morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5
 
-for era in 2016 2017 2018;
-do
-    mkdir -p output_mssm_vs_sm_h125/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_h125/${era}/htt_*/*  output_output_mssm_vs_sm_h125/${era}/cmb/
-done;
 mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_vs_sm_h125/201?/htt_*/*  output_mssm_vs_sm_h125/combined/cmb/
 ```
 
