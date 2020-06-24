@@ -284,3 +284,23 @@ combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2
 ```bash
 plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_heavy  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13_fixed.root --y-range 2.0,60.0 --x-title "m_{A} [GeV]"
 ```
+
+## Adaptions needed for job submission via htcondor
+
+The following line file [CombineToolBase.py](https://github.com/KIT-CMS/CombineHarvester/blob/master/CombineTools/python/combine/CombineToolBase.py#L33) from the CombineHarvester package needs to be
+updated to be able to run on htcondor batch systems with the following configuration snippet:
+
+**ETP batch system**
+
+```python
+Requirements = ( (Target.ProvidesCPU == True) && (TARGET.ProvidesEKPResources == True ) )
+universe = docker
+docker_image = mschnepf/slc7-condocker
++RequestWalltime = 10800
++ExperimentalJob = True
+RequestMemory = 2000
+RequestCpus = 1
+accounting_group = cms
+```
+
+**No additions needed for CERN/NAF/NAF/NAF/NAF/NAF/NAF/NAF batch system**
