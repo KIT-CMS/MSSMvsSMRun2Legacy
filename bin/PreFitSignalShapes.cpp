@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
   ch::CombineHarvester cmb_mssm = cmb.cp();
   ch::Parameter *par_mssm = cmb_mssm.GetParameter("x");
   par_mssm->set_val(1.0);
-  std::vector<std::string> mssm_signals = {"ggh_i", "ggh_t", "ggh_b", "ggA_i", "ggA_t", "ggA_b", "ggH_i", "ggH_t", "ggH_b", "bbh", "bbH", "bbA", "qqh"};
+  std::vector<std::string> mssm_signals = {"ggh_i", "ggh_t", "ggh_b", "ggA_i", "ggA_t", "ggA_b", "ggH_i", "ggH_t", "ggH_b", "bbh", "bbH", "bbA", "qqh", "ggh"};
   for (auto proc : mssm_signals) {
     cmb_mssm.cp().process({proc}).PrintProcs();
     pre_shapes_tot[proc] = cmb_mssm.cp().process({proc}).GetShapeWithUncertainty();

@@ -61,6 +61,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.PROC_SETS = []
         self.SYST_DICT = defaultdict(list)
         self.NUISANCES = set()
+        self.scaleforh = 1.0
 
     def setPhysicsOptions(self,physOptions):
         for po in physOptions:
@@ -90,6 +91,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if po.startswith('maxTemplateMass='):
                 self.maxTemplateMass = float(po.replace('maxTemplateMass=', ''))
                 print "Upper limit for mass histograms: {MAXMASS}".format(MAXMASS=self.maxTemplateMass)
+
+            if po.startswith('scaleforh='):
+                self.scaleforh = float(po.replace('scaleforh=',''))
+                print "Additional scale for the light scalar h: {SCALE}".format(SCALE=self.scaleforh)
 
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
@@ -180,8 +185,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 if abs(sin_alpha) > 1:
                     sin_alpha  = np.sign(sin_alpha)
                 alpha = np.arcsin(sin_alpha)
-                value = np.sin(beta-alpha)**2 # (g_HVV)**2
                 value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
+                value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
         print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
         canv = ROOT.TCanvas()
@@ -222,6 +227,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 xs_ggh = xs_ggh_hist.Interpolate(x,y)
                 br_htautau = br_htautau_hist.Interpolate(x,y)
                 value =  xs_ggh / xs_ggh_SM_125 * br_htautau / br_htautau_SM_125 # xs * BR / (xs * BR of SM 125)
+                value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
         print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
         canv = ROOT.TCanvas()
