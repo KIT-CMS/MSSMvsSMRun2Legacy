@@ -157,10 +157,44 @@ The different analysis setups are listed in the following:
  * `mssm_vs_sm_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
 is compared with the SM prediction.
 
-## Datacard creation
+## Datacard creation for `mssm_vs_sm_classic_h125`
 
 ```bash
- MorphingMSSMvsSM --era=2017 --auto_rebin=1 --binomial_bbb=1 --variable=mt_tot_puppi --analysis=mssm_vs_sm_standard
+morph_parallel.py --output output --analysis mssm_vs_sm_classic_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_classic_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
+
+for era in 2016 2017 2018;
+do
+    mkdir -p output_mssm_vs_sm_classic_h125/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_classic_h125/${era}/htt_*/*  output_output_mssm_vs_sm_classic_h125/${era}/cmb/
+done;
+mkdir -p output_mssm_vs_sm_classic_h125/combined/cmb/; rsync -av --progress output_mssm_vs_sm_classic_h125/201?/htt_*/*  output_mssm_vs_sm_classic_h125/combined/cmb/
+```
+
+## Datacard creation for `mssm_vs_sm_heavy`
+
+```bash
+morph_parallel.py --output output --analysis mssm_vs_sm_heavy --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_heavy --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt --variable mt_tot_puppi --parallel 5
+
+for era in 2016 2017 2018;
+do
+    mkdir -p output_mssm_vs_sm_heavy/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_heavy/${era}/htt_*/*  output_output_mssm_vs_sm_heavy/${era}/cmb/
+done;
+mkdir -p output_mssm_vs_sm_heavy/combined/cmb/; rsync -av --progress output_mssm_vs_sm_heavy/201?/htt_*/*  output_mssm_vs_sm_heavy/combined/cmb/
+```
+
+## Datacard creation for `mssm_vs_sm_h125`
+
+```bash
+morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5
+
+for era in 2016 2017 2018;
+do
+    mkdir -p output_mssm_vs_sm_h125/${era}/cmb/; rsync -av --progress output_mssm_vs_sm_h125/${era}/htt_*/*  output_output_mssm_vs_sm_h125/${era}/cmb/
+done;
+mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_vs_sm_h125/201?/htt_*/*  output_mssm_vs_sm_h125/combined/cmb/
 ```
 
 ## Workspace creation
