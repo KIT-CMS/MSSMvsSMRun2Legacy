@@ -192,6 +192,7 @@ mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_
 Currently supported scenario is mh125 (with a fixed version at cern afs)
 
 ```bash
+ulimit -s unlimited
 combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh125_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_mssm_vs_sm_classic_h125/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
 ```
 
@@ -203,6 +204,7 @@ combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.M
 mkdir -p calculation_mh125_mssm_vs_sm_classic_h125
 cd calculation_mh125_mssm_vs_sm_classic_h125
 
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_classic_h125/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_classic_h125_1' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_classic_h125_1.{sh,sub}, submit to batch system:
@@ -214,6 +216,7 @@ condor_submit  condor_mssm_vs_sm_classic_h125_1.sub
 Basically the same command as above, but with a different task name (in case some of the jobs have failed)
 
 ```bash
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_classic_h125/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_classic_h125_2' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 ```
 
@@ -230,6 +233,7 @@ plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (h,
 mkdir -p calculation_mh125_mssm_vs_sm_h125
 cd calculation_mh125_mssm_vs_sm_h125
 
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_h125/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_h125_1' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_h125_1.{sh,sub}, submit to batch system:
@@ -241,6 +245,7 @@ condor_submit  condor_mssm_vs_sm_h125_1.sub
 Basically the same command as above, but with a different task name (in case some of the jobs have failed)
 
 ```bash
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_h125/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_h125_2' --dry-run --redefineSignalPOI x --setParameters r=1 --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 ```
 
@@ -258,6 +263,7 @@ plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (h,
 mkdir -p calculation_mh125_mssm_vs_sm_heavy
 cd calculation_mh125_mssm_vs_sm_heavy
 
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_heavy/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_heavy_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_heavy_1.{sh,sub}, submit to batch system:
@@ -269,6 +275,7 @@ condor_submit  condor_mssm_vs_sm_heavy_1.sub
 Basically the same command as above, but with a different task name (in case some of the jobs have failed)
 
 ```bash
+ulimit -s unlimited
 combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_heavy/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_heavy_2' --dry-run --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 ```
 
