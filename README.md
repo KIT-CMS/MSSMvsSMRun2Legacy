@@ -224,7 +224,7 @@ combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2
 **Plotting limits:**
 
 ```bash
-plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_classic_h125  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13_fixed.root --y-range 2.0,60.0 --x-title "m_{A} [GeV]"
+plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_classic_h125  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13.root --y-range 2.0,60.0 --x-title "m_{A} [GeV]"
 ```
 ## Model-dependent CLs 95% limits for `mssm_vs_sm_h125`
 
