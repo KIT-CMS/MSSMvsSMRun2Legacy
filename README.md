@@ -159,6 +159,7 @@ is compared with the SM prediction.
    * high mass no-btag categories contain only bbH, bbA and ggH, ggA
    * btag categories & common control regions contain the full BSM signal model
  * `mssm_vs_sm_h125`: same as above, but using for ggh the templates from the SM prediction, which are reweighted to the yield predicted by the MSSM scenario.
+ * `mssm_vs_sm_CPV` : here the considered Higgs bosons are `H1` (SM-like), `H2` and `H3` instead of the usual `h` `H` and `A`. _IN PROGRESS_
 
 ## Datacard creation for `mssm_vs_sm_classic_h125`
 
@@ -188,6 +189,16 @@ morph_parallel.py --output output --analysis mssm_vs_sm_h125 --eras 2016,2017,20
 mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_vs_sm_h125/201?/htt_*/*  output_mssm_vs_sm_h125/combined/cmb/
 ```
 
+## Datacard creation for `mssm_vs_sm_CPV`
+
+```bash
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt --variable mt_tot_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5
+
+mkdir -p output_mssm_vs_sm_CPV/combined/cmb/; rsync -av --progress output_mssm_vs_sm_CPV/201?/htt_*/*  output_mssm_vs_sm_CPV/combined/cmb/
+```
+
 ## Workspace creation (exemplary for `mssm_vs_sm_classic_h125`)
 
 Currently supported scenario is mh125 (with a fixed version at cern afs)
@@ -196,6 +207,7 @@ Currently supported scenario is mh125 (with a fixed version at cern afs)
 ulimit -s unlimited
 combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh125_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_mssm_vs_sm_classic_h125/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
 ```
+_NB_ : for the `mssm_vs_sm_CPV` analysis, use `mh1125_13.root` instead of `mh125_13.root`.
 
 ## Model-dependent CLs 95% limits for `mssm_vs_sm_classic_h125`
 
@@ -284,6 +296,36 @@ combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2
 
 ```bash
 plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_heavy  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13_fixed.root --y-range 2.0,60.0 --x-title "m_{A} [GeV]"
+```
+
+## Model-dependent CLs 95% limits for `mssm_vs_sm_CPV`
+
+**Computing limits:**
+
+```bash
+mkdir -p calculation_mh125_mssm_vs_sm_CPV
+cd calculation_mh125_mssm_vs_sm_CPV
+
+ulimit -s unlimited
+combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
+
+# After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_CPV_1.{sh,sub}, submit to batch system:
+condor_submit  condor_mssm_vs_sm_CPV_1.sub
+```
+
+**Collecting limits:**
+
+Basically the same command as above, but with a different task name (in case some of the jobs have failed)
+
+```bash
+ulimit -s unlimited
+combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_2' --dry-run --freezeParameters r -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
+```
+
+**Plotting limits:**
+
+```bash
+plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} CPV scenario (H1,H2,H3#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_CPV  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13_fixed.root --y-range 2.0,60.0 --x-title "m_{H^#pm} [GeV]"
 ```
 
 ## Adaptions needed for job submission via htcondor
