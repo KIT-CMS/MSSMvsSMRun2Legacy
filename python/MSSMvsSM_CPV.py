@@ -31,8 +31,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             "mass"          : {"name" : "m{HIGGS}", "access" : "{HIGGS}"},
             "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau", "access2" : "br_{HIGGS}_tautau"},
             "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}", "access2" : "xs_{PROD}_{HIGGS}"},
-            "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
-            "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
+            # In contrast to the CP conserving scenarios we do not provide relative Yukawa couplings as those do have a real and imaginary contribution to both the vector and axial-vector component. On the other hand, we do provide interference factors as in such channels large destructive interferences between H2 and H3 appear.
+            # "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
+            # "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
             "yukawa_deltab" : {"name" : "Ydeltab_MSSM", "access" : "rescale_deltab"},
         }
         self.uncertainty_map = {
@@ -41,21 +42,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             "bbtotal" : "::{VAR}",
         }
         self.binning =  {
-            "mh125": {
+            "mh1125_CPV": {
                 "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
-            },
-            "mh125_lc": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
-            },
-            "mh125_ls": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
-            },
-            "mh125_align": {
-                "tanb" : np.arange(1.0, 20.25, 0.25),
-                "mA" :   np.arange(120.0, 1005.0, 5.0),
+                "mHp" :   np.arange(70.0, 2605.0, 5.0),
             },
         }
         self.PROC_SETS = []
@@ -233,13 +222,13 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         canv = ROOT.TCanvas()
         canv.cd()
         hist.SetContour(2000)
-        hist.GetXaxis().SetTitle('m_{A}')
+        hist.GetXaxis().SetTitle('m_{H^#pm}')
         hist.GetYaxis().SetTitle('tan#beta')
         hist.Draw("colz")
         canv.SetLogx()
         canv.Update()
-        canv.SaveAs("ggh_MSSM_%s.pdf"%self.scenario)
-        canv.SaveAs("ggh_MSSM_%s.png"%self.scenario)
+        canv.SaveAs("ggH1_MSSM_%s.pdf"%self.scenario)
+        canv.SaveAs("ggH1_MSSM_%s.png"%self.scenario)
 
         return self.doHistFunc(name, hist, varlist)
 
@@ -328,19 +317,19 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.doSet('POI', 'r')
 
         # We don't intend on actually floating these in any fits...
-        self.modelBuilder.out.var('mA').setConstant(True)
+        self.modelBuilder.out.var('mHp').setConstant(True)
         self.modelBuilder.out.var('tanb').setConstant(True)
 
         for proc in self.PROC_SETS:
-            if re.match("(gg(A|H|h)_(t|i|b)|bb(A|H|h))", proc):
+            if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
-            elif proc == 'qqh':
-                terms = [self.sigNorms[True], 'r', 'qqh_MSSM']
-            elif proc == 'ggh':
-                terms = [self.sigNorms[True], 'r', 'ggh_MSSM']
+            elif proc == 'qqH1':
+                terms = [self.sigNorms[True], 'r', 'qqH1_MSSM']
+            elif proc == 'ggH1':
+                terms = [self.sigNorms[True], 'r', 'ggH1_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
@@ -361,24 +350,24 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             return 1
 
     def buildModel(self):
-        mA = ROOT.RooRealVar('mA', 'm_{A} [GeV]', 120.)
+        mA = ROOT.RooRealVar('mHp', 'm_{H^#pm} [GeV]', 120.)
         tanb = ROOT.RooRealVar('tanb', 'tan#beta', 20.)
         pars = [mA, tanb]
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
         self.doHistFuncForQQH(pars)
-        self.PROC_SETS.append('qqh')
+        self.PROC_SETS.append('qqH1')
 
         self.doHistFuncForGGH(pars)
-        self.PROC_SETS.append('ggh')
+        self.PROC_SETS.append('ggH1')
 
-        for X in ['h', 'H']:
+        for X in ['H1', 'H2']:
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
 
         self.doHistFuncFromModelFile(None, "yukawa_deltab", pars)
 
-        for X in ['h', 'H', 'A']:
+        for X in ['H1', 'H2', 'H3']:
             self.doHistFuncFromModelFile(X, "yukawa_top", pars)
             self.doHistFuncFromModelFile(X, "yukawa_bottom", pars)
 
@@ -411,4 +400,4 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.PROC_SETS.extend(['ggH125', 'qqH125', 'ZH125', 'WH125', 'ttH125'])
 
 
-MSSMvsSM = MSSMvsSMHiggsModel()
+MSSMvsSM_CPV = MSSMvsSMHiggsModel()
