@@ -783,7 +783,7 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
-  if(analysis == "mssm") //TODO also make CPV case?
+  if(analysis == "mssm")
   {
     mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
@@ -813,6 +813,27 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
   }
 
+  if(analysis == "mssm_vs_sm_CPV")
+    {
+      mass_var = {
+        {"ggH1_t", &mh}, {"ggH1_b", &mh}, {"ggH1_i", &mh},
+        {"ggH2_t", &mH}, {"ggH2_b", &mH}, {"ggH2_i", &mH},
+        {"ggH3_t", &mA}, {"ggH3_b", &mA}, {"ggH3_i", &mA},
+        {"bbH1", &mh},
+        {"bbH2", &mH},
+        {"bbH3", &mA}
+      };
+      
+      process_norm_map = {
+        {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
+        {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
+        {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
+        {"bbH1", "norm"},
+        {"bbH2", "norm"},
+        {"bbH3", "norm"}
+      };
+      
+    }
 
   dout("[INFO] Prepare demo.");
   if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
