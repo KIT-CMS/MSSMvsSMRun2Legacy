@@ -221,11 +221,22 @@ int main(int argc, char **argv) {
     }
   }
 
+  if(analysis != "mssm_vs_sm_CPV")
+    {
   // Define MSSM model-dependent mass parameters mA, mH, mh
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
   mA.setConstant(true);
+    }
+  else // mssm_vs_sm_CPV case
+    {
+  // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1
+  RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
+  RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
+  RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
+  mH3.setConstant(true);
+    }
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -816,12 +827,12 @@ int main(int argc, char **argv) {
   if(analysis == "mssm_vs_sm_CPV")
     {
       mass_var = {
-        {"ggH1_t", &mh}, {"ggH1_b", &mh}, {"ggH1_i", &mh},
-        {"ggH2_t", &mH}, {"ggH2_b", &mH}, {"ggH2_i", &mH},
-        {"ggH3_t", &mA}, {"ggH3_b", &mA}, {"ggH3_i", &mA},
-        {"bbH1", &mh},
-        {"bbH2", &mH},
-        {"bbH3", &mA}
+        {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
+        {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
+        {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
+        {"bbH1", &mH1},
+        {"bbH2", &mH2},
+        {"bbH3", &mH3}
       };
       
       process_norm_map = {
