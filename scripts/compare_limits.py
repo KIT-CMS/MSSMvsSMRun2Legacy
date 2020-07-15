@@ -121,6 +121,23 @@ has_band = False
 dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
 plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
 
+import json
+with open(args.input[0].split(":")[0],"r") as f:
+    base = json.load(f)
+with open(args.input[1].split(":")[0],"r") as f:
+    compare = json.load(f)
+max_ratio = 10.
+max_mass = -1
+avg_ratio = 0.
+for mass in base.keys():
+    ratio = compare[mass]["exp0"]/base[mass]["exp0"]
+    avg_ratio+=100.*(1.-ratio)
+    if ratio<max_ratio:
+        max_ratio = ratio
+        max_mass = mass
+max_ratio = 100.*(1.-max_ratio)
+avg_ratio /= float(len(base.keys()))
+
 for src in args.input:
     splitsrc = src.split(':')
     file = splitsrc[0]
@@ -179,7 +196,7 @@ for src in args.input:
 theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
 theory_graph = theory_file.Get("g_bbtautau")
 
-mass = [int(s) for s in args.output.split("_") if s.isdigit()][0]
+mass = [int(s) for s in args.output.split("_") if s.isdigit()][1]
 if mass<750 and mass>399:
     theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
     theory_line.SetLineColor(1)
@@ -192,6 +209,15 @@ if mass<750 and mass>399:
     theory_line_solid.Draw("SAME")
     legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
     # theory_graph.Draw("SAME")
+if len(splitsrc)<3:
+	pt = ROOT.TPaveText(62,0.8,200,5)
+	pt.SetTextAlign(11)
+	pt.AddText("Average improvement: {:.1f}%".format(avg_ratio))
+	pt.AddText("Maximal improvement: {:.1f}% for h'={} GeV".format(max_ratio,max_mass.split(".")[0]))
+	pt.SetTextFont(45)
+	pt.SetTextSize(14)
+	pt.SetFillStyle(4000)
+	pt.Draw("SAME")
 
 axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "bb#phi":
@@ -206,7 +232,6 @@ axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
 if args.xmax is not None:
-    print args.xmax
     axis[0].GetXaxis().SetLimits(60.,args.xmax)
 
 if args.logy:

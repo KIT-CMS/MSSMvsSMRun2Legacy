@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   string category = "all";
   string heavy_mass = "all";
   string light_mass = "all";
-  string variable = "m_ttvisbb";
+  // string variable = "m_ttvisbb";
   bool auto_rebin = false;
   bool real_data = false;
   bool binomial_bbb = false;
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   config.add_options()
       ("base_path", po::value<string>(&base_path)->default_value(base_path))
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
-      ("variable", po::value<string>(&variable)->default_value(variable))
+      // ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("category", po::value<string>(&category)->default_value(category))
       ("heavy_mass", po::value<string>(&heavy_mass)->default_value(heavy_mass))
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
   // Define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
-  output_folder = output_folder + "_" + analysis + "_" + variable + "_" + heavy_mass + "_" + light_mass;
+  output_folder = output_folder + "_" + analysis + "_" + heavy_mass + "_" + light_mass;
   std::map<string, string> input_dir;
   input_dir["mt"] = base_path;
   input_dir["et"] = base_path;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
   if (chan.find("em") != std::string::npos)
     chns.push_back("em");
   if (chan == "all")
-    chns = {"mt", "et", "tt", "em"};
+    chns = {"mt", "et", "tt"};
 
   // Define restriction to the channel defined by '--category' option
   if(category != "all"){
@@ -107,13 +107,13 @@ int main(int argc, char **argv) {
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
 
-  sm_signals = {"WH125", "ZH125", "ttH125"};
+  sm_signals = {"ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
 
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
-  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125"};
-  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125"};
+  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
+  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
 
   std::cout << "[INFO] Considering the following processes as main backgrounds:\n";
 
@@ -316,10 +316,10 @@ if(analysis == "nmssm"){
   // Extract shapes from input ROOT files
   for (string chn : chns) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score" + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     if(analysis == "nmssm"){
       cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + variable + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score" + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
       }
     }
 

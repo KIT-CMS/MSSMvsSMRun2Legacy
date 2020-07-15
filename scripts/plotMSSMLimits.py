@@ -165,7 +165,7 @@ for src in args.input:
         graphs[-1].Draw('PLSAME')
         legend.AddEntry(graphs[-1], '', 'PL')
 
-mass = [int(s) for s in args.output.split("_") if s.isdigit()][0]
+mass = [int(s) for s in args.output.split("_") if s.isdigit()][1]
 
 
 if (mass>399 and mass<750):
