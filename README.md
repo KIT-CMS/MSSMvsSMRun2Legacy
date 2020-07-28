@@ -192,9 +192,9 @@ mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_
 ## Datacard creation for `mssm_vs_sm_CPV`
 
 ```bash
-morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5
-morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt --variable mt_tot_puppi --parallel 5
-morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt --variable mt_tot_puppi --parallel 5 --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt --variable mt_tot_puppi --parallel 5 --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root
+morph_parallel.py --output output --analysis mssm_vs_sm_CPV --eras 2016,2017,2018 --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_categories.txt --variable m_sv_puppi --parallel 5 --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root
 
 mkdir -p output_mssm_vs_sm_CPV/combined/cmb/; rsync -av --progress output_mssm_vs_sm_CPV/201?/htt_*/*  output_mssm_vs_sm_CPV/combined/cmb/
 ```

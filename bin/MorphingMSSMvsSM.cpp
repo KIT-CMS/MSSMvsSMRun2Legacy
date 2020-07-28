@@ -221,22 +221,18 @@ int main(int argc, char **argv) {
     }
   }
 
-  if(analysis != "mssm_vs_sm_CPV")
-    {
   // Define MSSM model-dependent mass parameters mA, mH, mh
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
   mA.setConstant(true);
-    }
-  else // mssm_vs_sm_CPV case
-    {
+
   // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
-  mH3.setConstant(true);
-    }
+  RooRealVar mHp("mHp", "mHp", 125., 90., 4000.);
+  mHp.setConstant(true);
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -844,6 +840,22 @@ int main(int argc, char **argv) {
         {"bbH3", "norm"}
       };
       
+    std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
+    TFile fractions_sm(sm_gg_fractions.c_str());
+    RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
+    // w_sm->var("mh")->SetName("mHp");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    t_frac->SetName("ggH1_t_frac");
+    b_frac->SetName("ggH1_b_frac");
+    i_frac->SetName("ggH1_i_frac");
+    ws.import(mHp);
+    ws.import(*t_frac, RooFit::RecycleConflictNodes());
+    ws.import(*b_frac, RooFit::RecycleConflictNodes());
+    ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    fractions_sm.Close();
+
     }
 
   dout("[INFO] Prepare demo.");

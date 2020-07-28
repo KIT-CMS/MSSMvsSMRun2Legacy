@@ -24,6 +24,10 @@ parser.add_argument('--parallel', type=int, default=5, help = "Cores provided fo
 parser.add_argument('--additional_arguments', type=str, default="--auto_rebin=1" , help = "Additional arguments to be passed to the Morphing executable")
 parser.add_argument('--dry_run',action='store_true', help = "Don't execute, only list Morphing commands")
 
+parser.add_argument('--sm_gg_fractions',
+                    default = '${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root',
+                    help = "sm_gg_fractions file to use")
+
 args = parser.parse_args()
 
 categories = []
