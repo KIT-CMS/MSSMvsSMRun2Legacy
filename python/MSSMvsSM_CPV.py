@@ -12,6 +12,16 @@ import re
 from collections import defaultdict
 from array import array
 
+# tmp trick
+CPV_to_classic = {
+    'H1' : 'h',
+    'H2' : 'H',
+    'H3' : 'A',
+    'h' : 'h',
+    'H' : 'H',
+    'A' : 'A',
+}
+
 class MSSMvsSMHiggsModel(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
@@ -32,9 +42,15 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau", "access2" : "br_{HIGGS}_tautau"},
             "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}", "access2" : "xs_{PROD}_{HIGGS}"},
             # In contrast to the CP conserving scenarios we do not provide relative Yukawa couplings as those do have a real and imaginary contribution to both the vector and axial-vector component. On the other hand, we do provide interference factors as in such channels large destructive interferences between H2 and H3 appear.
-            # "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
-            # "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
+            "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
+            "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
             "yukawa_deltab" : {"name" : "Ydeltab_MSSM", "access" : "rescale_deltab"},
+            "int_bb_tautau_H1" : {"name" : "int_bb_tautau_{HIGGS}", "access" : "int_bb_tautau_{HIGGS}"},
+            "int_bb_tautau_H2" : {"name" : "int_bb_tautau_{HIGGS}", "access" : "int_bb_tautau_{HIGGS}"},
+            "int_bb_tautau_H3" : {"name" : "int_bb_tautau_{HIGGS}", "access" : "int_bb_tautau_{HIGGS}"},
+            "int_gg_tautau_H1" : {"name" : "int_gg_tautau_{HIGGS}", "access" : "int_gg_tautau_{HIGGS}"},
+            "int_gg_tautau_H2" : {"name" : "int_gg_tautau_{HIGGS}", "access" : "int_gg_tautau_{HIGGS}"},
+            "int_gg_tautau_H3" : {"name" : "int_gg_tautau_{HIGGS}", "access" : "int_gg_tautau_{HIGGS}"},
         }
         self.uncertainty_map = {
             "ggscale" : "::scale{VAR}",
@@ -43,14 +59,15 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         }
         self.binning =  {
             "mh1125_CPV": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mHp" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(1.0, 20.0, 1.0),
+                "mHp" :   np.arange(130.0, 1500.0, 5.0),
             },
         }
         self.PROC_SETS = []
         self.SYST_DICT = defaultdict(list)
         self.NUISANCES = set()
         self.scaleforh = 1.0
+        self.is_CPV = True # False by default later, to check how to set it
 
     def setPhysicsOptions(self,physOptions):
         for po in physOptions:
@@ -148,10 +165,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
     def doHistFuncForQQH(self, varlist):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
-        name  = "qqh_MSSM"
-        accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
-        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
-        print "Computing 'qqh' scaling function from model file..."
+        name  = "qqH1_MSSM"
+        if not self.is_CPV:
+            accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H2')
+        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='H1')
+        print "Computing 'qqH1' scaling function from model file..."
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -160,7 +178,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_binning = self.binning[self.scenario][y_parname]
 
         F = ROOT.TFile.Open(self.filename, "read")
-        g_Htt_hist = F.Get(accesskey)
+        if not self.is_CPV:
+            g_Htt_hist = F.Get(accesskey)
         br_htautau_hist = F.Get(accesskey_br)
         br_htautau_SM_125 = 0.06272 # Value for 125 GeV SM Higgs from YR4
 
@@ -168,35 +187,40 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
                 beta = np.arctan(y)
-                g_Htt = g_Htt_hist.Interpolate(x,y)
+                if not self.is_CPV:
+                    g_Htt = g_Htt_hist.Interpolate(x,y)
                 br_htautau = br_htautau_hist.Interpolate(x,y)
-                sin_alpha = g_Htt * np.sin(beta)
-                if abs(sin_alpha) > 1:
-                    sin_alpha  = np.sign(sin_alpha)
-                alpha = np.arcsin(sin_alpha)
-                value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
+                if not self.is_CPV:
+                    sin_alpha = g_Htt * np.sin(beta)
+                    if abs(sin_alpha) > 1:
+                        sin_alpha  = np.sign(sin_alpha)
+                    alpha = np.arcsin(sin_alpha)
+                if not self.is_CPV:
+                    value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
+                else:
+                    value = br_htautau / br_htautau_SM_125
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
         print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
         canv = ROOT.TCanvas()
         canv.cd()
         hist.SetContour(2000)
-        hist.GetXaxis().SetTitle('m_{A}')
+        hist.GetXaxis().SetTitle('m_{H^#pm}')
         hist.GetYaxis().SetTitle('tan#beta')
         hist.Draw("colz")
         canv.SetLogx()
         canv.Update()
-        canv.SaveAs("qqh_MSSM_%s.pdf"%self.scenario)
-        canv.SaveAs("qqh_MSSM_%s.png"%self.scenario)
+        canv.SaveAs("qqH1_MSSM_%s.pdf"%self.scenario)
+        canv.SaveAs("qqH1_MSSM_%s.png"%self.scenario)
 
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncForGGH(self, varlist):
         # Computing scaling function for ggh contribution (little Higgs) in context of MSSM
-        name  = "ggh_MSSM"
-        accesskey_xs = self.quantity_map['xsec']['access2'].format(HIGGS='h',PROD='gg')
-        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
-        print "Computing 'ggh' scaling function from model file..."
+        name  = "ggH1_MSSM"
+        accesskey_xs = self.quantity_map['xsec']['access2'].format(HIGGS='H1',PROD='gg')
+        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='H1')
+        print "Computing 'ggH1' scaling function from model file..."
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -287,8 +311,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
     def add_ggH_at_NLO(self, name, X):
         importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}_{LC}_MSSM_frac" #import t,b,i fraction of xsec at NLO
         for loopcontrib in ['t','b','i']:
-            getattr(self.modelBuilder.out, 'import')(importstring.format(X=X, LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
-            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=X, LC=""), "gg%s_%s_MSSM_frac" % (X,loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=CPV_to_classic[X], LC=""), "gg%s_%s_MSSM_frac" % (CPV_to_classic[X],loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
 
     def preProcessNuisances(self,nuisances):
         doParams = set()
@@ -321,9 +345,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var('tanb').setConstant(True)
 
         for proc in self.PROC_SETS:
+            X = None
             if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
-                terms = ['xs_%s' %proc, 'br_%stautau'%X]
+                terms = ['xs_%s' %proc, 'br_%stautau'%CPV_to_classic[X]]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqH1':
@@ -332,6 +357,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms = [self.sigNorms[True], 'r', 'ggH1_MSSM']
             else:
                 terms = [self.sigNorms[False]]
+            if self.is_CPV and X in ['H2', 'H3']:
+                for xx in ['bb', 'gg']:
+                    terms.append('int_{}_tautau_{}'.format(xx, X))
             # Now scan terms and add theory uncerts
             extra = []
             for term in terms:
@@ -362,14 +390,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.doHistFuncForGGH(pars)
         self.PROC_SETS.append('ggH1')
 
-        for X in ['H1', 'H2']:
+        for X in ['H1', 'H2', 'H3']:
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
 
         self.doHistFuncFromModelFile(None, "yukawa_deltab", pars)
 
         for X in ['H1', 'H2', 'H3']:
-            self.doHistFuncFromModelFile(X, "yukawa_top", pars)
-            self.doHistFuncFromModelFile(X, "yukawa_bottom", pars)
+            for xx in ['bb', 'gg']:
+                self.doHistFuncFromModelFile(X, 'int_{}_tautau_{}'.format(xx, X), pars)
 
             self.doHistFuncFromXsecTools(X, "br", pars) # syntax: Higgs-Boson, xsec attribute, parameters, production mode
 
