@@ -348,7 +348,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             X = None
             if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
-                terms = ['xs_%s' %proc, 'br_%stautau'%CPV_to_classic[X]]
+                terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqH1':
@@ -403,7 +403,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-            self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
+            self.add_ggH_at_NLO('gg{X}{LC}_MSSM_xsec', X)
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
