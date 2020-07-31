@@ -841,13 +841,13 @@ int main(int argc, char **argv) {
       };
       
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
-    TFile fractions_sm(sm_gg_fractions.c_str());
-    RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
+    TFile fractions_sm_1(sm_gg_fractions.c_str());
+    RooWorkspace *w_sm_1 = (RooWorkspace*)fractions_sm_1.Get("w");
 
-    w_sm->var("mh")->SetName("mH1");
-    RooAbsReal *t_fracH1 = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_fracH1 = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_fracH1 = w_sm->function("ggh_i_SM_frac");
+    w_sm_1->var("mh")->SetName("mH1");
+    RooAbsReal *t_fracH1 = w_sm_1->function("ggh_t_SM_frac");
+    RooAbsReal *b_fracH1 = w_sm_1->function("ggh_b_SM_frac");
+    RooAbsReal *i_fracH1 = w_sm_1->function("ggh_i_SM_frac");
     t_fracH1->SetName("ggH1_t_frac");
     b_fracH1->SetName("ggH1_b_frac");
     i_fracH1->SetName("ggH1_i_frac");
@@ -856,31 +856,39 @@ int main(int argc, char **argv) {
     ws.import(*b_fracH1, RooFit::RecycleConflictNodes());
     ws.import(*i_fracH1, RooFit::RecycleConflictNodes());
 
-    // w_sm->var("mh")->SetName("mH2");
-    RooAbsReal *t_fracH2 = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_fracH2 = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_fracH2 = w_sm->function("ggh_i_SM_frac");
-    // t_fracH2->SetName("ggH2_t_frac");
-    // b_fracH2->SetName("ggH2_b_frac");
-    // i_fracH2->SetName("ggH2_i_frac");
-    // ws.import(mH2);
-    // ws.import(*t_fracH2, RooFit::RecycleConflictNodes());
-    // ws.import(*b_fracH2, RooFit::RecycleConflictNodes());
-    // ws.import(*i_fracH2, RooFit::RecycleConflictNodes());
+    fractions_sm_1.Close();
+    TFile fractions_sm_2(sm_gg_fractions.c_str());
+    RooWorkspace *w_sm_2 = (RooWorkspace*)fractions_sm_2.Get("w");
 
-    // w_sm->var("mh")->SetName("mH3");
-    RooAbsReal *t_fracH3  = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_fracH3 = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_fracH3 = w_sm->function("ggh_i_SM_frac");
-    // t_fracH3->SetName("ggH3_t_frac");
-    // b_fracH3->SetName("ggH3_b_frac");
-    // i_fracH3->SetName("ggH3_i_frac");
-    // ws.import(mH3);
-    // ws.import(*t_fracH3, RooFit::RecycleConflictNodes());
-    // ws.import(*b_fracH3, RooFit::RecycleConflictNodes());
-    // ws.import(*i_fracH3, RooFit::RecycleConflictNodes());
+    w_sm_2->var("mh")->SetName("mH2");
+    RooAbsReal *t_fracH2 = w_sm_2->function("ggh_t_SM_frac");
+    RooAbsReal *b_fracH2 = w_sm_2->function("ggh_b_SM_frac");
+    RooAbsReal *i_fracH2 = w_sm_2->function("ggh_i_SM_frac");
+    t_fracH2->SetName("ggH2_t_frac");
+    b_fracH2->SetName("ggH2_b_frac");
+    i_fracH2->SetName("ggH2_i_frac");
+    ws.import(mH2);
+    ws.import(*t_fracH2, RooFit::RecycleConflictNodes());
+    ws.import(*b_fracH2, RooFit::RecycleConflictNodes());
+    ws.import(*i_fracH2, RooFit::RecycleConflictNodes());
 
-    fractions_sm.Close();
+    fractions_sm_2.Close();
+    TFile fractions_sm_3(sm_gg_fractions.c_str());
+    RooWorkspace *w_sm_3 = (RooWorkspace*)fractions_sm_3.Get("w");
+
+    w_sm_3->var("mh")->SetName("mH3");
+    RooAbsReal *t_fracH3  = w_sm_3->function("ggh_t_SM_frac");
+    RooAbsReal *b_fracH3 = w_sm_3->function("ggh_b_SM_frac");
+    RooAbsReal *i_fracH3 = w_sm_3->function("ggh_i_SM_frac");
+    t_fracH3->SetName("ggH3_t_frac");
+    b_fracH3->SetName("ggH3_b_frac");
+    i_fracH3->SetName("ggH3_i_frac");
+    ws.import(mH3);
+    ws.import(*t_fracH3, RooFit::RecycleConflictNodes());
+    ws.import(*b_fracH3, RooFit::RecycleConflictNodes());
+    ws.import(*i_fracH3, RooFit::RecycleConflictNodes());
+
+    fractions_sm_3.Close();
     }
 
   dout("[INFO] Prepare demo.");
