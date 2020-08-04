@@ -51,10 +51,10 @@ condor_submit condor_r_1Dscan.sub
 
 ```bash
 # ggH
-combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_ggH --alignEdges 1 -M MultiDimFit -d stage0.root --setParameterRanges r_ggH=0.65,1.35:r_qqH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_ggH --job-mode condor --task-name r_ggH_1Dscan --dry-run
+combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_ggH --alignEdges 1 --setParameterRanges r_ggH=0.65,1.35:r_qqH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_ggH --job-mode condor --task-name r_ggH_1Dscan --dry-run
 
 # qqH
-combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_qqH --alignEdges 1 -M MultiDimFit -d stage0.root --setParameterRanges r_qqH=0.65,1.35:r_ggH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_qqH --job-mode condor --task-name r_qqH_1Dscan --dry-run
+combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --algo grid --robustFit 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --floatOtherPOIs 1 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --redefineSignalPOIs r_qqH --alignEdges 1 --setParameterRanges r_qqH=0.65,1.35:r_ggH=0.3,1.7 --points 41 --split-points 1 -n .stage0_r_qqH --job-mode condor --task-name r_qqH_1Dscan --dry-run
 
 # after adapting the condor configuration, submit to batch system:
 condor_submit condor_r_ggH_1Dscan.sub
