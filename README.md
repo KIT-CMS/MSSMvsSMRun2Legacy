@@ -59,6 +59,9 @@ combineTool.py -M MultiDimFit -d output_sm/combined/cmb/stage0.root --there --al
 # after adapting the condor configuration, submit to batch system:
 condor_submit condor_r_ggH_1Dscan.sub
 condor_submit condor_r_qqH_1Dscan.sub
+
+# determining correlation ggH vs. qqH
+combineTool.py -M FitDiagnostics -d output_sm/combined/cmb/stage0.root --there --robustHesse 1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -t -1 --expectSignal 1 -v1 --setParameters r_ggH=1,r_qqH=1 --setParameterRanges r_qqH=0.65,1.35:r_ggH=0.65,1.35 -n .stage0 --task-name stage0_correlation
 ```
 
 **Collecting results & plotting likelihood scans:**
