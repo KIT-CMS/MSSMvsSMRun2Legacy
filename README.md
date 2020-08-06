@@ -74,6 +74,8 @@ hadd output_sm/combined/cmb/higgsCombine.stage0_r_qqH.MultiDimFit.mH120.root out
 plot1DScan.py output_sm/combined/cmb/higgsCombine.inclusive.MultiDimFit.mH120.root -o r_1Dscan
 plot1DScan.py output_sm/combined/cmb/higgsCombine.stage0_r_ggH.MultiDimFit.mH120.root -o r_ggH_1Dscan --POI r_ggH
 plot1DScan.py output_sm/combined/cmb/higgsCombine.stage0_r_qqH.MultiDimFit.mH120.root -o r_qqH_1Dscan --POI r_qqH
+
+print_correlation.py output_sm/combined/cmb/fitDiagnostics.stage0.root r_ggH r_qqH
 ```
 
 ## Prefit shapes
