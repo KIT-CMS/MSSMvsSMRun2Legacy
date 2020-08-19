@@ -17,6 +17,7 @@ def execute(cmd):
 parser = argparse.ArgumentParser( description = "Compare Integrals of Processes between ML and Cutbased shapes")
 parser.add_argument('--output_folder', required = True, help = "Main folder, where the datacards should be created")
 parser.add_argument('--eras', required = True, help = "Eras list, which will be used for parallelization of morphing")
+parser.add_argument('--additional_arguments',type=str, default="", help = "Additional arguments passed to the Morphing executable")
 parser.add_argument('--parallel', type=int, default=5, help = "Cores provided for parallel morphing")
 parser.add_argument('--dry_run',action='store_true', help = "Don't execute, only list Morphing commands")
 
@@ -47,17 +48,20 @@ eras = args.eras.split(',')
 
 commands = []
 
-command_template = "MorphingCatVariables --era={ERA} --category={CATEGORY}  --output_folder={OUTPUT} --variable={VARIABLE}"
+command_template = "MorphingCatVariables --era={ERA} --category={CATEGORY}  --output_folder={OUTPUT} --variable={VARIABLE} {ADDITIONALARGS}"
 
 for era in eras:
     for category in variables_per_cat:
             for channel in variables_per_cat[category]:
                 for variable in variables_per_cat[category][channel]:
                     catname = "_".join([channel,category])
-                    command = command_template.format(ERA=era, CATEGORY=catname, OUTPUT=args.output_folder, VARIABLE=variable)
+                    command = command_template.format(ERA=era, CATEGORY=catname, OUTPUT=args.output_folder, VARIABLE=variable, ADDITIONALARGS=args.additional_arguments)
                     commands.append(command)
                     print command
 
-if not args.dry_run:
+if args.dry_run:
+    for command in commands:
+        print command
+else:
     p = Pool(args.parallel)
     p.map(execute, commands)

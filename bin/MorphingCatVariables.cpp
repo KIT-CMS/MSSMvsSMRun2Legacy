@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
   bool real_data = true;
   bool verbose = false;
   bool use_automc = true;
+  bool manual_rebinning = false;
 
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("use_automc", po::value<bool>(&use_automc)->default_value(use_automc))
+      ("manual_rebinning", po::value<bool>(&manual_rebinning)->default_value(manual_rebinning))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("era", po::value<int>(&era)->default_value(era))
@@ -255,21 +257,23 @@ int main(int argc, char **argv) {
 
 
   // Manual rebinning, if needed
-  std::map<std::string, std::vector<double> > binning;
-  binning["DiTauDeltaR_et_nobtag_lowmsv"] = {0.5, 2.5, 4.0};
-  binning["DiTauDeltaR_tt_nobtag_lowmsv"] = {0.5, 2.5, 3.2, 4.0};
-  binning["jdeta_tt_nobtag_lowmsv"] = {0.0, 4.0, 8.0};
-  binning["pt_tt_puppi_em_nobtag_lowmsv"] = {0.0, 10.0, 40.0, 120.0, 200.0, 300.0};
-  binning["pt_tt_puppi_et_nobtag_lowmsv"] = {0.0, 120.0, 200.0, 300.0};
-  binning["pt_tt_puppi_mt_nobtag_lowmsv"] = {0.0, 120.0, 200.0, 300.0};
+  if(manual_rebinning){
+    std::map<std::string, std::vector<double> > binning;
+    binning["DiTauDeltaR_et_nobtag_lowmsv"] = {0.5, 2.5, 4.0};
+    binning["DiTauDeltaR_tt_nobtag_lowmsv"] = {0.5, 2.5, 3.2, 4.0};
+    binning["jdeta_tt_nobtag_lowmsv"] = {0.0, 4.0, 8.0};
+    binning["pt_tt_puppi_em_nobtag_lowmsv"] = {0.0, 10.0, 40.0, 120.0, 200.0, 300.0};
+    binning["pt_tt_puppi_et_nobtag_lowmsv"] = {0.0, 120.0, 200.0, 300.0};
+    binning["pt_tt_puppi_mt_nobtag_lowmsv"] = {0.0, 120.0, 200.0, 300.0};
 
-  for(auto b : cb.cp().bin_set())
-  {
-    std::string var_bin = variable + "_" + b;
-    if(binning.find(var_bin) != binning.end())
+    for(auto b : cb.cp().bin_set())
     {
-        std::cout << "Rebinning by hand for variable, bin: " << var_bin <<  std::endl;
-        cb.cp().bin({b}).VariableRebin(binning[var_bin]);
+      std::string var_bin = variable + "_" + b;
+      if(binning.find(var_bin) != binning.end())
+      {
+          std::cout << "Rebinning by hand for variable, bin: " << var_bin <<  std::endl;
+          cb.cp().bin({b}).VariableRebin(binning[var_bin]);
+      }
     }
   }
 

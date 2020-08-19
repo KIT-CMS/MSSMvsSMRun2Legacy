@@ -40,8 +40,10 @@ for era in eras:
     for category in categories:
         command = command_template.format(ERA=era, CATEGORY=category, ANALYSIS=args.analysis, ADDITIONALARGS=args.additional_arguments, OUTPUT=args.output_folder, VARIABLE=args.variable)
         commands.append(command)
-        print command
 
-if not args.dry_run:
+if args.dry_run:
+    for command in commands
+        print command
+else:
     p = Pool(args.parallel)
     p.map(execute, commands)
