@@ -42,7 +42,7 @@ for era in eras:
         commands.append(command)
 
 if args.dry_run:
-    for command in commands
+    for command in commands:
         print command
 else:
     p = Pool(args.parallel)
