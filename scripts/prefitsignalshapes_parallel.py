@@ -3,6 +3,7 @@
 import os
 import glob
 import sys
+import argparse
 from multiprocessing import Pool
 
 def execute(cmd):
@@ -10,17 +11,25 @@ def execute(cmd):
         os.system(cmd)
     except:
         print "[WARNING] Command failed:",cmd
-print sys.argv
-ws_pattern = sys.argv[1]
-freezeargs = sys.argv[2]
-ncores = 10
-if len(sys.argv) > 3:
-    ncores = int(sys.argv[3])
 
-ws = [w for w in glob.glob(ws_pattern) if "/htt_" in w]
-print ws
+parser = argparse.ArgumentParser( description = "Script to run 'PostFitShapesFromWorkspace' in parallel for each category.")
+parser.add_argument('--datacard_pattern', required = True, help = "Path pattern to the 'combined.txt.cmb' datacards to be used for the histograms")
+parser.add_argument('--workspace_name', required = True, help = "Workspace name to be used to derive systematic uncertainties")
+parser.add_argument('--freeze_arguments', default="", help = "Arguments to be frozen to a certain value. Use with options, e.g. '--freeze r=1'")
+parser.add_argument('--fit_arguments', default="",
+                    help = "Arguments to be used to apply fit result(s). Use with needed options, e.g. '-f <path-pattern-to-fitDiagnostics.root>:<fit-to-be-used> --sampling --postfit'")
+parser.add_argument('--parallel', type=int, default=5, help = "Cores provided for parallel processing")
+parser.add_argument('--dry_run',action='store_true', help = "Don't execute, only list commands")
 
-cmds = ['ws=WORKSPACE; wsname=$(basename ${ws}); basedir=$(dirname $(dirname ${ws})); category=$(basename $(dirname ${ws})); PreFitSignalShapes -w ${ws}  -o ${ws/${wsname}/prefit_signal_shapes_${wsname}.root} -d ${basedir}/restore_binning/${category}/${category}.txt -c ${category} --freeze FREEZEARGS'.replace("WORKSPACE",w).replace("FREEZEARGS",freezeargs) for w in ws]
+args = parser.parse_args()
 
-p = Pool(ncores)
-p.map(execute, cmds)
+datacards = [d for d in glob.glob(args.datacard_pattern) if "/cmb/" not in d]
+
+cmds = ['card=DATACARD; basedir=$(dirname $(dirname ${card})); category=$(basename $(dirname ${card})); echo $card; echo ${card/combined.txt.cmb/WSNAME}; echo ${card/combined.txt.cmb/prefit_signal_shapes_WSNAME}; PreFitSignalShapes -w ${card/combined.txt.cmb/WSNAME}  -o ${card/combined.txt.cmb/prefit_signal_shapes_WSNAME} -d ${basedir}/restore_binning/${category}/${category}.txt -c ${category} FREEZEARGS FITARGS'.replace("DATACARD",d).replace("FREEZEARGS",args.freeze_arguments).replace("FITARGS",args.fit_arguments).replace("WSNAME",args.workspace_name) for d in datacards]
+
+p = Pool(args.parallel)
+if args.dry_run:
+    for cmd in cmds:
+        print cmd
+else:
+    p.map(execute, cmds)

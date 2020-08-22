@@ -261,6 +261,7 @@ int main(int argc, char **argv) {
     std::map<std::string, std::vector<double> > binning;
     binning["DiTauDeltaR_et_nobtag_lowmsv"] = {0.5, 2.5, 4.0};
     binning["DiTauDeltaR_tt_nobtag_lowmsv"] = {0.5, 2.5, 3.2, 4.0};
+    binning["pZetaPuppiMissVis_em_inclusive"] = {-100.0,-35.0,-10.0,30.0,100.0};
     binning["jdeta_tt_nobtag_lowmsv"] = {0.0, 4.0, 8.0};
     binning["pt_tt_puppi_em_nobtag_lowmsv"] = {0.0, 10.0, 40.0, 120.0, 200.0, 300.0};
     binning["pt_tt_puppi_et_nobtag_lowmsv"] = {0.0, 120.0, 200.0, 300.0};
