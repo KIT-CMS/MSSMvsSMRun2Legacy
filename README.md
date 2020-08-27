@@ -207,7 +207,7 @@ Currently supported scenario is mh125 (with a fixed version at cern afs)
 ulimit -s unlimited
 combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh125_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_mssm_vs_sm_classic_h125/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
 ```
-_NB_ : for the `mssm_vs_sm_CPV` analysis, use `mh1125_13.root` instead of `mh125_13.root`.
+_NB_ : for the `mssm_vs_sm_CPV` analysis, use `mh1125_13.root` instead of `mh125_13.root` and `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root` instead of `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root`.
 
 ## Model-dependent CLs 95% limits for `mssm_vs_sm_classic_h125`
 
