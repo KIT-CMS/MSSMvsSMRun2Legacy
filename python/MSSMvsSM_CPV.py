@@ -308,11 +308,12 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out._import(asym)
         return self.modelBuilder.out.function(systname)
 
-    def add_ggH_at_NLO(self, name, X):
-        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}_{LC}_SM_frac" #import t,b,i fraction of xsec at NLO
-        for loopcontrib in ['t','b','i']:
-            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
-            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=CPV_to_classic[X], LC=""), "gg%s_%s_SM_frac" % (CPV_to_classic[X],loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
+    def add_ggH_at_NLO(self, X, LC, model, type):
+        if LC != "" and LC[0] != "_":
+            LC = "_{}".format(LC)
+        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}_{model}_{type}"
+        getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=LC, model=model, type=type), ROOT.RooFit.RecycleConflictNodes())
+        self.modelBuilder.out.factory('prod::%s(%s,%s)' % ("gg{X}{LC}_{model}_{type}".format(X=X, LC=LC, model=model, type=type), "gg{X}{LC}_{model}_{type}".format(X=CPV_to_classic[X], LC=LC, model=model, type=type), "gg%s%s_%s_%s" % (CPV_to_classic[X],LC,model,type))) #multiply t,b,i fractions with xsec at NNLO
 
     def preProcessNuisances(self,nuisances):
         doParams = set()
@@ -406,7 +407,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-            self.add_ggH_at_NLO('gg{X}{LC}_SM_xsec', X)
+            for LC in ["t", "b", "i"]:
+                self.add_ggH_at_NLO(X, LC, 'SM', 'xsec')
+                self.add_ggH_at_NLO(X, LC, 'SM', 'frac')
+                self.add_ggH_at_NLO(X, LC, '2HDM', 'xsec')
+            self.add_ggH_at_NLO(X, '', 'SM', 'xsec')
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
