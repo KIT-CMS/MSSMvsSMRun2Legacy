@@ -320,6 +320,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         for bin in self.DC.bins:
             for proc in self.DC.exp[bin].keys():
                 if self.DC.isSignal[proc]:
+                    if self.is_CPV and any([s in proc for s in ["qq", "gg", "bb"]]): # rename procs for the moment?
+                        proc = proc.replace('H', 'H2')
+                        proc = proc.replace('H2125', 'H125')
+                        proc = proc.replace('h', 'H1')
+                        proc = proc.replace('A', 'H3')
                     scaling = 'scaling_%s' % proc
                     params = self.modelBuilder.out.function(scaling).getParameters(ROOT.RooArgSet()).contentsString().split(',')
                     for param in params:
@@ -375,6 +380,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
     def getYieldScale(self,bin,process):
         if self.DC.isSignal[process]:
+            if self.is_CPV and any([s in process for s in ["qq", "gg", "bb"]]): # rename procs for the moment?
+                process = process.replace('H', 'H2')
+                process = process.replace('H2125', 'H125')
+                process = process.replace('h', 'H1')
+                process = process.replace('A', 'H3')
             scaling = 'scaling_%s' % process
             print 'Scaling %s/%s as %s' % (bin, process, scaling)
             return scaling
