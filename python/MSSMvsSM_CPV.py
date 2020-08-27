@@ -378,9 +378,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             return 1
 
     def buildModel(self):
-        mA = ROOT.RooRealVar('mHp', 'm_{H^#pm} [GeV]', 120.)
-        tanb = ROOT.RooRealVar('tanb', 'tan#beta', 20.)
-        pars = [mA, tanb]
+        mHp = ROOT.RooRealVar('mHp', 'm_{H^#pm} [GeV]', 130.)
+        tanb = ROOT.RooRealVar('tanb', 'tan#beta', 10.)
+        pars = [mHp, tanb]
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
