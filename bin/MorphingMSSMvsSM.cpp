@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
       ("category", po::value<string>(&category)->default_value(category))
       ("variable", po::value<string>(&variable)->default_value(variable))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
+      ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(manual_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("use_automc", po::value<bool>(&use_automc)->default_value(use_automc))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
