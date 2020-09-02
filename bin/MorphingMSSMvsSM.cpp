@@ -51,14 +51,17 @@ void update_vector_by_byparser(T& parameter, const T& parser, const string name=
 }
 
 std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>> binning_map) {
-    std::vector <double> binning;
-    for (auto it = binning_map.begin(); it != binning_map.end(); ++it)
-        for (double first = it->second[0]; first < it->second[1]; first+=it->second[2])
-        {
-            binning.push_back(first);
-        }
-    auto last = --binning_map.end();
-    binning.push_back(last->second[1]);
+    std::vector <double> binning = {};
+    if(binning_map.begin() != binning_map.end())
+    {
+        for (auto it = binning_map.begin(); it != binning_map.end(); ++it)
+            for (double first = it->second[0]; first < it->second[1]; first+=it->second[2])
+            {
+                binning.push_back(first);
+            }
+        auto last = --binning_map.end();
+        binning.push_back(last->second[1]);
+    }
     return binning;
 }
 
