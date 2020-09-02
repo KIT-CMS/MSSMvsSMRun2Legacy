@@ -1239,7 +1239,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"jetFakes"})
-      .AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$ERA", "lnN", SystMap<channel>::init
+      .AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$BIN_$ERA", "lnN", SystMap<channel>::init
 	       ({"mt"}, 1.037) //incl
 	       ({"et"}, 1.065) //incl
 	       ({"tt"}, 1.041) //incl
@@ -1250,7 +1250,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"jetFakes"})
-      .AddSyst(cb, "CMS_ff_norm_syst_$CHANNEL_$ERA", "lnN", SystMap<channel>::init
+      .AddSyst(cb, "CMS_ff_norm_syst_$CHANNEL_$BIN_$ERA", "lnN", SystMap<channel>::init
 	       ({"mt"}, 1.059) //incl
 	       ({"et"}, 1.059) //incl
 	       ({"tt"}, 1.095) //incl
