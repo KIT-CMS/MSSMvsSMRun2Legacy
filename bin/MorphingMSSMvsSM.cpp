@@ -50,6 +50,18 @@ void update_vector_by_byparser(T& parameter, const T& parser, const string name=
     }
 }
 
+std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>> binning_map) {
+    std::vector <double> binning;
+    for (auto it = binning_map.begin(); it != binning_map.end(); ++it)
+        for (double first = it->second[0]; first < it->second[1]; first+=it->second[2])
+        {
+            binning.push_back(first);
+        }
+    auto last = --binning_map.end();
+    binning.push_back(last->second[1]);
+    return binning;
+}
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -65,6 +77,7 @@ int main(int argc, char **argv) {
   string variable = "m_sv_puppi";
 
   bool auto_rebin = false;
+  bool manual_rebin = false;
   bool real_data = false;
   bool verbose = false;
   bool use_automc = true;
@@ -620,6 +633,242 @@ int main(int argc, char **argv) {
     }
   });
 
+  // Manual rebinning for histograms
+  if(manual_rebin)
+  {
+    std::map<std::string, std::map<unsigned int, std::map<unsigned int, std::vector<double> > > >binning_map;
+    binning_map["em"] = {};
+    binning_map["et"] = {};
+    binning_map["mt"] = {};
+    binning_map["tt"] = {};
+
+    binning_map["em"][1] = {};
+
+    binning_map["em"][10] = {};
+    binning_map["em"][10][0] = {0.0, 70.0, 70.0};
+    binning_map["em"][10][1] = {70.0, 160.0, 5.0};
+    binning_map["em"][10][2] = {160.0, 200.0, 10.0};
+    binning_map["em"][10][3] = {200.0, 250.0, 50.0};
+
+    binning_map["em"][11] = {};
+    binning_map["em"][11][0] = {0.0, 60.0, 60.0};
+    binning_map["em"][11][1] = {60.0, 140.0, 5.0};
+    binning_map["em"][11][2] = {140.0, 200.0, 10.0};
+    binning_map["em"][11][3] = {200.0, 250.0, 50.0};
+
+    binning_map["em"][12] = {};
+    binning_map["em"][12][0] = {0.0, 70.0, 70.0};
+    binning_map["em"][12][1] = {70.0, 160.0, 5.0};
+    binning_map["em"][12][2] = {160.0, 200.0, 10.0};
+    binning_map["em"][12][3] = {200.0, 250.0, 50.0};
+
+    binning_map["em"][13] = {};
+    binning_map["em"][13][0] = {0.0, 60.0, 60.0};
+    binning_map["em"][13][1] = {60.0, 140.0, 5.0};
+    binning_map["em"][13][2] = {140.0, 200.0, 10.0};
+    binning_map["em"][13][3] = {200.0, 250.0, 50.0};
+
+    binning_map["em"][14] = {};
+    binning_map["em"][14][0] = {0.0, 60.0, 60.0};
+    binning_map["em"][14][1] = {60.0, 150.0, 5.0};
+    binning_map["em"][14][2] = {150.0, 250.0, 50.0};
+
+    binning_map["em"][15] = {};
+    binning_map["em"][15][0] = {0.0, 60.0, 60.0};
+    binning_map["em"][15][1] = {60.0, 150.0, 5.0};
+    binning_map["em"][15][2] = {150.0, 250.0, 50.0};
+
+    binning_map["em"][16] = {};
+    binning_map["em"][16][0] = {0.0, 70.0, 70.0};
+    binning_map["em"][16][1] = {70.0, 150.0, 10.0};
+    binning_map["em"][16][2] = {150.0, 250.0, 50.0};
+
+    binning_map["em"][17] = {};
+    binning_map["em"][17][0] = {0.0, 70.0, 70.0};
+    binning_map["em"][17][1] = {70.0, 150.0, 20.0};
+    binning_map["em"][17][2] = {150.0, 250.0, 100.0};
+
+    binning_map["em"][18] = {};
+    binning_map["em"][18][0] = {0.0, 60.0, 60.0};
+    binning_map["em"][18][1] = {60.0, 150.0, 5.0};
+    binning_map["em"][18][2] = {150.0, 250.0, 20.0};
+
+    binning_map["em"][19] = {};
+    binning_map["em"][19][0] = {0.0, 70.0, 70.0};
+    binning_map["em"][19][1] = {70.0, 150.0, 10.0};
+    binning_map["em"][19][2] = {150.0, 250.0, 20.0};
+
+    binning_map["et"][1] = {};
+    binning_map["et"][1][0] = {0.0, 150.0, 50.0};
+    binning_map["et"][1][1] = {150.0, 500.0, 10.0};
+    binning_map["et"][1][2] = {500.0, 1000.0, 25.0};
+    binning_map["et"][1][3] = {1000.0, 2000.0, 50.0};
+    binning_map["et"][1][4] = {2000.0, 5000.0, 100.0};
+
+    binning_map["et"][10] = {};
+    binning_map["et"][10][0] = {0.0, 80.0, 80.0};
+    binning_map["et"][10][1] = {80.0, 160.0, 5.0};
+    binning_map["et"][10][2] = {160.0, 200.0, 20.0};
+    binning_map["et"][10][3] = {200.0, 250.0, 50.0};
+
+    binning_map["et"][11] = {};
+    binning_map["et"][11][0] = {0.0, 60.0, 60.0};
+    binning_map["et"][11][1] = {60.0, 90.0, 10.0};
+    binning_map["et"][11][2] = {90.0, 160.0, 5.0};
+    binning_map["et"][11][3] = {160.0, 200.0, 20.0};
+    binning_map["et"][11][4] = {200.0, 250.0, 50.0};
+
+    binning_map["et"][12] = {};
+    binning_map["et"][12][0] = {0.0, 90.0, 90.0};
+    binning_map["et"][12][1] = {90.0, 160.0, 5.0};
+    binning_map["et"][12][2] = {160.0, 200.0, 20.0};
+    binning_map["et"][12][3] = {200.0, 250.0, 50.0};
+
+    binning_map["et"][13] = {};
+    binning_map["et"][13][0] = {0.0, 60.0, 60.0};
+    binning_map["et"][13][1] = {60.0, 160.0, 10.0};
+    binning_map["et"][13][2] = {160.0, 250.0, 90.0};
+
+    binning_map["et"][14] = {};
+    binning_map["et"][14][0] = {0.0, 70.0, 70.0};
+    binning_map["et"][14][1] = {70.0, 150.0, 20.0};
+    binning_map["et"][14][2] = {150.0, 250.0, 100.0};
+
+    binning_map["et"][15] = {};
+    binning_map["et"][15][0] = {0.0, 70.0, 70.0};
+    binning_map["et"][15][1] = {70.0, 110.0, 20.0};
+    binning_map["et"][15][2] = {110.0, 150.0, 40.0};
+    binning_map["et"][15][3] = {150.0, 250.0, 100.0};
+
+    binning_map["et"][16] = {};
+    binning_map["et"][16][0] = {0.0, 60.0, 60.0};
+    binning_map["et"][16][1] = {60.0, 90.0, 10.0};
+    binning_map["et"][16][2] = {90.0, 140.0, 5.0};
+    binning_map["et"][16][3] = {140.0, 160.0, 10.0};
+    binning_map["et"][16][4] = {160.0, 200.0, 40.0};
+    binning_map["et"][16][5] = {200.0, 250.0, 50.0};
+
+    binning_map["et"][17] = {};
+    binning_map["et"][17][0] = {0.0, 60.0, 60.0};
+    binning_map["et"][17][1] = {60.0, 150.0, 10.0};
+    binning_map["et"][17][2] = {150.0, 250.0, 100.0};
+
+    binning_map["et"][18] = {};
+    binning_map["et"][18][0] = {0.0, 100.0, 100.0};
+    binning_map["et"][18][1] = {100.0, 140.0, 40.0};
+    binning_map["et"][18][2] = {140.0, 250.0, 110.0};
+
+    binning_map["mt"][1] = {};
+    binning_map["mt"][1][0] = {0.0, 150.0, 50.0};
+    binning_map["mt"][1][1] = {150.0, 500.0, 10.0};
+    binning_map["mt"][1][2] = {500.0, 1000.0, 25.0};
+    binning_map["mt"][1][3] = {1000.0, 2000.0, 50.0};
+    binning_map["mt"][1][4] = {2000.0, 5000.0, 100.0};
+
+    binning_map["mt"][10] = {};
+    binning_map["mt"][10][0] = {0.0, 70.0, 70.0};
+    binning_map["mt"][10][1] = {70.0, 160.0, 5.0};
+    binning_map["mt"][10][2] = {160.0, 200.0, 20.0};
+    binning_map["mt"][10][3] = {200.0, 250.0, 50.0};
+
+    binning_map["mt"][11] = {};
+    binning_map["mt"][11][0] = {0.0, 60.0, 60.0};
+    binning_map["mt"][11][1] = {60.0, 150.0, 5.0};
+    binning_map["mt"][11][2] = {150.0, 250.0, 20.0};
+
+    binning_map["mt"][12] = {};
+    binning_map["mt"][12][0] = {0.0, 70.0, 70.0};
+    binning_map["mt"][12][1] = {70.0, 170.0, 5.0};
+    binning_map["mt"][12][2] = {170.0, 250.0, 20.0};
+
+    binning_map["mt"][13] = {};
+    binning_map["mt"][13][0] = {0.0, 60.0, 60.0};
+    binning_map["mt"][13][1] = {60.0, 160.0, 10.0};
+    binning_map["mt"][13][2] = {160.0, 250.0, 90.0};
+
+    binning_map["mt"][14] = {};
+    binning_map["mt"][14][0] = {0.0, 70.0, 70.0};
+    binning_map["mt"][14][1] = {70.0, 150.0, 20.0};
+    binning_map["mt"][14][2] = {150.0, 250.0, 100.0};
+
+    binning_map["mt"][15] = {};
+    binning_map["mt"][15][0] = {0.0, 70.0, 70.0};
+    binning_map["mt"][15][1] = {70.0, 110.0, 20.0};
+    binning_map["mt"][15][2] = {110.0, 150.0, 40.0};
+    binning_map["mt"][15][3] = {150.0, 250.0, 100.0};
+
+    binning_map["mt"][16] = {};
+    binning_map["mt"][16][0] = {0.0, 60.0, 60.0};
+    binning_map["mt"][16][1] = {60.0, 100.0, 10.0};
+    binning_map["mt"][16][2] = {100.0, 140.0, 5.0};
+    binning_map["mt"][16][3] = {140.0, 160.0, 10.0};
+    binning_map["mt"][16][4] = {160.0, 200.0, 40.0};
+    binning_map["mt"][16][5] = {200.0, 250.0, 50.0};
+
+    binning_map["mt"][17] = {};
+    binning_map["mt"][17][0] = {0.0, 70.0, 70.0};
+    binning_map["mt"][17][1] = {70.0, 150.0, 10.0};
+    binning_map["mt"][17][2] = {150.0, 250.0, 100.0};
+
+    binning_map["mt"][18] = {};
+    binning_map["mt"][18][0] = {0.0, 100.0, 100.0};
+    binning_map["mt"][18][1] = {100.0, 140.0, 40.0};
+    binning_map["mt"][18][2] = {140.0, 250.0, 110.0};
+
+    binning_map["tt"][10] = {};
+    binning_map["tt"][10][0] = {0.0, 120.0, 120.0};
+    binning_map["tt"][10][1] = {120.0, 250.0, 10.0};
+
+    binning_map["tt"][11] = {};
+    binning_map["tt"][11][0] = {0.0, 90.0, 90.0};
+    binning_map["tt"][11][1] = {90.0, 150.0, 5.0};
+    binning_map["tt"][11][2] = {150.0, 250.0, 25.0};
+
+    binning_map["tt"][12] = {};
+    binning_map["tt"][12][0] = {0.0, 70.0, 70.0};
+    binning_map["tt"][12][1] = {70.0, 150.0, 10.0};
+    binning_map["tt"][12][2] = {150.0, 250.0, 100.0};
+
+    binning_map["tt"][13] = {};
+    binning_map["tt"][13][0] = {0.0, 100.0, 100.0};
+    binning_map["tt"][13][1] = {100.0, 150.0, 10.0};
+    binning_map["tt"][13][2] = {150.0, 250.0, 20.0};
+
+    binning_map["tt"][14] = {};
+    binning_map["tt"][14][0] = {0.0, 70.0, 70.0};
+    binning_map["tt"][14][1] = {70.0, 150.0, 20.0};
+    binning_map["tt"][14][2] = {150.0, 250.0, 100.0};
+
+    binning_map["tt"][15] = {};
+    binning_map["tt"][15][0] = {0.0, 70.0, 70.0};
+    binning_map["tt"][15][1] = {70.0, 150.0, 20.0};
+    binning_map["tt"][15][2] = {150.0, 250.0, 100.0};
+
+    binning_map["tt"][16] = {};
+    binning_map["tt"][16][0] = {0.0, 70.0, 70.0};
+    binning_map["tt"][16][1] = {70.0, 100.0, 30.0};
+    binning_map["tt"][16][2] = {100.0, 150.0, 25.0};
+    binning_map["tt"][16][3] = {150.0, 250.0, 100.0};
+
+    binning_map["tt"][17] = {};
+    binning_map["tt"][17][0] = {0.0, 70.0, 70.0};
+    binning_map["tt"][17][1] = {70.0, 100.0, 30.0};
+    binning_map["tt"][17][2] = {100.0, 140.0, 40.0};
+    binning_map["tt"][17][3] = {140.0, 250.0, 110.0};
+
+    for(auto chn : chns)
+    {
+      for(auto b : cb.cp().channel({chn}).bin_id_set())
+      {
+        std::vector<double> binning = binning_from_map(binning_map[chn][b]);
+        if(binning.size() > 0)
+        {
+            std::cout << "Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
+            cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
+        }
+      }
+    }
+  }
   // Turn systematics into lnN
   cb.cp().ForEachSyst([](ch::Systematic *s){
     TString sname = TString(s->name());
@@ -748,7 +997,7 @@ int main(int argc, char **argv) {
   // Perform auto-rebinning
   if (auto_rebin) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(10.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
