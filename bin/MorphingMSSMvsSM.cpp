@@ -620,6 +620,25 @@ int main(int argc, char **argv) {
     }
   });
 
+  // Turn systematics into lnN
+  cb.cp().ForEachSyst([](ch::Systematic *s){
+    TString sname = TString(s->name());
+    if(sname.Contains("boson") || sname == "CMS_scale_e" || sname.Contains("res_j") || sname.Contains("scale_j") || sname.Contains("met_unclustered"))
+    {
+      double err_u = 0.0;
+      double err_d = 0.0;
+      int nbins = s->shape_u()->GetNbinsX();
+      double yield_u = s->shape_u()->IntegralAndError(1,nbins,err_u);
+      double yield_d = s->shape_d()->IntegralAndError(1,nbins,err_d);
+      double value_u = s->value_u();
+      double value_d = s->value_d();
+      if (std::abs(value_u-1.0)+std::abs(value_d-1.0)<err_u/yield_u+err_d/yield_d){
+        s->set_type("lnN");
+        std::cout << "Setting systematic " << s->name() << " to lnN" << std::endl;
+      }
+    }
+  });
+
   // At this point we can fix the negative bins for the remaining processes
   std::cout << "[INFO] Fixing negative bins.\n";
   cb.ForEachProc([](ch::Process *p) {
