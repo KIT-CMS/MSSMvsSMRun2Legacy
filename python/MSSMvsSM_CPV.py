@@ -377,6 +377,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var('mH').SetName('mH2')
         self.modelBuilder.out.var('mA').SetName('mH3')
 
+        self.modelBuilder.out.var('ref_tanb_h').SetName('ref_tanb_H1')
+        self.modelBuilder.out.var('ref_tanb_H').SetName('ref_tanb_H2')
+        self.modelBuilder.out.var('ref_tanb_A').SetName('ref_tanb_H3')
+
         for proc in self.PROC_SETS:
             X = None
             if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
