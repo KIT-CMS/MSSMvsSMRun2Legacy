@@ -308,12 +308,39 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out._import(asym)
         return self.modelBuilder.out.function(systname)
 
-    def add_ggH_at_NLO(self, X, LC, model, type):
-        if LC != "" and LC[0] != "_":
-            LC = "_{}".format(LC)
-        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}_{model}_{type}"
-        getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=LC, model=model, type=type), ROOT.RooFit.RecycleConflictNodes())
-        self.modelBuilder.out.factory('prod::%s(%s,%s)' % ("gg{X}{LC}_{model}_{type}".format(X=X, LC=LC, model=model, type=type), "gg{X}{LC}_{model}_{type}".format(X=CPV_to_classic[X], LC=LC, model=model, type=type), "gg%s%s_%s_%s" % (CPV_to_classic[X],LC,model,type))) #multiply t,b,i fractions with xsec at NNLO
+    def add_ggH_at_NLO(self, name, X, suffix="_SM_frac"):
+        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}"+suffix #import t,b,i fraction of xsec at NLO
+        loopcontribs = ['_t','_b','_i']
+        if suffix == "_SM_xsec":
+            loopcontribs.append("")
+        for loopcontrib in loopcontribs:
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory(
+                'prod::gg{X_MSSM}{LC}{suffix}(gg{X_SM}{LC}{suffix},1)'.format(
+                    X_MSSM = X,
+                    X_SM   = CPV_to_classic[X],
+                    LC = loopcontrib,
+                    suffix = suffix,
+                )
+            )
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC=loopcontrib), name.format(X=X, LC=""), "gg%s%s%s" % (X,loopcontrib, suffix))) #multiply t,b,i fractions with xsec at NNLO
+
+    def add_bbH_at_NLO(self, name, X, suffix="_SM_frac"):
+        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}"+suffix #import t,b,i fraction of xsec at NLO
+        loopcontribs = ['_t','_b','_i']
+        if suffix == "_SM_xsec":
+            loopcontribs.append("")
+        for loopcontrib in loopcontribs:
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory(
+                'prod::bb{X_MSSM}{LC}{suffix}(gg{X_SM}{LC}{suffix},1)'.format(
+                    X_MSSM = X,
+                    X_SM   = CPV_to_classic[X],
+                    LC = loopcontrib,
+                    suffix = suffix,
+                )
+            )
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC=loopcontrib), name.format(X=X, LC=""), "bb%s%s%s" % (X,loopcontrib, suffix))) #multiply t,b,i fractions with xsec at NNLO
 
     def preProcessNuisances(self,nuisances):
         doParams = set()
@@ -345,14 +372,16 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var('mHp').setConstant(True)
         self.modelBuilder.out.var('tanb').setConstant(True)
 
+        # change dependances
+        self.modelBuilder.out.var('mh').SetName('mH1')
+        self.modelBuilder.out.var('mH').SetName('mH2')
+        self.modelBuilder.out.var('mA').SetName('mH3')
+
         for proc in self.PROC_SETS:
             X = None
             if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
-                if self.is_CPV and 'ggH' in proc and any(["_{}".format(LC) in proc for LC in ["t", "b", "i"]]): # only for CPV
-                    terms = ['%s_SM_xsec' %proc, 'br_%stautau'%X]
-                else:
-                    terms = ['xs_%s' %proc, 'br_%stautau'%X]
+                terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqH1':
@@ -407,11 +436,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-            for LC in ["t", "b", "i"]:
-                self.add_ggH_at_NLO(X, LC, 'SM', 'xsec')
-                self.add_ggH_at_NLO(X, LC, 'SM', 'frac')
-                self.add_ggH_at_NLO(X, LC, '2HDM', 'xsec')
-            self.add_ggH_at_NLO(X, '', 'SM', 'xsec')
+            for suffix in ["_SM_frac", "_SM_xsec", "_2HDM_xsec"]:
+                self.add_ggH_at_NLO('xs_gg{X}{LC}', X, suffix=suffix)
+
+            self.add_bbH_at_NLO("xs_bb{X}{LC}", X, suffix="_SM_xsec")
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
