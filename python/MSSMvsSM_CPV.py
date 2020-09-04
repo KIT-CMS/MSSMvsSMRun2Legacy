@@ -343,8 +343,41 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     getattr(self.modelBuilder.out, 'import')(i, ROOT.RooFit.RecycleConflictNodes())
 
                 fractions_sm.Close()
-
         return True
+
+    def add_ggH_at_NLO_CPV(self, name, X, suffix="_SM_frac"):
+        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}"+suffix #import t,b,i fraction of xsec at NLO
+        loopcontribs = ['_t','_b','_i']
+        if suffix == "_SM_xsec":
+            loopcontribs.append("")
+        for loopcontrib in loopcontribs:
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory(
+                'prod::gg{X_MSSM}{LC}{suffix}(gg{X_SM}{LC}{suffix},1)'.format(
+                    X_MSSM = X,
+                    X_SM   = "h",
+                    LC = loopcontrib,
+                    suffix = suffix,
+                )
+            )
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC=loopcontrib), name.format(X=X, LC=""), "gg%s%s%s" % (X,loopcontrib, suffix))) #multiply t,b,i fractions with xsec at NNLO
+
+    def add_bbH_at_NLO_CPV(self, name, X, suffix="_SM_frac"):
+        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}{LC}"+suffix #import t,b,i fraction of xsec at NLO
+        loopcontribs = ['_t','_b','_i']
+        if suffix == "_SM_xsec":
+            loopcontribs.append("")
+        for loopcontrib in loopcontribs:
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=CPV_to_classic[X], LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory(
+                'prod::bb{X_MSSM}{LC}{suffix}(gg{X_SM}{LC}{suffix},1)'.format(
+                    X_MSSM = X,
+                    X_SM   = "h",
+                    LC = loopcontrib,
+                    suffix = suffix,
+                )
+            )
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC=loopcontrib), name.format(X=X, LC=""), "bb%s%s%s" % (X,loopcontrib, suffix))) #multiply t,b,i fractions with xsec at NNLO
 
     def add_ggH_at_NLO(self, name, X):
         importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}_{LC}_MSSM_frac" #import t,b,i fraction of xsec at NLO
@@ -386,7 +419,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             X = None
             if re.match("(gg(H3|H2|H1)_(t|i|b)|bb(H3|H2|H1))", proc):
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
-                terms = ['%s_SM_xsec' %proc, 'br_%stautau'%X]
+                terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqH1':
@@ -444,8 +477,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-            if not self.is_CPV:
+            if self.is_CPV:
+                for suffix in ["_SM_frac", "_SM_xsec", "_2HDM_xsec"]:
+                    self.add_ggH_at_NLO_CPV('xs_gg{X}{LC}', X, suffix=suffix)
+                self.add_bbH_at_NLO_CPV("xs_bb{X}{LC}", X, suffix="_SM_xsec")
+            else:
                 self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
+            
+
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
