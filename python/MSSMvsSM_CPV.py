@@ -399,7 +399,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms = [self.sigNorms[False]]
             if self.is_CPV and X in ['H2', 'H3']:
                 for xx in ['bb', 'gg']:
-                    terms.append('int_{}_tautau_{}'.format(xx, X))
+                    if xx in proc:
+                        terms.append('int_{}_tautau_{}'.format(xx, X))
             # Now scan terms and add theory uncerts
             extra = []
             for term in terms:
