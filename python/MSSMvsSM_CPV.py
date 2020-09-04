@@ -344,8 +344,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 fractions_sm.Close()
 
-        
-
         return True
 
     def add_ggH_at_NLO(self, name, X):
