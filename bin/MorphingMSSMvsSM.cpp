@@ -692,6 +692,13 @@ int main(int argc, char **argv) {
     binning_map["em"][19][0] = {0.0, 50.0, 50.0};
     binning_map["em"][19][1] = {50.0, 250.0, 10.0};
 
+    binning_map["em"][32] = {};
+    binning_map["em"][33] = {};
+    binning_map["em"][34] = {};
+    binning_map["em"][35] = {};
+    binning_map["em"][36] = {};
+    binning_map["em"][37] = {};
+
     binning_map["et"][1] = {};
     binning_map["et"][1][0] = {0.0, 50.0, 50.0};
     binning_map["et"][1][1] = {50.0, 150.0, 20.0};
@@ -738,6 +745,11 @@ int main(int argc, char **argv) {
     binning_map["et"][18] = {};
     binning_map["et"][18][0] = {0.0, 50.0, 50.0};
     binning_map["et"][18][1] = {50.0, 250.0, 20.0};
+
+    binning_map["et"][32] = {};
+    binning_map["et"][33] = {};
+    binning_map["et"][35] = {};
+    binning_map["et"][36] = {};
 
     binning_map["mt"][1] = {};
     binning_map["mt"][1][0] = {0.0, 50.0, 50.0};
@@ -787,6 +799,11 @@ int main(int argc, char **argv) {
     binning_map["mt"][18][0] = {0.0, 50.0, 50.0};
     binning_map["mt"][18][1] = {50.0, 250.0, 20.0};
 
+    binning_map["mt"][32] = {};
+    binning_map["mt"][33] = {};
+    binning_map["mt"][35] = {};
+    binning_map["mt"][36] = {};
+
     binning_map["tt"][10] = {};
 
     binning_map["tt"][11] = {};
@@ -821,6 +838,9 @@ int main(int argc, char **argv) {
     binning_map["tt"][17][0] = {0.0, 50.0, 50.0};
     binning_map["tt"][17][1] = {50.0, 250.0, 20.0};
 
+    binning_map["tt"][32] = {};
+    binning_map["tt"][35] = {};
+
     for(auto chn : chns)
     {
       for(auto b : cb.cp().channel({chn}).bin_id_set())
@@ -828,7 +848,7 @@ int main(int argc, char **argv) {
         std::vector<double> binning = binning_from_map(binning_map[chn][b]);
         if(binning.size() > 0)
         {
-            std::cout << "Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
+            std::cout << "[INFO] Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
             cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
         }
       }
@@ -962,7 +982,7 @@ int main(int argc, char **argv) {
   // Perform auto-rebinning
   if (auto_rebin) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(10.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
