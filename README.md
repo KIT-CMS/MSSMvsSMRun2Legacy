@@ -307,7 +307,7 @@ mkdir -p calculation_mh125_mssm_vs_sm_CPV
 cd calculation_mh125_mssm_vs_sm_CPV
 
 ulimit -s unlimited
-combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
+combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_CPV.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_CPV_1.{sh,sub}, submit to batch system:
 condor_submit  condor_mssm_mh125_mssm_vs_sm_CPV_1.sub
