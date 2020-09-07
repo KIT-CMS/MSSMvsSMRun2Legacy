@@ -856,9 +856,9 @@ int main(int argc, char **argv) {
   }
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
-  cb.cp().ForEachSyst([category](ch::Systematic *s){
+  cb.cp().ForEachSyst([category, mssm_signals](ch::Systematic *s){
     TString sname = TString(s->name());
-    if(s->type().find("shape") != std::string::npos)
+    if((s->type().find("shape") != std::string::npos) && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end()))
     {
       double err_u = 0.0;
       double err_d = 0.0;
