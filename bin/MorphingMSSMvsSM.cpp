@@ -855,9 +855,10 @@ int main(int argc, char **argv) {
     }
   }
   // Turn systematics into lnN
-  cb.cp().ForEachSyst([](ch::Systematic *s){
+  std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
+  cb.cp().ForEachSyst([category](ch::Systematic *s){
     TString sname = TString(s->name());
-    if(sname.Contains("boson") || sname == "CMS_scale_e" || sname.Contains("res_j") || sname.Contains("scale_j") || sname.Contains("met_unclustered"))
+    if(s->type().find("shape") != std::string::npos)
     {
       double err_u = 0.0;
       double err_d = 0.0;
@@ -868,7 +869,10 @@ int main(int argc, char **argv) {
       double value_d = s->value_d();
       if (std::abs(value_u-1.0)+std::abs(value_d-1.0)<err_u/yield_u+err_d/yield_d){
         s->set_type("lnN");
-        std::cout << "Setting systematic " << s->name() << " to lnN" << std::endl;
+        std::cout << "\tSetting systematic " << s->name() << " of process " << s->process() << " to lnN" << std::endl;
+      }
+      else{
+        std::cout << "\tLeaving systematic " << s->name() << " of process " << s->process() << " as shape" << std::endl;
       }
     }
   });
