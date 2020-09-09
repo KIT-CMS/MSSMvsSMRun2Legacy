@@ -195,7 +195,7 @@ mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_
 
 ## Workspace creation (exemplary for `mssm_vs_sm_classic_h125`)
 
-Currently supported scenario is mh125 (with a fixed version at cern afs)
+Please note, that the xsec & BR values for light scalar are incorrect in the current root files (see notes on (LHCHXSWGMSSMNeutral Twiki)[https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWGMSSMNeutral#ROOT_histograms_2018_and_beyond]). Currently supported and fixed scenario is [mh125_13](https://www.itp.kit.edu/~sliebler/files/mh125comparison/mh125_13.root).
 
 ```bash
 ulimit -s unlimited
