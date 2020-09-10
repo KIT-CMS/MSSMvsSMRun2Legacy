@@ -505,7 +505,9 @@ int main(int argc, char **argv) {
       }
       if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
+        if(analysis != "mssm_vs_sm_CPV"){
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
+        }
         if(analysis == "mssm_vs_sm_classic_h125")
         {
           cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, cats[chn], true);
