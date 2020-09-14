@@ -710,12 +710,12 @@ int main(int argc, char **argv) {
     binning_map["et"][10] = {};
     binning_map["et"][10][0] = {0.0, 70.0, 70.0};
     binning_map["et"][10][1] = {70.0, 150.0, 5.0};
-    binning_map["et"][10][2] = {150.0, 200.0, 10.0};
+    binning_map["et"][10][2] = {150.0, 250.0, 10.0};
 
     binning_map["et"][11] = {};
     binning_map["et"][11][0] = {0.0, 60.0, 60.0};
     binning_map["et"][11][1] = {60.0, 150.0, 5.0};
-    binning_map["et"][11][2] = {150.0, 200.0, 10.0};
+    binning_map["et"][11][2] = {150.0, 250.0, 10.0};
 
     binning_map["et"][12] = {};
     binning_map["et"][12][0] = {0.0, 70.0, 70.0};
