@@ -537,45 +537,53 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({mc_processes, {"jetFakes"}}))
+      // .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, {"jetFakes"}}))
+      .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals}))
       .AddSyst(cb, "CMS_scale_t_1prong_$ERA","shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({mc_processes, {"jetFakes"}}))
+      // .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, {"jetFakes"}}))
+      .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals}))
       .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA", "shape",
                SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({mc_processes, {"jetFakes"}}))
+      // .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, {"jetFakes"}}))
+      .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals}))
       .AddSyst(cb, "CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({mc_processes, {"jetFakes"}}))
+      // .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, {"jetFakes"}}))
+      .process(JoinStr({{"ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals}))
       .AddSyst(cb, "CMS_scale_t_3prong1pizero_$ERA", "shape",
                SystMap<>::init(1.0));
 
   // Component for EMB only
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
+      // .process({"EMB", "jetFakes"})
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_emb_1prong_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
+      // .process({"EMB", "jetFakes"})
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_emb_1prong1pizero_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
+      // .process({"EMB", "jetFakes"})
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_emb_3prong_$ERA", "shape", SystMap<>::init(0.866));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process({"EMB", "jetFakes"})
+      // .process({"EMB", "jetFakes"})
+      .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_emb_3prong1pizero_$ERA", "shape", SystMap<>::init(0.866));
   // Common component acting on EMB
 
