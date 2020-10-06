@@ -260,181 +260,181 @@ int main(int argc, char **argv) {
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
     cats["et"] = {
-        {  1, "et_wjets_control"},
-        { 32, "et_nobtag_tightmt"},
-        { 33, "et_nobtag_loosemt"},
-        { 35, "et_btag_tightmt"},
-        { 36, "et_btag_loosemt"},
+        {  1, "et_MTGt70"},
+        { 32, "et_Nbtag0_MTLt40"},
+        { 33, "et_Nbtag0_MT40To70"},
+        { 35, "et_NbtagGt1_MTLt40"},
+        { 36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        {  1, "mt_wjets_control"},
-        { 32, "mt_nobtag_tightmt"},
-        { 33, "mt_nobtag_loosemt"},
-        { 35, "mt_btag_tightmt"},
-        { 36, "mt_btag_loosemt"},
+        {  1, "mt_MTGt70"},
+        { 32, "mt_Nbtag0_MTLt40"},
+        { 33, "mt_Nbtag0_MT40To70"},
+        { 35, "mt_NbtagGt1_MTLt40"},
+        { 36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        { 32, "tt_nobtag"},
-        { 35, "tt_btag"},
+        { 32, "tt_Nbtag0"},
+        { 35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        {  1, "em_ttbar_control"},
-        { 32, "em_nobtag_highdzeta"},
-        { 33, "em_nobtag_mediumdzeta"},
-        { 34, "em_nobtag_lowdzeta"},
-        { 35, "em_btag_highdzeta"},
-        { 36, "em_btag_mediumdzeta"},
-        { 37, "em_btag_lowdzeta"},
+        {  1, "em_DZetaLtm35"},
+        { 32, "em_Nbtag0_DZetaGt30"},
+        { 33, "em_Nbtag0_DZetam10To30"},
+        { 34, "em_Nbtag0_DZetam35Tom10"},
+        { 35, "em_NbtagGt1_DZetaGt30"},
+        { 36, "em_NbtagGt1_DZetam10To30"},
+        { 37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else if(analysis == "sm"){
     cats["et"] = {
-        { 1, "et_wjets_control"},
+        { 1, "et_MTGt70"},  // control region
 
-        {10, "et_nobtag_lowmsv_0jet_tightmt"},
-        {11, "et_nobtag_lowmsv_0jet_loosemt"},
+        {10, "et_NJets0_MTLt40"},
+        {11, "et_NJets0_MT40To70"},
 
-        {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
+        {12, "et_NJetsGt0_DeltaRGt2p5"},
 
-        {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"},
+        {13, "et_NJets1_PTHLt120"},
+        {14, "et_NJets1_PTH120To200"},
+        {15, "et_NJets1_PTHGt200"},
 
-        {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+        {16, "et_NJetsGt1_MJJLt350"},
+        {17, "et_NJetsGt1_MJJ350To1000"},
+        {18, "et_NJetsGt1_MJJGt1000"},
     };
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
+        { 1, "mt_MTGt70"},  // control region
 
-        {10, "mt_nobtag_lowmsv_0jet_tightmt"},
-        {11, "mt_nobtag_lowmsv_0jet_loosemt"},
+        {10, "mt_NJets0_MTLt40"},
+        {11, "mt_NJets0_MT40To70"},
 
-        {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
+        {12, "mt_NJetsGt0_DeltaRGt2p5"},
 
-        {13, "mt_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
+        {13, "mt_NJets1_PTHLt120"},
+        {14, "mt_NJets1_PTH120To200"},
+        {15, "mt_NJets1_PTHGt200"},
 
-        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+        {16, "mt_NJetsGt1_MJJLt350"},
+        {17, "mt_NJetsGt1_MJJ350To1000"},
+        {18, "mt_NJetsGt1_MJJGt1000"},
     };
     cats["tt"] = {
-        {10, "tt_nobtag_lowmsv_highdeltar"},
+        {10, "tt_NjetsLt2_DeltaRGt3p2_NjetsGt2_DeltaGt2p5"},
 
-        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"},
+        {11, "tt_Njets0_DeltaRLt3p2"},
 
-        {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"},
-        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"},
+        {12, "tt_Njets1_DeltaRLt2p5_PTHLt100"},
+        {13, "tt_Njets1_DeltaR2p5To3p2_PTHLt100"},
+        {14, "tt_Njets1_DeltaRLt3p2_PTHGt100"},
 
-        {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"},
-        {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
+        {15, "tt_NjetsGt2_DeltaRLt2p5_MJJLt350"},
+        {16, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJLt4"},
+        {17, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJGt4"},
     };
     cats["em"] = {
-        { 1, "em_ttbar_control"},
+        { 1, "em_DZetaLtm35"}, // ttbar control region
 
-        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"},
-        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"},
-        {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
-        {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
+        {10, "em_NJets0_DZetamGtm10_PTHLt10"},
+        {11, "em_NJets0_DZetam35Tom10_PTHLt10"},
+        {12, "em_NJets0_DZetamGtm10_PTHGt10"},
+        {13, "em_NJets0_DZetam35Tom10_PTHGt10"},
 
-        {14, "em_nobtag_lowmsv_1jet_lowpt"},
-        {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
-        {16, "em_nobtag_lowmsv_1jet_highmediumpt"},
-        {17, "em_nobtag_lowmsv_1jet_highpt"},
+        {14, "em_NJets1_PTHLt40"},
+        {15, "em_NJets1_PTH40To120"},
+        {16, "em_NJets1_PTH120To200"},
+        {17, "em_NJets1_PTHGt200"},
 
-        {18, "em_nobtag_lowmsv_2jet_lowmjj"},
-        {19, "em_nobtag_lowmsv_2jet_mediummjj"},
+        {18, "em_NJetsGt2_MJJLt350"},
+        {19, "em_NJetsGt2_MJJGt350"},
     };
   }
   else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125"){
     cats["et"] = {
-        { 1, "et_wjets_control"},
+        { 1, "et_MTGt70"},  // control region
 
-        {10, "et_nobtag_lowmsv_0jet_tightmt"}, // No bbA
-        {11, "et_nobtag_lowmsv_0jet_loosemt"},
+        {10, "et_NJets0_MTLt40"},
+        {11, "et_NJets0_MT40To70"},
 
-        {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
+        {12, "et_NJetsGt0_DeltaRGt2p5"},
 
-        {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"}, // No bbA
-        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"}, // No bbA
+        {13, "et_NJets1_PTHLt120"},
+        {14, "et_NJets1_PTH120To200"},
+        {15, "et_NJets1_PTHGt200"},
 
-        {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
+        {16, "et_NJetsGt1_MJJLt350"},
+        {17, "et_NJetsGt1_MJJ350To1000"},
+        {18, "et_NJetsGt1_MJJGt1000"},
 
-        {32, "et_nobtag_highmsv_tightmt"},
-        {33, "et_nobtag_highmsv_loosemt"},
+        {32, "et_Nbtag0_MTLt40_MHGt250"},
+        {33, "et_Nbtag0_MT40To70_MHGt250"},
 
-        {35, "et_btag_tightmt"},
-        {36, "et_btag_loosemt"},
+        {35, "et_NbtagGt1_MTLt40"},
+        {36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
+        { 1, "mt_MTGt70"},  // control region
 
-        {10, "mt_nobtag_lowmsv_0jet_tightmt"},
-        {11, "mt_nobtag_lowmsv_0jet_loosemt"}, // No bbA
+        {10, "mt_NJets0_MTLt40"},
+        {11, "mt_NJets0_MT40To70"},
 
-        {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
+        {12, "mt_NJetsGt0_DeltaRGt2p5"},
 
-        {13, "mt_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
+        {13, "mt_NJets1_PTHLt120"},
+        {14, "mt_NJets1_PTH120To200"},
+        {15, "mt_NJets1_PTHGt200"},
 
-        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"}, // No bbA
-        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"}, // No bbA
-        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
+        {16, "mt_NJetsGt1_MJJLt350"},
+        {17, "mt_NJetsGt1_MJJ350To1000"},
+        {18, "mt_NJetsGt1_MJJGt1000"},
 
-        {32, "mt_nobtag_highmsv_tightmt"},
-        {33, "mt_nobtag_highmsv_loosemt"},
+        {32, "mt_Nbtag0_MTLt40_MHGt250"},
+        {33, "mt_Nbtag0_MT40To70_MHGt250"},
 
-        {35, "mt_btag_tightmt"},
-        {36, "mt_btag_loosemt"},
+        {35, "mt_NbtagGt1_MTLt40"},
+        {36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        {10, "tt_nobtag_lowmsv_highdeltar"},
+        {10, "tt_NjetsLt2_DeltaRGt3p2_NjetsGt2_DeltaGt2p5"},
 
-        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"}, // No bbA
+        {11, "tt_Njets0_DeltaRLt3p2"},
 
-        {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"}, // No bbA
-        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"}, // No bbA
+        {12, "tt_Njets1_DeltaRLt2p5_PTHLt100"},
+        {13, "tt_Njets1_DeltaR2p5To3p2_PTHLt100"},
+        {14, "tt_Njets1_DeltaRLt3p2_PTHGt100"},
 
-        {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"}, // No bbA
-        {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
+        {15, "tt_NjetsGt2_DeltaRLt2p5_MJJLt350"},
+        {16, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJLt4"},
+        {17, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJGt4"},
 
-        {32, "tt_nobtag_highmsv"},
+        {32, "tt_Nbtag0_MHGt250"},
 
-        {35, "tt_btag"},
+        {35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        { 1, "em_ttbar_control"},
+        { 1, "em_DZetaLtm35"},
 
-        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"}, // No bbA
-        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"}, // No bbA, bbH
-        {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
-        {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
+        {10, "em_NJets0_DZetamGtm10_PTHLt10"}, // No bbA
+        {11, "em_NJets0_DZetam35Tom10_PTHLt10"}, // No bbA, bbH
+        {12, "em_NJets0_DZetamGtm10_PTHGt10"},
+        {13, "em_NJets0_DZetam35Tom10_PTHGt10"},
 
-        {14, "em_nobtag_lowmsv_1jet_lowpt"},
-        {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
-        {16, "em_nobtag_lowmsv_1jet_highmediumpt"}, // No bbA
-        {17, "em_nobtag_lowmsv_1jet_highpt"}, // No bbA
+        {14, "em_NJets1_PTHLt40"},
+        {15, "em_NJets1_PTH40To120"},
+        {16, "em_NJets1_PTH120To200"}, // No bbA
+        {17, "em_NJets1_PTHGt200"}, // No bbA
 
-        {18, "em_nobtag_lowmsv_2jet_lowmjj"},
-        {19, "em_nobtag_lowmsv_2jet_mediummjj"},
+        {18, "em_NJetsGt2_MJJLt350"},
+        {19, "em_NJetsGt2_MJJGt350"},
 
-        {32, "em_nobtag_highmsv_highdzeta"},
-        {33, "em_nobtag_highmsv_mediumdzeta"},
-        {34, "em_nobtag_highmsv_lowdzeta"}, // No bbA
+        {32, "em_Nbtag0_DZetaGt30_MHGt250"},
+        {33, "em_Nbtag0_DZetam10To30_MHGt250"},
+        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
 
-        {35, "em_btag_highdzeta"},
-        {36, "em_btag_mediumdzeta"},
-        {37, "em_btag_lowdzeta"},
+        {35, "em_NbtagGt1_DZetaGt30"},
+        {36, "em_NbtagGt1_DZetam10To30"},
+        {37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
@@ -545,7 +545,7 @@ int main(int argc, char **argv) {
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
-    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
