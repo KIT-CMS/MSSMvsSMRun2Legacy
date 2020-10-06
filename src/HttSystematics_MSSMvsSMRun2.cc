@@ -303,7 +303,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::string tauTriggerdmbins[4] = {"0", "1", "10", "11"};
   for (auto tauTriggerbin: tauTriggerdmbins)
   {
-      // mt cross trigger
+      // lt cross trigger
       cb.cp()
           .channel({"mt", "et"})
           .process(mc_processes)
@@ -324,18 +324,18 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       cb.cp()
           .channel({"tt"})
           .process(mc_processes)
-          .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(1.00));
+          .AddSyst(cb, "CMS_eff_trigger_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(1.00));
           
       cb.cp()
           .channel({"tt"})
           .process({"EMB"})
-          .AddSyst(cb, "CMS_eff_xtrigger_t_emb_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.866));
+          .AddSyst(cb, "CMS_eff_trigger_emb_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.866));
 
       // Correlated component acting on Embedded
       cb.cp()
           .channel({"tt"})
           .process({"EMB"})
-          .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
+          .AddSyst(cb, "CMS_eff_trigger_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
   }
 
   // ##########################################################################
