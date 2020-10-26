@@ -206,7 +206,10 @@ Currently supported scenario is mh125 (with a fixed version at cern afs)
 ulimit -s unlimited
 combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh125_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_mssm_vs_sm_classic_h125/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
 ```
-_NB_ : for the `mssm_vs_sm_CPV` analysis, use `mh1125_CPV_13.root` instead of `mh125_13.root` and `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root` instead of `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root`.
+_NB_ : for the `mssm_vs_sm_CPV` analysis, use `mh1125_CPV_13.root` instead of `mh125_13.root` and `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root` instead of `--PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root`. You may also change `ws_mh125.root` to `ws_mH1125_CPV.root`. The command to run would then be
+```
+combineTool.py -M T2W -o ws_mH1125_CPV.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM_CPV:MSSMvsSM_CPV --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh1125_CPV_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root -i output_mssm_vs_sm_CPV/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
+```
 
 ## Model-dependent CLs 95% limits for `mssm_vs_sm_classic_h125`
 
@@ -306,7 +309,7 @@ mkdir -p calculation_mh125_mssm_vs_sm_CPV
 cd calculation_mh125_mssm_vs_sm_CPV
 
 ulimit -s unlimited
-combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_CPV.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOI x --setParameters r=1 --freezeParameters r
+combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_CPV.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mH1125_CPV.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_1' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOI x --setParameters r=1 --freezeParameters r
 
 # After adaption of each shell script and condor configuration matching mattern condor_mssm_mh125_mssm_vs_sm_CPV_1.{sh,sub}, submit to batch system:
 condor_submit  condor_mssm_mh125_mssm_vs_sm_CPV_1.sub
@@ -318,7 +321,7 @@ Basically the same command as above, but with a different task name (in case som
 
 ```bash
 ulimit -s unlimited
-combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_CPV.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mh125.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_2' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOI x --setParameters r=1 --freezeParameters r
+combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_CPV.json -d ${CMSSW_BASE}/src/output_mssm_vs_sm_CPV/combined/cmb/ws_mH1125_CPV.root --job-mode 'condor' --task-name 'mssm_mh125_mssm_vs_sm_CPV_2' --dry-run -v1 --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOI x --setParameters r=1 --freezeParameters r
 ```
 
 **Plotting limits:**
