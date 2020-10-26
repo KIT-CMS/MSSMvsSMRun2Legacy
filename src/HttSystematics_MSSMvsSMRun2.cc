@@ -62,7 +62,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       };
   std::vector<std::string> signals_VH = {
       // STXS stage 0
-      "WH125", "ZH125", "ttH125"};
+      "WH125", "ZH125", "ttH125", "VH125"};
   std::vector<std::string> signals_ggHToWW = {
      // STXS stage 0
      "ggHWW125"};
@@ -419,12 +419,20 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_htt_eff_b_$ERA_$CHANNEL", "shape", SystMap<>::init(0.71));
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_htt_mistag_b_$ERA_$CHANNEL", "shape", SystMap<>::init(0.71));
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
@@ -749,7 +757,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
-      .AddSyst(cb, "CMS_htt_ttbarShape", "shape", SystMap<>::init(1.00));
+      .AddSyst(cb, "CMS_htt_ttbarShape", "shape", SystMap<>::init(0.71));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({"TTT", "TTL", "TTJ", "TT"})
+      .AddSyst(cb, "CMS_htt_ttbarShape_$ERA", "shape", SystMap<>::init(0.71));
 
   // ##########################################################################
   // Uncertainty: Electron/muon to tau fakes and ZL energy scale
@@ -872,10 +884,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
 
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(nmssm_signals)
-      .AddSyst(cb, "MG_scale_choice", "shape", SystMap<>::init(1.00));
+//  cb.cp()
+//      .channel({"et", "mt", "tt", "em"})
+//      .process(nmssm_signals)
+//      .AddSyst(cb, "MG_scale_choice", "shape", SystMap<>::init(1.00));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(nmssm_signals)
@@ -890,15 +902,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(signals)
-      .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(signals)
-      .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(signals)
-      .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
+      .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.021));
+
   // Uncertainty on branching ratio for HWW at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -927,12 +932,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   }
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125"})
-      .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.009));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"WH125"})
-      .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.008));
+      .process({"ZH125","VH125"})
+      .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.01));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"ttH125"})
@@ -953,7 +954,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"WH125"})
+      .process({"WH125","VH125"})
       .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -1067,7 +1068,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
     .process({"EMB"})
-    .AddSyst(cb, "CMS_htt_emb_ttbar_$ERA", "shape", SystMap<>::init(1.00));
+    .AddSyst(cb, "CMS_htt_emb_ttbar_$ERA", "shape", SystMap<>::init(1.0));
 
   // Uncertainty of hadronic tau track efficiency correction
   // uncorrelated between eras
@@ -1233,16 +1234,59 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           
 
 
-  // Stat. norm (uncorrelated across years)
+//   // Stat. norm (uncorrelated across years)
+//   cb.cp()
+//       .channel({"et", "mt", "tt"})
+//       .process({"jetFakes"})
+//       .AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$ERA", "lnN", SystMap<channel>::init
+// 	       ({"mt"}, 1.026) //incl
+// 	       ({"et"}, 1.046) //incl
+// 	       ({"tt"}, 1.029) //incl
+// 	       );
   cb.cp()
       .channel({"et", "mt", "tt"})
       .process({"jetFakes"})
-      .AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$ERA", "lnN", SystMap<channel>::init
-	       ({"mt"}, 1.026) //incl
-	       ({"et"}, 1.046) //incl
-	       ({"tt"}, 1.029) //incl
+      .AddSyst(cb, "CMS_ff_norm_stat_$CHANNEL_$BIN_$ERA", "lnN", SystMap<channel, bin_id>::init
+	       ({"mt"}, {1},  1.026)
+	       ({"mt"}, {2},  1.026) 
+	       ({"mt"}, {3},  1.026)
+	       ({"mt"}, {4},  1.026)
+	       ({"mt"}, {5},  1.026) 
+	       ({"mt"}, {6},  1.026)
+	       ({"mt"}, {7},  1.026) 
+	       ({"mt"}, {8},  1.026)
+	       ({"mt"}, {9},  1.026)
+	       ({"mt"}, {10},  1.026)
+	       ({"mt"}, {11},  1.026)
+	       ({"mt"}, {12},  1.026)
+	       ({"mt"}, {300}, 1.026)
+	       ({"et"}, {1},  1.046)
+	       ({"et"}, {2},  1.046) 
+	       ({"et"}, {3},  1.046)
+	       ({"et"}, {4},  1.046)
+	       ({"et"}, {5},  1.046) 
+	       ({"et"}, {6},  1.046)
+	       ({"et"}, {7},  1.046) 
+	       ({"et"}, {8},  1.046)
+	       ({"et"}, {9},  1.046)
+	       ({"et"}, {10},  1.046)
+	       ({"et"}, {11},  1.046)
+	       ({"et"}, {12},  1.046)
+	       ({"et"}, {300}, 1.046)
+	       ({"tt"}, {1},  1.029)
+	       ({"tt"}, {2},  1.029) 
+	       ({"tt"}, {3},  1.029)
+	       ({"tt"}, {4},  1.029)
+	       ({"tt"}, {5},  1.029) 
+	       ({"tt"}, {6},  1.029)
+	       ({"tt"}, {7},  1.029) 
+	       ({"tt"}, {8},  1.029)
+	       ({"tt"}, {9},  1.029)
+	       ({"tt"}, {10},  1.029)
+	       ({"tt"}, {11},  1.029)
+	       ({"tt"}, {12},  1.029)
+	       ({"tt"}, {300}, 1.029)
 	       );
-
   // Syst. norm: Bin-correlated
   // uncorrelated between eras
   cb.cp()
