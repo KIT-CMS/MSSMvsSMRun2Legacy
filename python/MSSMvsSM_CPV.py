@@ -12,16 +12,6 @@ import re
 from collections import defaultdict
 from array import array
 
-# tmp trick
-CPV_to_classic = {
-    'H1' : 'h',
-    'H2' : 'H',
-    'H3' : 'A',
-    'h' : 'h',
-    'H' : 'H',
-    'A' : 'A',
-}
-
 class MSSMvsSMHiggsModel(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
