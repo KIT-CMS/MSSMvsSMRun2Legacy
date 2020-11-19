@@ -327,7 +327,7 @@ combineTool.py -M AsymptoticGrid ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2
 **Plotting limits:**
 
 ```bash
-plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} CPV scenario (H1,H2,H3#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_CPV  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13_fixed.root --y-range 2.0,60.0 --x-title "m_{H^#pm} [GeV]"
+plotLimitGrid.py asymptotic_grid.root --scenario-label="M_{h}^{125} CPV scenario (H1,H2,H3#rightarrow#tau#tau)" --output mssm_mh125_mssm_vs_sm_CPV  --title-right="137 fb^{-1} (13 TeV)" --cms-sub="Own Work" --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh1125_CPV_13.root --y-range 2.0,60.0 --x-title "m_{H^#pm} [GeV]" --mass_histogram m_H1
 ```
 
 ## Adaptions needed for job submission via htcondor
