@@ -46,6 +46,8 @@ int main(int argc, char **argv) {
   string chan = "all";
   string category = "all";
   string heavy_mass = "all";
+  string training_mass = "all";
+  string training_batch = "all";
   string light_mass = "all";
   // string variable = "m_ttvisbb";
   bool auto_rebin = false;
@@ -54,23 +56,28 @@ int main(int argc, char **argv) {
   bool verbose = false;
   string analysis = "nmssm"; // "sm", "sm_standard"  "mssm", "mssm_btag", "mssm_vs_sm_standard", "mssm_vs_sm_qqh", "gof"
   int era = 2016; // 2016, 2017 or 2018
+  int restrict_to_cat = -1;
+
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
       ("base_path", po::value<string>(&base_path)->default_value(base_path))
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
-      // ("variable", po::value<string>(&variable)->default_value(variable))
       ("channel", po::value<string>(&chan)->default_value(chan))
       ("category", po::value<string>(&category)->default_value(category))
       ("heavy_mass", po::value<string>(&heavy_mass)->default_value(heavy_mass))
       ("light_mass", po::value<string>(&light_mass)->default_value(light_mass))
+      ("training_mass", po::value<string>(&training_mass)->default_value(training_mass))
+      ("training_batch", po::value<string>(&training_batch)->default_value(training_batch))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
       ("binomial_bbb", po::value<bool>(&binomial_bbb)->default_value(binomial_bbb))
-      ("era", po::value<int>(&era)->default_value(era));
+      ("era", po::value<int>(&era)->default_value(era))
+      ("restrict_to_cat", po::value<int>(&restrict_to_cat)->default_value(restrict_to_cat));
+
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -105,12 +112,9 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, sm_signals;
 
-  sm_signals = {"ttH125"};
-  main_sm_signals = {"ggH125", "qqH125"};
-
-  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  sm_signals = {"ttH125", "VH125", "ggH125", "qqH125"}; //, "VHBB"};
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
@@ -132,64 +136,9 @@ int main(int argc, char **argv) {
 
 if(analysis == "nmssm"){
     for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
+        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-
-  /*
-  // vector<string> heavy_masses = {"240", "280", "320", "360", "400", "450", "500", "550", "600", "700", "800", "900", "1000", "1200", "1400", "1600", "1800", "2000", "2500", "3000"};
-  vector<string> light_mass_coarse = {"60"};//, "70", "80", "90", "100", "120", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "800", "900", "1000", "1100", "1200", "1300", "1400", "1600", "1800", "2000", "2200", "2400", "2600", "2800"};
-  vector<string> light_mass_fine = {"60"};//, "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "150", "170", "190", "250", "300", "350", "400", "450", "500", "550", "600", "650", "700", "750", "800", "850"};
-
-  vector<string> masses;
-  vector<string> light_masses_list;
-
-  int hm;
-  int lm;
-  // for(int i=0;i<heavy_masses.size();i++) {
-  //   sig_procs.push_back({});
-  //   light_masses_list.push_back({});
-  //   hm = std::stoi(heavy_masses[i]);
-  //   if(hm>1001) {
-  //     for(int j=0;j<light_mass_coarse.size();j++) {
-  //       lm = std::stoi(light_mass_coarse[i]);
-  //       if((lm+125)>hm) {
-  //         continue;
-  //       }
-  //         sig_procs[i].push_back("NMSSM_"+heavy_masses[i]+"_125_"+light_mass_coarse[i]);
-  //         light_masses_list.push_back(lm);
-  //     }
-  //   }
-  //   else {
-  //     for(int j=0;j<light_mass_fine.size();j++) {
-  //       lm = std::stoi(light_mass_fine[i]);
-  //       if((lm+125)>hm) {
-  //         continue;
-  //       }
-  //         sig_procs[i].push_back("NMSSM_"+heavy_masses[i]+"_125_"+light_mass_fine[i]);
-  //         light_masses_list.push_back(lm);
-  //     }
-  //   }
-    hm = std::stoi(heavy_mass);
-    if(hm>1001) {
-      for(uint i=0;i<light_mass_coarse.size();i++) {
-        lm = std::stoi(light_mass_coarse[i]);
-        if((lm+125)>hm) {
-          continue;
-        }
-          light_masses_list.push_back(light_mass_coarse[i]);
-      }
-    }
-    else {
-      for(uint i=0;i<light_mass_fine.size();i++) {
-        lm = std::stoi(light_mass_fine[i]);
-        if((lm+125)>hm) {
-          continue;
-        }
-          light_masses_list.push_back(light_mass_fine[i]);
-      }
-    }
-  */
   // Specify signal processes and masses
   vector<string> sig_procs;
   // STXS stage 0: ggH and VBF processes
@@ -207,6 +156,8 @@ if(analysis == "nmssm"){
 
   // Define categories
   map<string, Categories> cats;
+  string tmp_mass = training_mass;
+  if (training_mass=="1200") training_mass = "gt1000";
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "nmssm"){
     cats["et"] = {
@@ -214,17 +165,7 @@ if(analysis == "nmssm"){
       { 2 , "et_tt"},
       { 3 , "et_misc"},
       { 4 , "et_ff"},
-      { 5 , "et_NMSSM_MH1001to1999_boosted"},
-      { 6 , "et_NMSSM_MH1001to1999_unboosted"},
-      { 7 , "et_NMSSM_MH2000toinfty_boosted"},
-      { 8 , "et_NMSSM_MH2000toinfty_unboosted"},
-      { 9 , "et_NMSSM_MH240to320_unboosted"},
-      { 10, "et_NMSSM_MH321to500_boosted"},
-      { 11, "et_NMSSM_MH321to500_unboosted"},
-      { 12, "et_NMSSM_MH501to700_boosted"},
-      { 13, "et_NMSSM_MH501to700_unboosted"},
-      { 14, "et_NMSSM_MH701to1000_boosted"},
-      { 15, "et_NMSSM_MH701to1000_unboosted"}
+      { 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch},
     };
 
 
@@ -234,54 +175,33 @@ if(analysis == "nmssm"){
       { 2 , "mt_tt"},
       { 3 , "mt_misc"},
       { 4 , "mt_ff"},
-      { 5 , "mt_NMSSM_MH1001to1999_boosted"},
-      { 6 , "mt_NMSSM_MH1001to1999_unboosted"},
-      { 7 , "mt_NMSSM_MH2000toinfty_boosted"},
-      { 8 , "mt_NMSSM_MH2000toinfty_unboosted"},
-      { 9 , "mt_NMSSM_MH240to320_unboosted"},
-      { 10, "mt_NMSSM_MH321to500_boosted"},
-      { 11, "mt_NMSSM_MH321to500_unboosted"},
-      { 12, "mt_NMSSM_MH501to700_boosted"},
-      { 13, "mt_NMSSM_MH501to700_unboosted"},
-      { 14, "mt_NMSSM_MH701to1000_boosted"},
-      { 15, "mt_NMSSM_MH701to1000_unboosted"}
+      { 5 , "mt_NMSSM_MH"+training_mass+"_"+training_batch}
     };
+
     cats["tt"] = {
       { 1 , "tt_emb"},
       { 2 , "tt_tt"},
       { 3 , "tt_misc"},
       { 4 , "tt_ff"},
-      { 5 , "tt_NMSSM_MH1001to1999_boosted"},
-      { 6 , "tt_NMSSM_MH1001to1999_unboosted"},
-      { 7 , "tt_NMSSM_MH2000toinfty_boosted"},
-      { 8 , "tt_NMSSM_MH2000toinfty_unboosted"},
-      { 9 , "tt_NMSSM_MH240to320_unboosted"},
-      { 10, "tt_NMSSM_MH321to500_boosted"},
-      { 11, "tt_NMSSM_MH321to500_unboosted"},
-      { 12, "tt_NMSSM_MH501to700_boosted"},
-      { 13, "tt_NMSSM_MH501to700_unboosted"},
-      { 14, "tt_NMSSM_MH701to1000_boosted"},
-      { 15, "tt_NMSSM_MH701to1000_unboosted"}
+      { 5 , "tt_NMSSM_MH"+training_mass+"_"+training_batch}
     };
     cats["em"] = {
       { 1 , "em_emb"},
-      { 2 , "em_tt"},
+      { 2 , "em_tt"}, 
       { 3 , "em_misc"},
-      { 4 , "em_ss"},
-      { 5 , "em_NMSSM_MH1001to1999_boosted"},
-      { 6 , "em_NMSSM_MH1001to1999_unboosted"},
-      { 7 , "em_NMSSM_MH2000toinfty_boosted"},
-      { 8 , "em_NMSSM_MH2000toinfty_unboosted"},
-      { 9 , "em_NMSSM_MH240to320_unboosted"},
-      { 10, "em_NMSSM_MH321to500_boosted"},
-      { 11, "em_NMSSM_MH321to500_unboosted"},
-      { 12, "em_NMSSM_MH501to700_boosted"},
-      { 13, "em_NMSSM_MH501to700_unboosted"},
-      { 14, "em_NMSSM_MH701to1000_boosted"},
-      { 15, "em_NMSSM_MH701to1000_unboosted"}
+      { 4 , "em_ff"}, 
+      { 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch}
     };
   }
+
   else throw std::runtime_error("Given categorization is not known.");
+  training_mass = tmp_mass;
+  if(restrict_to_cat>0) {
+    cats["mt"] = {{restrict_to_cat, cats["mt"].at(restrict_to_cat-1).second}};
+    cats["et"] = {{restrict_to_cat, cats["et"].at(restrict_to_cat-1).second}};
+    cats["tt"] = {{restrict_to_cat, cats["tt"].at(restrict_to_cat-1).second}};
+    cats["em"] = {{restrict_to_cat, cats["em"].at(restrict_to_cat-1).second}};
+  }
 
   // Create combine harverster object
   ch::CombineHarvester cb;
@@ -306,7 +226,7 @@ if(analysis == "nmssm"){
   }
 
   // Add systematics
-  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, true, true, era, heavy_mass, light_mass);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, true, true, false, false, era, heavy_mass, light_mass);
 
   // Define restriction to the desired category
   // if(category != "all"){
@@ -316,10 +236,10 @@ if(analysis == "nmssm"){
   // Extract shapes from input ROOT files
   for (string chn : chns) {
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score" + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score_" + training_mass + "_" + training_batch + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC"); 
     if(analysis == "nmssm"){
       cb.cp().channel({chn}).process(sig_procs).ExtractShapes(
-          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score" + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+          input_dir[chn] + "htt_" + chn + ".inputs-nmssm-" + era_tag + "-" + chn + "_max_score_" + training_mass + "_" + training_batch + ".root", "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC"); 
       }
     }
 
@@ -372,7 +292,7 @@ if(analysis == "nmssm"){
       auto total_procs_shape = cb.cp().bin({b}).data().GetShape();
       total_procs_shape.Scale(0.0);
       if(analysis == "nmssm"){
-        auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
+        auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals})).GetShape();
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         bool no_sm_signal = (sm_signal_shape.GetNbinsX() == 1 && sm_signal_shape.Integral() == 0.0);
         if(no_sm_signal && no_background)

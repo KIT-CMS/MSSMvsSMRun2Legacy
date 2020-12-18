@@ -80,7 +80,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               signals_ggHToWW,
               signals_qqHToWW,
               nmssm_signals,
-              {"ZTT", "TT", "TTT", "TTL", "TTJ", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST", "W"}
+              {"ZTT", "TT", "TTT", "TTL", "TTJ", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST", "W", "VHBB"}
               });
 
   // ##########################################################################
@@ -274,7 +274,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // 3% in Tau ID SF with different anti-l fake WP
   cb.cp()
       .channel({"mt", "tt"})
-      .process(JoinStr({signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, {"VHBB","EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
 
   std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "500-1000", "1000-inf"};
@@ -299,24 +299,24 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   for (auto tauIDbin : tauIDptbins){ //first part correlated between channels for IDvsJets
     cb.cp()
         .channel({"et", "mt"})
-        .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp() //second part uncorrelated between channels for IDvsLep
       .channel({"et", "mt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: tt with 2 real taus
   for (auto tauIDbin : tauIDdmbins){
     cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.014));
 
   // Component for EMB only
@@ -480,23 +480,23 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_t_1prong_$ERA", "shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA", "shape",
                SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_t_3prong_$ERA", "shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
-      .process(JoinStr({signals, nmssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
+      .process(JoinStr({signals, nmssm_signals, {"VHBB","ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes"}}))
       .AddSyst(cb, "CMS_scale_t_3prong1pizero_$ERA", "shape",
                SystMap<>::init(1.0));
 
@@ -625,7 +625,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZTT", "TT", "TTT", "TTL", "TTJ", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST", "W"})  //Z and W processes are only included due to the EWK fraction. Make sure that there is no contribution to the shift from the DY or Wjets samples.
+      .process({"ZTT", "TT", "TTT", "TTL", "TTJ", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST", "W", "VHBB"})  //Z and W processes are only included due to the EWK fraction. Make sure that there is no contribution to the shift from the DY or Wjets samples.
       .AddSyst(cb, "CMS_scale_met_unclustered", "shape", SystMap<>::init(1.00));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -904,6 +904,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(signals)
       .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.021));
 
+  // Uncertainty on branching ratio for HBB at 125 GeV
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({"VHBB"})
+      .AddSyst(cb, "BR_hbb", "lnN", SystMap<>::init(1.021));
+
   // Uncertainty on branching ratio for HWW at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -948,13 +954,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"et", "mt", "tt", "em"})
      .process(JoinStr({signals_qqH,signals_qqHToWW, {"qqh"}}))
      .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
+//   cb.cp()
+//       .channel({"et", "mt", "tt", "em"})
+//       .process({"ZH125"})
+//       .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125"})
-      .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"WH125","VH125"})
+      .process({"WH125","VH125","VHBB"})
       .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
