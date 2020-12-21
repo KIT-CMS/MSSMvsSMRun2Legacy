@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
   bool verbose = false;
   bool use_automc = true;
   bool mva(false), no_emb(false);
+  bool sm = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -109,6 +110,7 @@ int main(int argc, char **argv) {
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
+      ("sm", po::value<bool>(&sm)->default_value(sm))
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
       ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
@@ -164,9 +166,12 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
+  // if (variable == "nnscore"){
+  //   sm_signals = {"WH_htt", "ZH_htt", "ttH_htt"};
+  //   main_sm_signals = {"ggH_htt125", "qqH_htt125"};
+  // }
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -188,9 +193,18 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  // if (variable == "nnscore"){
+  //   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggH_hww", "qqH_hww", "WH_hww", "ZH_hww"};
+  //   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggH_hww", "qqH_hww", "WH_hww", "ZH_hww"};
+  // }
+  if ( sm == true){
+    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
+    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "jetFakes"), bkgs_em.end());
+    bkgs.push_back("jetFakesSM");
+    bkgs_em.push_back("jetFakesSM");
+  }
   update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
@@ -289,83 +303,52 @@ int main(int argc, char **argv) {
   }
   else if(analysis == "sm"){
     cats["et"] = {
-        { 1, "et_MTGt70"},  // control region
+      { 1, "et_xxh"}, // SM Signal Category
 
-        {10, "et_NJets0_MTLt40"},
-        {11, "et_NJets0_MT40To70"},
-
-        {12, "et_NJetsGt0_DeltaRGt2p5"},
-
-        {13, "et_NJets1_PTHLt120"},
-        {14, "et_NJets1_PTH120To200"},
-        {15, "et_NJets1_PTHGt200"},
-
-        {16, "et_NJetsGt1_MJJLt350"},
-        {17, "et_NJetsGt1_MJJ350To1000"},
-        {18, "et_NJetsGt1_MJJGt1000"},
+      {13, "et_tt"},
+      {15, "et_zll"},
+      {16, "et_misc"},
+      {20, "et_emb"},
+      {21, "et_ff"}
     };
+
     cats["mt"] = {
-        { 1, "mt_MTGt70"},  // control region
+      { 1, "mt_xxh"}, // SM Signal Category
 
-        {10, "mt_NJets0_MTLt40"},
-        {11, "mt_NJets0_MT40To70"},
-
-        {12, "mt_NJetsGt0_DeltaRGt2p5"},
-
-        {13, "mt_NJets1_PTHLt120"},
-        {14, "mt_NJets1_PTH120To200"},
-        {15, "mt_NJets1_PTHGt200"},
-
-        {16, "mt_NJetsGt1_MJJLt350"},
-        {17, "mt_NJetsGt1_MJJ350To1000"},
-        {18, "mt_NJetsGt1_MJJGt1000"},
+      {13, "mt_tt"},
+      {15, "mt_zll"},
+      {16, "mt_misc"},
+      {20, "mt_emb"},
+      {21, "mt_ff"}
     };
+
     cats["tt"] = {
-        {10, "tt_NjetsLt2_DeltaRGt3p2_NjetsGt2_DeltaGt2p5"},
+      { 1, "tt_xxh"}, // SM Signal Category
 
-        {11, "tt_Njets0_DeltaRLt3p2"},
-
-        {12, "tt_Njets1_DeltaRLt2p5_PTHLt100"},
-        {13, "tt_Njets1_DeltaR2p5To3p2_PTHLt100"},
-        {14, "tt_Njets1_DeltaRLt3p2_PTHGt100"},
-
-        {15, "tt_NjetsGt2_DeltaRLt2p5_MJJLt350"},
-        {16, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJLt4"},
-        {17, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJGt4"},
+      {16, "tt_misc"},
+      {20, "tt_emb"},
+      {21, "tt_ff"}
     };
+
     cats["em"] = {
-        { 1, "em_DZetaLtm35"}, // ttbar control region
+      { 1, "em_xxh"}, // SM Signal Category
 
-        {10, "em_NJets0_DZetamGtm10_PTHLt10"},
-        {11, "em_NJets0_DZetam35Tom10_PTHLt10"},
-        {12, "em_NJets0_DZetamGtm10_PTHGt10"},
-        {13, "em_NJets0_DZetam35Tom10_PTHGt10"},
-
-        {14, "em_NJets1_PTHLt40"},
-        {15, "em_NJets1_PTH40To120"},
-        {16, "em_NJets1_PTH120To200"},
-        {17, "em_NJets1_PTHGt200"},
-
-        {18, "em_NJetsGt2_MJJLt350"},
-        {19, "em_NJetsGt2_MJJGt350"},
+      {13, "em_tt"},
+      {14, "em_ss"},
+      {16, "em_misc"},
+      {19, "em_db"},
+      {20, "em_emb"}
     };
   }
   else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125"){
     cats["et"] = {
-        { 1, "et_MTGt70"},  // control region
+        { 1, "et_xxh"}, // SM Signal Category
 
-        {10, "et_NJets0_MTLt40"},
-        {11, "et_NJets0_MT40To70"},
-
-        {12, "et_NJetsGt0_DeltaRGt2p5"},
-
-        {13, "et_NJets1_PTHLt120"},
-        {14, "et_NJets1_PTH120To200"},
-        {15, "et_NJets1_PTHGt200"},
-
-        {16, "et_NJetsGt1_MJJLt350"},
-        {17, "et_NJetsGt1_MJJ350To1000"},
-        {18, "et_NJetsGt1_MJJGt1000"},
+        {13, "et_tt"},
+        {15, "et_zll"},
+        {16, "et_misc"},
+        {20, "et_emb"},
+        {21, "et_ff"},
 
         {32, "et_Nbtag0_MTLt40_MHGt250"},
         {33, "et_Nbtag0_MT40To70_MHGt250"},
@@ -374,20 +357,13 @@ int main(int argc, char **argv) {
         {36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        { 1, "mt_MTGt70"},  // control region
+        { 1, "mt_xxh"}, // SM Signal Category
 
-        {10, "mt_NJets0_MTLt40"},
-        {11, "mt_NJets0_MT40To70"},
-
-        {12, "mt_NJetsGt0_DeltaRGt2p5"},
-
-        {13, "mt_NJets1_PTHLt120"},
-        {14, "mt_NJets1_PTH120To200"},
-        {15, "mt_NJets1_PTHGt200"},
-
-        {16, "mt_NJetsGt1_MJJLt350"},
-        {17, "mt_NJetsGt1_MJJ350To1000"},
-        {18, "mt_NJetsGt1_MJJGt1000"},
+        {13, "mt_tt"},
+        {15, "mt_zll"},
+        {16, "mt_misc"},
+        {20, "mt_emb"},
+        {21, "mt_ff"},
 
         {32, "mt_Nbtag0_MTLt40_MHGt250"},
         {33, "mt_Nbtag0_MT40To70_MHGt250"},
@@ -396,37 +372,24 @@ int main(int argc, char **argv) {
         {36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        {10, "tt_NjetsLt2_DeltaRGt3p2_NjetsGt2_DeltaGt2p5"},
+        { 1, "tt_xxh"}, // SM Signal Category
 
-        {11, "tt_Njets0_DeltaRLt3p2"},
-
-        {12, "tt_Njets1_DeltaRLt2p5_PTHLt100"},
-        {13, "tt_Njets1_DeltaR2p5To3p2_PTHLt100"},
-        {14, "tt_Njets1_DeltaRLt3p2_PTHGt100"},
-
-        {15, "tt_NjetsGt2_DeltaRLt2p5_MJJLt350"},
-        {16, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJLt4"},
-        {17, "tt_NjetsGt2_DeltaRLt2p5_MJJGt350_EtaJJGt4"},
+        {16, "tt_misc"},
+        {20, "tt_emb"},
+        {21, "tt_ff"},
 
         {32, "tt_Nbtag0_MHGt250"},
 
         {35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        { 1, "em_DZetaLtm35"},
+        { 1, "em_xxh"}, // SM Signal Category
 
-        {10, "em_NJets0_DZetamGtm10_PTHLt10"}, // No bbA
-        {11, "em_NJets0_DZetam35Tom10_PTHLt10"}, // No bbA, bbH
-        {12, "em_NJets0_DZetamGtm10_PTHGt10"},
-        {13, "em_NJets0_DZetam35Tom10_PTHGt10"},
-
-        {14, "em_NJets1_PTHLt40"},
-        {15, "em_NJets1_PTH40To120"},
-        {16, "em_NJets1_PTH120To200"}, // No bbA
-        {17, "em_NJets1_PTHGt200"}, // No bbA
-
-        {18, "em_NJetsGt2_MJJLt350"},
-        {19, "em_NJetsGt2_MJJGt350"},
+        {13, "em_tt"},
+        {14, "em_ss"},
+        {16, "em_misc"},
+        {19, "em_db"},
+        {20, "em_emb"},
 
         {32, "em_Nbtag0_DZetaGt30_MHGt250"},
         {33, "em_Nbtag0_DZetam10To30_MHGt250"},
@@ -445,12 +408,10 @@ int main(int argc, char **argv) {
 
 
   // Introduce ordering of categories for the final discriminator in MSSM
-  std::vector<int> sm_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                    11,12,13,14,15,16,17,18,19,20,
-                                    21,22,23,24,25,26,27,28,29,30,31}; // SM-like categories with m_sv as discriminator
+  std::vector<int> sm_categories = {13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> control_region_categories = {1}; // control regions with mt_tot as discriminator
+  std::vector<int> sm_signal_category = {1}; // category for the SM signal
 
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
@@ -482,7 +443,13 @@ int main(int argc, char **argv) {
             --catit;
           }
         }
-
+        for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+        {
+          if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+            mssm_cats.erase(catit);
+            --catit;
+          }
+        }
         for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
         {
           if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
@@ -497,6 +464,13 @@ int main(int argc, char **argv) {
             --catit;
           }
         }
+        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+        {
+          if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+            mssm_btag_cats.erase(catit);
+            --catit;
+          }
+        }
 
         for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
         {
@@ -505,6 +479,19 @@ int main(int argc, char **argv) {
             --catit;
           }
         }
+        std::cout << "[INFO] Using the following categories:" << std::endl;
+        std::cout << "   sm_and_btag_cats:" << std::endl;
+        for (const auto i: sm_and_btag_cats)
+          std::cout << "      " << i.first << ' ' << i.second << std::endl;
+        std::cout  << std::endl;
+        std::cout << "    mssm_cats:" << std::endl;
+        for (const auto i: mssm_cats)
+          std::cout << "      " << i.first << ' ' << i.second << std::endl;
+        std::cout  << std::endl;
+        std::cout << "    mssm_btag_cats:" << std::endl;
+        for (const auto i: mssm_btag_cats)
+          std::cout << "      " << i.first << ' ' << i.second << std::endl;
+        std::cout  << std::endl;
 
         if(analysis == "mssm_vs_sm"){
           cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
@@ -514,11 +501,11 @@ int main(int argc, char **argv) {
         cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
         cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
 
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        if(analysis == "mssm_vs_sm_h125"){
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        }
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+        // cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+        // if(analysis == "mssm_vs_sm_h125"){
+        //   cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+        // }
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals}), cats[chn], true);
       }
       if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
@@ -534,8 +521,8 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb);
-  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva);
+  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
 
   // Define restriction to the desired category
   if(category != "all"){
@@ -547,6 +534,9 @@ int main(int argc, char **argv) {
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
+    // if (variable == "nnscore"){
+    //   input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + "nnet" + ".root";
+    // }
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
@@ -586,8 +576,6 @@ int main(int argc, char **argv) {
     if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
       cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
   }
 
@@ -674,51 +662,13 @@ int main(int argc, char **argv) {
     binning_map["mt"] = {};
     binning_map["tt"] = {};
 
+
     binning_map["em"][1] = {};
-
-    binning_map["em"][10] = {};
-    binning_map["em"][10][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][10][1] = {50.0, 160.0, 5.0};
-    binning_map["em"][10][2] = {160.0, 250.0, 10.0};
-
-    binning_map["em"][11] = {};
-    binning_map["em"][11][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][11][1] = {50.0, 140.0, 5.0};
-    binning_map["em"][11][2] = {140.0, 250.0, 10.0};
-
-    binning_map["em"][12] = {};
-    binning_map["em"][12][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][12][1] = {50.0, 160.0, 5.0};
-    binning_map["em"][12][2] = {160.0, 250.0, 10.0};
-
     binning_map["em"][13] = {};
-    binning_map["em"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][13][1] = {50.0, 140.0, 5.0};
-    binning_map["em"][13][2] = {140.0, 250.0, 10.0};
-
     binning_map["em"][14] = {};
-    binning_map["em"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][14][1] = {50.0, 150.0, 5.0};
-    binning_map["em"][14][2] = {150.0, 250.0, 10.0};
-
-    binning_map["em"][15] = {};
-    binning_map["em"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][15][1] = {50.0, 150.0, 5.0};
-    binning_map["em"][15][2] = {150.0, 250.0, 10.0};
-
     binning_map["em"][16] = {};
-    binning_map["em"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][16][1] = {50.0, 250.0, 10.0};
-
-    binning_map["em"][17] = {};
-    binning_map["em"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][17][1] = {50.0, 250.0, 20.0};
-
-    binning_map["em"][18] = {};
-
+    binning_map["em"][20] = {};
     binning_map["em"][19] = {};
-    binning_map["em"][19][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][19][1] = {50.0, 250.0, 10.0};
 
     binning_map["em"][32] = {};
     binning_map["em"][33] = {};
@@ -728,143 +678,36 @@ int main(int argc, char **argv) {
     binning_map["em"][37] = {};
 
     binning_map["et"][1] = {};
-    binning_map["et"][1][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][1][1] = {50.0, 150.0, 20.0};
-    binning_map["et"][1][2] = {150.0, 500.0, 10.0};
-    binning_map["et"][1][3] = {500.0, 1000.0, 25.0};
-    binning_map["et"][1][4] = {1000.0, 2000.0, 50.0};
-    binning_map["et"][1][5] = {2000.0, 5000.0, 100.0};
-
-    binning_map["et"][10] = {};
-    binning_map["et"][10][0] = {0.0, 70.0, 70.0};
-    binning_map["et"][10][1] = {70.0, 150.0, 5.0};
-    binning_map["et"][10][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][11] = {};
-    binning_map["et"][11][0] = {0.0, 60.0, 60.0};
-    binning_map["et"][11][1] = {60.0, 150.0, 5.0};
-    binning_map["et"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][12] = {};
-    binning_map["et"][12][0] = {0.0, 70.0, 70.0};
-    binning_map["et"][12][1] = {70.0, 250.0, 5.0};
-
     binning_map["et"][13] = {};
-    binning_map["et"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][13][1] = {50.0, 250.0, 10.0};
-
-    binning_map["et"][14] = {};
-    binning_map["et"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][14][1] = {50.0, 250.0, 10.0};
-
     binning_map["et"][15] = {};
-    binning_map["et"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][15][1] = {50.0, 250.0, 20.0};
-
     binning_map["et"][16] = {};
-    binning_map["et"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][16][1] = {50.0, 150.0, 5.0};
-    binning_map["et"][16][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][17] = {};
-    binning_map["et"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][17][1] = {50.0, 250.0, 10.0};
-
-    binning_map["et"][18] = {};
-    binning_map["et"][18][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][18][1] = {50.0, 250.0, 20.0};
+    binning_map["et"][20] = {};
+    binning_map["et"][21] = {};
 
     binning_map["et"][32] = {};
     binning_map["et"][33] = {};
     binning_map["et"][35] = {};
     binning_map["et"][36] = {};
 
+
     binning_map["mt"][1] = {};
-    binning_map["mt"][1][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][1][1] = {50.0, 150.0, 20.0};
-    binning_map["mt"][1][2] = {150.0, 500.0, 10.0};
-    binning_map["mt"][1][3] = {500.0, 1000.0, 25.0};
-    binning_map["mt"][1][4] = {1000.0, 2000.0, 50.0};
-    binning_map["mt"][1][5] = {2000.0, 5000.0, 100.0};
-
-    binning_map["mt"][10] = {};
-    binning_map["mt"][10][0] = {0.0, 70.0, 70.0};
-    binning_map["mt"][10][1] = {70.0, 150.0, 5.0};
-    binning_map["mt"][10][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][11] = {};
-    binning_map["mt"][11][0] = {0.0, 60.0, 60.0};
-    binning_map["mt"][11][1] = {60.0, 150.0, 5.0};
-    binning_map["mt"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][12] = {};
-    binning_map["mt"][12][0] = {0.0, 70.0, 70.0};
-    binning_map["mt"][12][1] = {70.0, 250.0, 5.0};
-
     binning_map["mt"][13] = {};
-    binning_map["mt"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][13][1] = {50.0, 150.0, 5.0};
-    binning_map["mt"][13][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][14] = {};
-    binning_map["mt"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][14][1] = {50.0, 250.0, 10.0};
-
     binning_map["mt"][15] = {};
-    binning_map["mt"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][15][1] = {50.0, 250.0, 20.0};
-
     binning_map["mt"][16] = {};
-    binning_map["mt"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][16][1] = {50.0, 150.0, 5.0};
-    binning_map["mt"][16][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][17] = {};
-    binning_map["mt"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][17][1] = {50.0, 250.0, 10.0};
-
-    binning_map["mt"][18] = {};
-    binning_map["mt"][18][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][18][1] = {50.0, 250.0, 20.0};
+    binning_map["mt"][20] = {};
+    binning_map["mt"][21] = {};
 
     binning_map["mt"][32] = {};
     binning_map["mt"][33] = {};
     binning_map["mt"][35] = {};
     binning_map["mt"][36] = {};
 
+
+    binning_map["tt"][1] = {};
     binning_map["tt"][10] = {};
-
-    binning_map["tt"][11] = {};
-    binning_map["tt"][11][0] = {0.0, 80.0, 80.0};
-    binning_map["tt"][11][1] = {80.0, 150.0, 5.0};
-    binning_map["tt"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["tt"][12] = {};
-    binning_map["tt"][12][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][12][1] = {50.0, 150.0, 5.0};
-    binning_map["tt"][12][2] = {200.0, 250.0, 50.0};
-
-    binning_map["tt"][13] = {};
-    binning_map["tt"][13][0] = {0.0, 100.0, 100.0};
-    binning_map["tt"][13][1] = {100.0, 250.0, 5.0};
-
-    binning_map["tt"][14] = {};
-    binning_map["tt"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][14][1] = {50.0, 150.0, 10.0};
-    binning_map["tt"][14][2] = {150.0, 250.0, 20.0};
-
-    binning_map["tt"][15] = {};
-    binning_map["tt"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][15][1] = {50.0, 150.0, 10.0};
-    binning_map["tt"][15][2] = {150.0, 250.0, 20.0};
-
     binning_map["tt"][16] = {};
-    binning_map["tt"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][16][1] = {50.0, 250.0, 20.0};
-
-    binning_map["tt"][17] = {};
-    binning_map["tt"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][17][1] = {50.0, 250.0, 20.0};
+    binning_map["tt"][20] = {};
+    binning_map["tt"][21] = {};
 
     binning_map["tt"][32] = {};
     binning_map["tt"][35] = {};
