@@ -106,7 +106,7 @@ elif [[ $MODE == "collect-dependent" ]]; then
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs.txt
 
-    condor_submit ${taskname2}.sub
+    condor_submit condor_${taskname2}.sub
     cp asymptotic_grid.root ..
     cd ${defaultdir}/limits/
 
