@@ -195,8 +195,6 @@ mkdir -p output_mssm_vs_sm_h125/combined/cmb/; rsync -av --progress output_mssm_
 
 ## Workspace creation (exemplary for `mssm_vs_sm_classic_h125`)
 
-Please note, that the xsec & BR values for light scalar are incorrect in the current root files (see notes on [LHCHXSWGMSSMNeutral Twiki](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWGMSSMNeutral#ROOT_histograms_2018_and_beyond)). Currently supported and fixed scenario is [mh125_13](https://www.itp.kit.edu/~sliebler/files/mh125comparison/mh125_13.root).
-
 ```bash
 ulimit -s unlimited
 combineTool.py -M T2W -o ws_mh125.root  -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ --PO modelFile=13,Run2017,mh125_13.root --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root -i output_mssm_vs_sm_classic_h125/combined/cmb/ --PO minTemplateMass=110.0 --PO maxTemplateMass=3200.0
