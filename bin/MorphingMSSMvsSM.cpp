@@ -1109,7 +1109,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
-    morphFactory.Run(cb, ws, process_norm_map); // buggy with CPV at this stage
+    morphFactory.Run(cb, ws, process_norm_map);
 
     if(analysis == "mssm"){
       // Adding 'norm' terms into workspace according to desired signals
