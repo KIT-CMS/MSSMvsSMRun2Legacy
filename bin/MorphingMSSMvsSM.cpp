@@ -86,6 +86,7 @@ int main(int argc, char **argv) {
   bool use_automc = true;
   bool mva(false), no_emb(false);
   bool sm = false;
+  bool rebin_sm = true;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -168,10 +169,6 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
-  // if (variable == "nnscore"){
-  //   sm_signals = {"WH_htt", "ZH_htt", "ttH_htt"};
-  //   main_sm_signals = {"ggH_htt125", "qqH_htt125"};
-  // }
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -195,10 +192,6 @@ int main(int argc, char **argv) {
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  // if (variable == "nnscore"){
-  //   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggH_hww", "qqH_hww", "WH_hww", "ZH_hww"};
-  //   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggH_hww", "qqH_hww", "WH_hww", "ZH_hww"};
-  // }
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
     bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "jetFakes"), bkgs_em.end());
@@ -501,11 +494,11 @@ int main(int argc, char **argv) {
         cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
         cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
 
-        // cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        // if(analysis == "mssm_vs_sm_h125"){
-        //   cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        // }
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals}), cats[chn], true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+        if(analysis == "mssm_vs_sm_h125"){
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+        }
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
       }
       if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
@@ -528,15 +521,11 @@ int main(int argc, char **argv) {
   if(category != "all"){
     cb = cb.bin({category});
   }
-  // cb.PrintAll();
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
-    // if (variable == "nnscore"){
-    //   input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + "nnet" + ".root";
-    // }
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
@@ -576,6 +565,8 @@ int main(int argc, char **argv) {
     if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
       cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
     }
   }
 
@@ -859,6 +850,33 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
     auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
+  }
+
+    // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
+  if (rebin_sm && sm) {
+    // Rebin background categories
+    // for(auto chn : chns)
+    // {
+      for(auto b : cb.cp().bin_id_set())
+      {
+        TString bstr = b;
+        if (bstr.Contains("ggh") || bstr.Contains("qqh") || bstr.Contains("vbftopo") || bstr.Contains("xxh")) continue;
+        std::cout << "[INFO] Rebin background bin " << b << "\n";
+        auto shape = cb.cp().bin_id({b}).backgrounds().GetShape();
+        auto min = shape.GetBinLowEdge(1);
+        std::vector<double> sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+        if(bstr.Contains("em") && bstr.Contains("misc")) sm_binning = {min, 0.4, 1.0};
+        else if(bstr.Contains("em_emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+        else if(bstr.Contains("et") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+        else if(bstr.Contains("mt") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+        else if(bstr.Contains("mt") && bstr.Contains("emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+        else sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+        std::cout << "[INFO] Using binning: ";
+        printVector(sm_binning);
+        std::cout << "\n";
+        cb.cp().bin_id({b}).VariableRebin(sm_binning);
+      // }
+    }
   }
 
   // This function modifies every entry to have a standardised bin name of
