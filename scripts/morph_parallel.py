@@ -24,6 +24,10 @@ parser.add_argument('--parallel', type=int, default=5, help = "Cores provided fo
 parser.add_argument('--additional_arguments', type=str, default="--auto_rebin=1" , help = "Additional arguments to be passed to the Morphing executable")
 parser.add_argument('--dry_run',action='store_true', help = "Don't execute, only list Morphing commands")
 
+parser.add_argument('--sm_gg_fractions',
+                    default = '${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root',
+                    help = "sm_gg_fractions file to use")
+
 args = parser.parse_args()
 
 categories = []
@@ -34,11 +38,11 @@ eras = args.eras.split(',')
 
 commands = []
 
-command_template = "MorphingMSSMvsSM --era={ERA} --category={CATEGORY} --analysis={ANALYSIS} {ADDITIONALARGS} --output_folder={OUTPUT} --variable={VARIABLE}"
+command_template = "MorphingMSSMvsSM --era={ERA} --category={CATEGORY} --analysis={ANALYSIS} {ADDITIONALARGS} --output_folder={OUTPUT} --variable={VARIABLE} --sm_gg_fractions={SM_GG_FRACTIONS}"
 
 for era in eras:
     for category in categories:
-        command = command_template.format(ERA=era, CATEGORY=category, ANALYSIS=args.analysis, ADDITIONALARGS=args.additional_arguments, OUTPUT=args.output_folder, VARIABLE=args.variable)
+        command = command_template.format(ERA=era, CATEGORY=category, ANALYSIS=args.analysis, ADDITIONALARGS=args.additional_arguments, OUTPUT=args.output_folder, VARIABLE=args.variable, SM_GG_FRACTIONS=args.sm_gg_fractions)
         commands.append(command)
 
 if args.dry_run:
