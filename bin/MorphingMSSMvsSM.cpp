@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
-  bool verbose = false;
+  bool verbose = true;
   bool use_automc = true;
   bool mva(false), no_emb(false);
   bool sm = false;
@@ -716,6 +716,41 @@ int main(int argc, char **argv) {
       }
     }
   }
+  // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
+  if (rebin_sm && sm) {
+    // Rebin background categories
+    // for(auto chn : chns)
+    // {
+      for(auto b : cb.cp().bin_id_set())
+      {
+        TString bstr = b;
+        TString cat = category;
+        std::cout << "[INFO] Desciding the binning for " << b << "/" << category << std::endl;
+        if (cat.Contains("xxh")){
+          std::cout << "[INFO] Performing auto-rebinning for SM signal category.\n";
+          auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+          rebin.Rebin(cb, cb);
+        }
+        else {
+          std::cout << "[INFO] Rebin background bin " << b << "\n";
+          auto shape = cb.cp().bin_id({b}).backgrounds().GetShape();
+          auto min = shape.GetBinLowEdge(1);
+          std::vector<double> sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+          if(bstr.Contains("em") && bstr.Contains("misc")) sm_binning = {min, 0.4, 1.0};
+          else if(bstr.Contains("em_emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("et") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("mt") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("mt") && bstr.Contains("emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+          std::cout << "[INFO] Using binning: ";
+          printVector(sm_binning);
+          std::cout << "\n";
+          cb.cp().bin_id({b}).VariableRebin(sm_binning);
+        }
+      // }
+    }
+  }
+
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
   cb.cp().ForEachSyst([category, mssm_signals](ch::Systematic *s){
@@ -729,6 +764,7 @@ int main(int argc, char **argv) {
       double yield_d = s->shape_d()->IntegralAndError(1,nbins,err_d);
       double value_u = s->value_u();
       double value_d = s->value_d();
+      // std::cout << "value_u: " << value_u << " value_d: " << value_d << " unc: " << err_u/yield_u+err_d/yield_d << " diff: " << std::abs(value_u-1.0)+std::abs(value_d-1.0) << std::endl;
       if (std::abs(value_u-1.0)+std::abs(value_d-1.0)<err_u/yield_u+err_d/yield_d){
         s->set_type("lnN");
         std::cout << "\tSetting systematic " << s->name() << " of process " << s->process() << " to lnN" << std::endl;
@@ -736,6 +772,7 @@ int main(int argc, char **argv) {
       else{
         std::cout << "\tLeaving systematic " << s->name() << " of process " << s->process() << " as shape" << std::endl;
       }
+      // std::cout << ch::Systematic::PrintHeader << *s << "\n";
     }
   });
 
@@ -845,38 +882,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Perform auto-rebinning
-  if (auto_rebin) {
+  if (auto_rebin && !sm) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
     auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
-  }
-
-    // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
-  if (rebin_sm && sm) {
-    // Rebin background categories
-    // for(auto chn : chns)
-    // {
-      for(auto b : cb.cp().bin_id_set())
-      {
-        TString bstr = b;
-        if (bstr.Contains("ggh") || bstr.Contains("qqh") || bstr.Contains("vbftopo") || bstr.Contains("xxh")) continue;
-        std::cout << "[INFO] Rebin background bin " << b << "\n";
-        auto shape = cb.cp().bin_id({b}).backgrounds().GetShape();
-        auto min = shape.GetBinLowEdge(1);
-        std::vector<double> sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
-        if(bstr.Contains("em") && bstr.Contains("misc")) sm_binning = {min, 0.4, 1.0};
-        else if(bstr.Contains("em_emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
-        else if(bstr.Contains("et") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
-        else if(bstr.Contains("mt") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
-        else if(bstr.Contains("mt") && bstr.Contains("emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
-        else sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
-        std::cout << "[INFO] Using binning: ";
-        printVector(sm_binning);
-        std::cout << "\n";
-        cb.cp().bin_id({b}).VariableRebin(sm_binning);
-      // }
-    }
   }
 
   // This function modifies every entry to have a standardised bin name of
