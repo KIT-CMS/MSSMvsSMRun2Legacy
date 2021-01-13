@@ -60,7 +60,7 @@ if [[ $MODE == "initial" ]]; then
     rsync -av --progress ${datacarddir}/${ERA}/htt_${CHANNEL}* ${datacarddir}/${ERA}/${CHANNEL}/
     rsync -av --progress ${datacarddir}/${ERA}/restore_binning ${datacarddir}/${ERA}/${CHANNEL}/restore_binning
 
-elif [[ $MODE == "ws-dependent" ]]; then
+elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
@@ -89,22 +89,22 @@ elif [[ $MODE == "ws-dependent" ]]; then
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 &> ${defaultdir}/logs/job_setup.txt
 
-elif [[ $MODE == "submit-dependent" ]]; then
+elif [[ $MODE == "submit" ]]; then
     ############
     # job submission
     ############
     cd ${defaultdir}/limits/condor
     condor_submit condor_${taskname}.sub
 
-elif [[ $MODE == "submit-dependent_local" ]]; then
+elif [[ $MODE == "submit-local" ]]; then
     ############
     # job submission
     ############
-    cp script/run_limits_locally.py ${defaultdir}/limits/condor
+    cp scripts/run_limits_locally.py ${defaultdir}/limits/condor
     cd ${defaultdir}/limits/condor
     python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
 
-elif [[ $MODE == "collect-dependent" ]]; then
+elif [[ $MODE == "collect" ]]; then
     ############
     # job collection
     ############
@@ -131,7 +131,7 @@ elif [[ $MODE == "collect-dependent" ]]; then
     ############
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)" \
-    --output ${TAG} \
+    --output ${TAG}_${ERA}_${CHANNEL} \
     --title-right="${CHANNEL} - ${LUMI}" \
     --cms-sub="Own Work" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
