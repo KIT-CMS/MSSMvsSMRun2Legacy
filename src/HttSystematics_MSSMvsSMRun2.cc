@@ -301,6 +301,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   // Tau trigger efficiencies implemented as shape uncertainties in all channels.
   std::string tauTriggerdmbins[4] = {"0", "1", "10", "11"};
+  std::string tauTriggerRegions[2] = {"", "_highpT"};
   for (auto tauTriggerbin: tauTriggerdmbins)
   {
       // lt cross trigger
@@ -320,23 +321,42 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .process({"EMB"})
           .AddSyst(cb, "CMS_eff_xtrigger_t_$CHANNEL_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
 
-      // di-tau trigger
-      cb.cp()
-          .channel({"tt"})
-          .process(mc_processes)
-          .AddSyst(cb, "CMS_eff_trigger_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(1.00));
-          
-      cb.cp()
-          .channel({"tt"})
-          .process({"EMB"})
-          .AddSyst(cb, "CMS_eff_trigger_emb_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.866));
+      for (auto region: tauTriggerRegions) {
+          // di-tau trigger
+          cb.cp()
+              .channel({"tt"})
+              .process(mc_processes)
+              .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+region+"_$ERA", "shape", SystMap<>::init(1.00));
+              
+          cb.cp()
+              .channel({"tt"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_eff_xtrigger_t_emb_tt_dm"+tauTriggerbin+region+"_$ERA", "shape", SystMap<>::init(0.866));
 
-      // Correlated component acting on Embedded
-      cb.cp()
-          .channel({"tt"})
-          .process({"EMB"})
-          .AddSyst(cb, "CMS_eff_trigger_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
+          // Correlated component acting on Embedded
+          cb.cp()
+              .channel({"tt"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+region+"_$ERA", "shape", SystMap<>::init(0.5));
+      }
   }
+
+  // Single tau trigger
+  cb.cp()
+      .channel({"mt", "et", "tt"})
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_eff_trigger_single_t_$ERA", "shape", SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"mt", "et", "tt"})
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_trigger_single_t_emb_$ERA", "shape", SystMap<>::init(0.866));
+  
+  // Correlated component acting on Embedded
+  cb.cp()
+      .channel({"mt", "et", "tt"})
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_eff_trigger_single_t_$ERA", "shape", SystMap<>::init(0.5));
 
   // ##########################################################################
   // Uncertainty: Electron, muon and tau ID efficiency
