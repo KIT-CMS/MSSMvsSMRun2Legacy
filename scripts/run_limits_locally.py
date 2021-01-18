@@ -16,8 +16,8 @@ index_list = range(0, 2820)
 
 
 def command(index):
-    os.system("./{} {}".format(args.task, str(index)))
+    os.system("./{} {}".format(args.taskname, str(index)))
 
 
-p = Pool(args.ncores)
+p = Pool(int(args.cores))
 p.map(command, index_list)
