@@ -194,9 +194,7 @@ int main(int argc, char **argv) {
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
-    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "jetFakes"), bkgs_em.end());
     bkgs.push_back("jetFakesSM");
-    bkgs_em.push_back("jetFakesSM");
   }
   update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
