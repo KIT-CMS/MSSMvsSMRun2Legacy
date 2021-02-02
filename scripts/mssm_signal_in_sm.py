@@ -14,6 +14,12 @@ parser.add_argument("--inputfile",
                     type=str,
                     required=True,
                     help="path to shapes")
+
+parser.add_argument("--mssmfile",
+                    type=str,
+                    default="",
+                    help="path to MSSM nominal signal shapes")
+
 parser.add_argument('--channel',
                     type=str,
                     required=True,
@@ -34,6 +40,11 @@ parser.add_argument(
     action='store_true',
     help="if set, the number of entries, instead of the integral is checked")
 
+parser.add_argument(
+    '--add-fraction',
+    action='store_true',
+    help="if set, the fraction of events ending up in the SM categories is shown")
+
 
 args = parser.parse_args()
 r.gROOT.SetBatch()
@@ -50,7 +61,7 @@ category_dict = {
 }
 
 
-def get_integrals(channel, f, categories, entries):
+def get_integrals(channel, f, mssmfile, categories, add_fraction, entries):
     output_data = {}
     output_data["mass"] = {}
     rfile = r.TFile.Open(f, "read")
@@ -81,9 +92,26 @@ def get_integrals(channel, f, categories, entries):
             else:
                 output_data[category][process] = d.Get(process).Integral()
     rfile.Close()
+
+    if add_fraction:
+        rmssmfile = r.TFile.Open(mssmfile, "read")
+        fractions = {}
+        for category in categories:
+            fractions[category] = {}
+            dm = rmssmfile.Get(category)
+            for process in processes:
+                if args.entries:
+                    fractions[category][process] = dm.Get(process).GetEntries()
+                else:
+                    fractions[category][process] = dm.Get(process).Integral()
+        output_data["_fraction"] = {}
+        for process in processes:
+            sm_signals = sum([output_data[a][process] for a in categories])
+            mssm_signals = sum([fractions[a][process] for a in categories])
+            output_data["_fraction"][process] = sm_signals / (sm_signals + mssm_signals)
     df = pd.DataFrame(output_data,
                       index=processes,
-                      columns=categories + ["mass"])
+                      columns=categories + ["mass"] + ["_fraction"])
     return df, processes
 
 
@@ -108,7 +136,7 @@ def plot_contribution(data, channel, era, threshold, do_mask, entries):
                              linecolor="grey",
                              annot_kws={'size': 12},
                              cbar_kws={"shrink": .8},
-                             fmt=".1f",
+                             fmt=".3f",
                              mask=mask)
         else:
             ax = sns.heatmap(subset,
@@ -118,7 +146,7 @@ def plot_contribution(data, channel, era, threshold, do_mask, entries):
                              linecolor="grey",
                              annot_kws={'size': 12},
                              cbar_kws={"shrink": .8},
-                             fmt=".1f")
+                             fmt=".3f")
         xticks_labels = [
             catgegory.split("_")[1] for catgegory in subset.columns
         ]
@@ -148,5 +176,5 @@ era = args.era
 categories = sorted(
     ['{}_{}'.format(channel, cat) for cat in category_dict[channel]])
 
-data, processes = get_integrals(channel, args.inputfile, categories, args.entries)
+data, processes = get_integrals(channel, args.inputfile, args.mssmfile, categories, args.add_fraction, args.entries)
 plot_contribution(data, channel, era, args.threshold, args.mask, args.entries)
