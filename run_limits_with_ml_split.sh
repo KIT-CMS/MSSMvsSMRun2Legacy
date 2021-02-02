@@ -6,19 +6,19 @@ MODE=$2
 CHANNEL=$3
 ERA=$4
 if [[ $TAG == "auto" ]]; then
-    TAG="${CHANNEL}_${ERA}"
+    TAG="${CHANNEL}_${ERA}_sm_only_h125"
 fi
 
 if [[ $ERA == "2016" ]]; then
     LUMI="35.9 fb^{-1} (2016, 13 TeV)"
-elif [[ $ERA == "2016" ]]; then
+elif [[ $ERA == "2017" ]]; then
     LUMI="41.5 fb^{-1} (2017, 13 TeV)"
-elif [[ $ERA == "2016" ]]; then
+elif [[ $ERA == "2018" ]]; then
     LUMI="59.7 fb^{-1} (2018, 13 TeV)"
 fi
 
 defaultdir=analysis/$TAG
-analysis="mssm_vs_sm"
+analysis="mssm_vs_sm_h125"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -40,12 +40,12 @@ if [[ $MODE == "initial" ]]; then
         --sm \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
-    morph_parallel.py --output ${defaultdir}/datacards \
-        --analysis ${analysis} \
-        --eras $ERA \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
-        --variable mt_tot_puppi \
-        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+    # morph_parallel.py --output ${defaultdir}/datacards \
+    #     --analysis ${analysis} \
+    #     --eras $ERA \
+    #     --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
+    #     --variable mt_tot_puppi \
+    #     --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs

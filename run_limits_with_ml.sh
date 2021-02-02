@@ -4,7 +4,7 @@ ulimit -s unlimited
 TAG=$1
 MODE=$2
 defaultdir=analysis/$TAG
-analysis="mssm_vs_sm"
+analysis="mssm_vs_sm_h125"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -26,12 +26,12 @@ if [[ $MODE == "initial" ]]; then
         --sm \
         --parallel 2 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
-    morph_parallel.py --output ${defaultdir}/datacards \
-        --analysis ${analysis} \
-        --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
-        --variable mt_tot_puppi \
-        --parallel 2 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+    # morph_parallel.py --output ${defaultdir}/datacards \
+    #     --analysis ${analysis} \
+    #     --eras 2016,2017,2018 \
+    #     --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+    #     --variable mt_tot_puppi \
+    #     --parallel 2 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
@@ -86,6 +86,14 @@ elif [[ $MODE == "submit-dependent" ]]; then
     cd ${defaultdir}/limits/condor
     condor_submit condor_${taskname}.sub
 
+elif [[ $MODE == "submit-dependent-local" ]]; then
+    ############
+    # job submission
+    ############
+    cp scripts/run_limits_locally.py ${defaultdir}/limits/condor
+    cd ${defaultdir}/limits/condor
+    python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
+
 elif [[ $MODE == "collect-dependent" ]]; then
     ############
     # job collection
@@ -93,7 +101,7 @@ elif [[ $MODE == "collect-dependent" ]]; then
     cd ${defaultdir}/limits/condor/
     combineTool.py -M AsymptoticGrid \
     ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_mh125.json \
-    -d ${datacarddir}/cmb/ws_mh125.root \
+    -d ${datacarddir}/combined/cmb/ws_mh125.root \
     --job-mode 'condor' \
     --task-name $taskname2 \
     --dry-run \
