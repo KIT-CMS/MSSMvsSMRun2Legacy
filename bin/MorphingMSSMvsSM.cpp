@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
   // Define categories
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
+  if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
     cats["et"] = {
         {  1, "et_MTGt70"},
         { 32, "et_Nbtag0_MTLt40"},
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
       {20, "em_emb"}
     };
   }
-  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125"){
+  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm"){
     cats["et"] = {
         { 1, "et_xxh"}, // SM Signal Category
 
@@ -932,6 +932,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
+    std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
     RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
