@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
@@ -190,8 +190,10 @@ int main(int argc, char **argv) {
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
+  update_vector_by_byparser(bkgs_tt, parser_bkgs, "bkgs_tt");
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
@@ -218,13 +220,17 @@ int main(int argc, char **argv) {
     std::cout << "For em channel : \n\t";
     printVector(bkgs_em);
   }
-  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
-    std::cout << "For et,mt,tt channels : \n\t";
+  if (chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For tt channels : \n\t";
+    printVector(bkgs_tt);
+  }
+  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For et,mt channels : \n\t";
     printVector(bkgs);
   }
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
-  bkg_procs["tt"] = bkgs;
+  bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
   if(analysis == "sm"){
