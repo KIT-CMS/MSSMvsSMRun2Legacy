@@ -24,7 +24,7 @@ git clone git@github.com:KIT-CMS/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/C
 git clone git@github.com:KIT-CMS/CombineHarvester.git CombineHarvester # fixes & extensions for morphing (22.08.2019)
 
 # MSSM vs SM analysis specific code
-git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
+git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy -b ntuple_processor
 
 # SM analysis specific code
 git clone git@github.com:KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
@@ -56,3 +56,5 @@ wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub
 # Download ggH NLO reweighting inputs
 git archive --remote=ssh://git@gitlab.cern.ch:7999/cms-htt/MSSM-Full-2016.git HEAD Models/higgs_pt_v3.root | tar -C CombineHarvester/MSSMvsSMRun2Legacy/data -xf - Models/higgs_pt_v3.root --strip-components=1
 git archive --remote=ssh://git@gitlab.cern.ch:7999/cms-htt/MSSM-Full-2016.git HEAD Models/higgs_pt_v3_mssm_mode.root | tar -C CombineHarvester/MSSMvsSMRun2Legacy/data -xf - Models/higgs_pt_v3_mssm_mode.root --strip-components=1
+wget https://github.com/danielwinterbottom/ggh-mssm/raw/master/workspace/higgs_pt_v0.root -P CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/data/
+wget https://github.com/danielwinterbottom/ggh-mssm/raw/master/workspace/higgs_pt_2016_v0.root -P CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/data/
