@@ -1072,9 +1072,9 @@ int main(int argc, char **argv) {
     TFile fractions_sm(sm_gg_fractions.c_str());
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");
