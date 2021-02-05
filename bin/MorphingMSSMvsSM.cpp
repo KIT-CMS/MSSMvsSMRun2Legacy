@@ -404,13 +404,75 @@ int main(int argc, char **argv) {
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> sm_signal_category = {1}; // category for the SM signal
 
+
   for (auto chn : chns) {
+  // build category maps used for the different analyses
+    Categories sm_and_btag_cats = cats[chn]; // contain 1-31
+    Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
+    Categories mssm_cats = cats[chn]; // contain 1, 32-37
+
+    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        mssm_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+    {
+      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+        mssm_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+
+    for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
+    {
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        sm_and_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    // std::cout << "[INFO] Using the following categories:" << std::endl;
+    // std::cout << "   sm_and_btag_cats:" << std::endl;
+    // for (const auto i: sm_and_btag_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
+    // std::cout << "    mssm_cats:" << std::endl;
+    // for (const auto i: mssm_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
+    // std::cout << "    mssm_btag_cats:" << std::endl;
+    // for (const auto i: mssm_btag_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
+    else if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
       if(analysis != "mssm_vs_sm" && analysis != "mssm_vs_sm_h125")
       {
         if(analysis != "mssm_vs_sm_classic_h125"){
@@ -421,69 +483,13 @@ int main(int argc, char **argv) {
         }
         cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       }
+      else if (analysis == "mssm"){
+        // consider MSSM signals in 1, 32,33,34,35,36,37
+        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
+        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
+      }
       else
       {
-        Categories sm_and_btag_cats = cats[chn]; // contain 1-31
-        Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
-        Categories mssm_cats = cats[chn]; // contain 1, 32-37
-
-        for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
-        {
-          if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
-            mssm_cats.erase(catit);
-            --catit;
-          }
-        }
-        for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
-        {
-          if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
-            mssm_cats.erase(catit);
-            --catit;
-          }
-        }
-        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-        {
-          if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
-            mssm_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-        {
-          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
-            mssm_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-        {
-          if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
-            mssm_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-
-        for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
-        {
-          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
-            sm_and_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-        std::cout << "[INFO] Using the following categories:" << std::endl;
-        std::cout << "   sm_and_btag_cats:" << std::endl;
-        for (const auto i: sm_and_btag_cats)
-          std::cout << "      " << i.first << ' ' << i.second << std::endl;
-        std::cout  << std::endl;
-        std::cout << "    mssm_cats:" << std::endl;
-        for (const auto i: mssm_cats)
-          std::cout << "      " << i.first << ' ' << i.second << std::endl;
-        std::cout  << std::endl;
-        std::cout << "    mssm_btag_cats:" << std::endl;
-        for (const auto i: mssm_btag_cats)
-          std::cout << "      " << i.first << ' ' << i.second << std::endl;
-        std::cout  << std::endl;
-
         if(analysis == "mssm_vs_sm"){
           cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
         }
