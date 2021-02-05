@@ -265,14 +265,12 @@ int main(int argc, char **argv) {
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
     cats["et"] = {
-        {  1, "et_MTGt70"},
         { 32, "et_Nbtag0_MTLt40"},
         { 33, "et_Nbtag0_MT40To70"},
         { 35, "et_NbtagGt1_MTLt40"},
         { 36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        {  1, "mt_MTGt70"},
         { 32, "mt_Nbtag0_MTLt40"},
         { 33, "mt_Nbtag0_MT40To70"},
         { 35, "mt_NbtagGt1_MTLt40"},
