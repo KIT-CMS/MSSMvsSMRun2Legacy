@@ -819,6 +819,23 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"em"})
      .process({"QCD"})
      .AddSyst(cb, "CMS_htt_qcd_iso", "shape", SystMap<>::init(1.00));
+  // em closure correction uncertainties in btag categories.
+  if (era == 2016) {
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<>::init(1.07));
+  }
+  else {
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<>::init(1.06));
+  }
+  cb.cp()
+     .channel({"em"})
+     .process({"QCD"})
+     .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<>::init(1.05));
 
   // ##########################################################################
   // Uncertainty: Drell-Yan LO->NLO reweighting
