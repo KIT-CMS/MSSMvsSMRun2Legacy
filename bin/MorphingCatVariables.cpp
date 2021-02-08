@@ -149,24 +149,16 @@ int main(int argc, char **argv) {
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
     cats["et"] = {
-        {  0, "et_inclusive"},
-        {  2, "et_signal_region"},
-        {  3, "et_nobtag_lowmsv"},
+        {  300, "et_" + variable},
     };
     cats["mt"] = {
-        {  0, "mt_inclusive"},
-        {  2, "mt_signal_region"},
-        {  3, "mt_nobtag_lowmsv"},
+        {  300, "mt_" + variable},
     };
     cats["tt"] = {
-        {  0, "tt_inclusive"},
-        {  2, "tt_signal_region"},
-        {  3, "tt_nobtag_lowmsv"},
+        {  300, "tt_" + variable},
     };
     cats["em"] = {
-        {  0, "em_inclusive"},
-        {  2, "em_signal_region"},
-        {  3, "em_nobtag_lowmsv"},
+        {  300, "em_" + variable},
     };
 
   // Create combine harverster object
@@ -192,7 +184,7 @@ int main(int argc, char **argv) {
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
-    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + ".root";
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
