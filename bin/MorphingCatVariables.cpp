@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_bbH_signals, hww_signals;
+  VString bkgs, bkgs_tt, bkgs_em, sm_signals, main_sm_signals, mssm_bbH_signals, hww_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   hww_signals = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
@@ -131,12 +131,13 @@ int main(int argc, char **argv) {
   auto all_signals = ch::JoinStr({main_sm_signals, sm_signals, hww_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
 
 
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
-  bkg_procs["tt"] = bkgs;
+  bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
 
