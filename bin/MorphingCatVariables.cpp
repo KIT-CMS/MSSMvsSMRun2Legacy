@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
-    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, all_signals, cats[chn], true);
+    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
   }
 
   // Add systematics
@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(all_signals).ExtractShapes(
+    cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
       input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
   }
 
