@@ -1146,6 +1146,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   std::string jet_bins[2] = {"njet0", "njet1"};
+  std::string jet_bins_lt[2] = {"njets0", "njets1"};
   std::string unc_regions[3] = {"low", "med", "high"};
   std::string extra_uncs[2] = {"unc1", "unc2"};
   std::string qcd_tt_uncs[3] = {"unc1", "unc2", "unc3"};
@@ -1186,7 +1187,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   }
 
   for (auto unc: extra_uncs) {
-      for (auto njet: jet_bins) {
+      for (auto njet: jet_bins_lt) {
           cb.cp()
               .channel({"et", "mt"})
               .process({"jetFakes"})
