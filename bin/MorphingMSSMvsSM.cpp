@@ -82,9 +82,11 @@ int main(int argc, char **argv) {
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
-  bool verbose = false;
+  bool verbose = true;
   bool use_automc = true;
   bool mva(false), no_emb(false);
+  bool sm = false;
+  bool rebin_sm = true;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -109,6 +111,7 @@ int main(int argc, char **argv) {
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
+      ("sm", po::value<bool>(&sm)->default_value(sm))
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
       ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
@@ -163,8 +166,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-
+  VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
@@ -188,10 +190,19 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  if ( sm == true){
+    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
+    bkgs.push_back("jetFakesSM");
+
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "wFakes"), bkgs_tt.end());
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "jetFakes"), bkgs_tt.end());
+    bkgs_tt.push_back("jetFakesSM");
+  }
   update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
+  update_vector_by_byparser(bkgs_tt, parser_bkgs, "bkgs_tt");
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
@@ -201,12 +212,12 @@ int main(int argc, char **argv) {
   }
   map<int, VString> SUSYggH_masses;
   SUSYggH_masses[2016] = {"110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
   SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
 
   map<int, VString> SUSYbbH_masses;
   SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
   SUSYbbH_masses[2018] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -218,13 +229,17 @@ int main(int argc, char **argv) {
     std::cout << "For em channel : \n\t";
     printVector(bkgs_em);
   }
-  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
-    std::cout << "For et,mt,tt channels : \n\t";
+  if (chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For tt channels : \n\t";
+    printVector(bkgs_tt);
+  }
+  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For et,mt channels : \n\t";
     printVector(bkgs);
   }
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
-  bkg_procs["tt"] = bkgs;
+  bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
   if(analysis == "sm"){
@@ -237,6 +252,16 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
   }
+
+  std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
+    {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
+    {2017,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
+    {2018,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}}};
+
+  std::map< int, std::map<std::string,int> > SM_thresholds_ggH{
+    {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
+    {2017,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
+    {2018,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}}};
 
   // Define MSSM model-dependent mass parameters mA, mH, mh
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
@@ -258,183 +283,131 @@ int main(int argc, char **argv) {
   // Define categories
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
+  if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
     cats["et"] = {
-        {  1, "et_wjets_control"},
-        { 32, "et_nobtag_tightmt"},
-        { 33, "et_nobtag_loosemt"},
-        { 35, "et_btag_tightmt"},
-        { 36, "et_btag_loosemt"},
+        { 32, "et_Nbtag0_MTLt40"},
+        { 33, "et_Nbtag0_MT40To70"},
+        { 35, "et_NbtagGt1_MTLt40"},
+        { 36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        {  1, "mt_wjets_control"},
-        { 32, "mt_nobtag_tightmt"},
-        { 33, "mt_nobtag_loosemt"},
-        { 35, "mt_btag_tightmt"},
-        { 36, "mt_btag_loosemt"},
+        { 32, "mt_Nbtag0_MTLt40"},
+        { 33, "mt_Nbtag0_MT40To70"},
+        { 35, "mt_NbtagGt1_MTLt40"},
+        { 36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        { 32, "tt_nobtag"},
-        { 35, "tt_btag"},
+        { 32, "tt_Nbtag0"},
+        { 35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        {  1, "em_ttbar_control"},
-        { 32, "em_nobtag_highdzeta"},
-        { 33, "em_nobtag_mediumdzeta"},
-        { 34, "em_nobtag_lowdzeta"},
-        { 35, "em_btag_highdzeta"},
-        { 36, "em_btag_mediumdzeta"},
-        { 37, "em_btag_lowdzeta"},
+        {  1, "em_DZetaLtm35"},
+        { 32, "em_Nbtag0_DZetaGt30"},
+        { 33, "em_Nbtag0_DZetam10To30"},
+        { 34, "em_Nbtag0_DZetam35Tom10"},
+        { 35, "em_NbtagGt1_DZetaGt30"},
+        { 36, "em_NbtagGt1_DZetam10To30"},
+        { 37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else if(analysis == "sm"){
     cats["et"] = {
-        { 1, "et_wjets_control"},
+      { 1, "et_xxh"}, // SM Signal Category
 
-        {10, "et_nobtag_lowmsv_0jet_tightmt"},
-        {11, "et_nobtag_lowmsv_0jet_loosemt"},
-
-        {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
-
-        {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"},
-
-        {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+      {13, "et_tt"},
+      {15, "et_zll"},
+      {16, "et_misc"},
+      {20, "et_emb"},
+      {21, "et_ff"}
     };
+
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
+      { 1, "mt_xxh"}, // SM Signal Category
 
-        {10, "mt_nobtag_lowmsv_0jet_tightmt"},
-        {11, "mt_nobtag_lowmsv_0jet_loosemt"},
-
-        {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
-
-        {13, "mt_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
-
-        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"},
+      {13, "mt_tt"},
+      {15, "mt_zll"},
+      {16, "mt_misc"},
+      {20, "mt_emb"},
+      {21, "mt_ff"}
     };
+
     cats["tt"] = {
-        {10, "tt_nobtag_lowmsv_highdeltar"},
+      { 1, "tt_xxh"}, // SM Signal Category
 
-        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"},
-
-        {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"},
-        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"},
-
-        {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"},
-        {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
+      {16, "tt_misc"},
+      {20, "tt_emb"},
+      {21, "tt_ff"}
     };
+
     cats["em"] = {
-        { 1, "em_ttbar_control"},
+      { 1, "em_xxh"}, // SM Signal Category
 
-        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"},
-        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"},
-        {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
-        {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
-
-        {14, "em_nobtag_lowmsv_1jet_lowpt"},
-        {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
-        {16, "em_nobtag_lowmsv_1jet_highmediumpt"},
-        {17, "em_nobtag_lowmsv_1jet_highpt"},
-
-        {18, "em_nobtag_lowmsv_2jet_lowmjj"},
-        {19, "em_nobtag_lowmsv_2jet_mediummjj"},
+      {13, "em_tt"},
+      {14, "em_ss"},
+      {16, "em_misc"},
+      {19, "em_db"},
+      {20, "em_emb"}
     };
   }
-  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125"){
+  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm"){
     cats["et"] = {
-        { 1, "et_wjets_control"},
+        { 1, "et_xxh"}, // SM Signal Category
 
-        {10, "et_nobtag_lowmsv_0jet_tightmt"}, // No bbA
-        {11, "et_nobtag_lowmsv_0jet_loosemt"},
+        {13, "et_tt"},
+        {15, "et_zll"},
+        {16, "et_misc"},
+        {20, "et_emb"},
+        {21, "et_ff"},
 
-        {12, "et_nobtag_lowmsv_geq1jet_highdeltar"},
-
-        {13, "et_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "et_nobtag_lowmsv_1jet_lowdeltar_mediumpt"}, // No bbA
-        {15, "et_nobtag_lowmsv_1jet_lowdeltar_highpt"}, // No bbA
-
-        {16, "et_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {17, "et_nobtag_lowmsv_2jet_lowdeltar_mediummjj"},
-        {18, "et_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
-
-        {32, "et_nobtag_highmsv_tightmt"},
-        {33, "et_nobtag_highmsv_loosemt"},
-
-        {35, "et_btag_tightmt"},
-        {36, "et_btag_loosemt"},
+        {32, "et_Nbtag0_MTLt40_MHGt250"},
+        {33, "et_Nbtag0_MT40To70_MHGt250"},
+        {35, "et_NbtagGt1_MTLt40"},
+        {36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        { 1, "mt_wjets_control"},
+        { 1, "mt_xxh"}, // SM Signal Category
 
-        {10, "mt_nobtag_lowmsv_0jet_tightmt"},
-        {11, "mt_nobtag_lowmsv_0jet_loosemt"}, // No bbA
+        {13, "mt_tt"},
+        {15, "mt_zll"},
+        {16, "mt_misc"},
+        {20, "mt_emb"},
+        {21, "mt_ff"},
 
-        {12, "mt_nobtag_lowmsv_geq1jet_highdeltar"},
+        {32, "mt_Nbtag0_MTLt40_MHGt250"},
+        {33, "mt_Nbtag0_MT40To70_MHGt250"},
 
-        {13, "mt_nobtag_lowmsv_1jet_lowdeltar_lowpt"},
-        {14, "mt_nobtag_lowmsv_1jet_lowdeltar_mediumpt"},
-        {15, "mt_nobtag_lowmsv_1jet_lowdeltar_highpt"},
-
-        {16, "mt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"}, // No bbA
-        {17, "mt_nobtag_lowmsv_2jet_lowdeltar_mediummjj"}, // No bbA
-        {18, "mt_nobtag_lowmsv_2jet_lowdeltar_highmjj"}, // No bbA
-
-        {32, "mt_nobtag_highmsv_tightmt"},
-        {33, "mt_nobtag_highmsv_loosemt"},
-
-        {35, "mt_btag_tightmt"},
-        {36, "mt_btag_loosemt"},
+        {35, "mt_NbtagGt1_MTLt40"},
+        {36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        {10, "tt_nobtag_lowmsv_highdeltar"},
+        { 1, "tt_xxh"}, // SM Signal Category
 
-        {11, "tt_nobtag_lowmsv_0jet_lowmediumdeltar"}, // No bbA
+        {16, "tt_misc"},
+        {20, "tt_emb"},
+        {21, "tt_ff"},
 
-        {12, "tt_nobtag_lowmsv_1jet_lowpt_lowdeltar"},
-        {13, "tt_nobtag_lowmsv_1jet_lowpt_mediumdeltar"}, // No bbA
-        {14, "tt_nobtag_lowmsv_1jet_highpt_lowmediumdeltar"}, // No bbA
+        {32, "tt_Nbtag0_MHGt250"},
 
-        {15, "tt_nobtag_lowmsv_2jet_lowdeltar_lowmjj"},
-        {16, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_lowjdeta"}, // No bbA
-        {17, "tt_nobtag_lowmsv_2jet_lowdeltar_highmjj_highjdeta"},
-
-        {32, "tt_nobtag_highmsv"},
-
-        {35, "tt_btag"},
+        {35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        { 1, "em_ttbar_control"},
+        { 1, "em_xxh"}, // SM Signal Category
 
-        {10, "em_nobtag_lowmsv_0jet_lowpt_mediumdzeta"}, // No bbA
-        {11, "em_nobtag_lowmsv_0jet_lowpt_lowdzeta"}, // No bbA, bbH
-        {12, "em_nobtag_lowmsv_0jet_highpt_mediumdzeta"},
-        {13, "em_nobtag_lowmsv_0jet_highpt_lowdzeta"},
+        { 2, "em_DZetaLtm35"}, // TODO check how we will hande the control region and overlap with SM
 
-        {14, "em_nobtag_lowmsv_1jet_lowpt"},
-        {15, "em_nobtag_lowmsv_1jet_lowmediumpt"},
-        {16, "em_nobtag_lowmsv_1jet_highmediumpt"}, // No bbA
-        {17, "em_nobtag_lowmsv_1jet_highpt"}, // No bbA
+        {13, "em_tt"},
+        {14, "em_ss"},
+        {16, "em_misc"},
+        {19, "em_db"},
+        {20, "em_emb"},
 
-        {18, "em_nobtag_lowmsv_2jet_lowmjj"},
-        {19, "em_nobtag_lowmsv_2jet_mediummjj"},
+        {32, "em_Nbtag0_DZetaGt30_MHGt250"},
+        {33, "em_Nbtag0_DZetam10To30_MHGt250"},
+        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
 
-        {32, "em_nobtag_highmsv_highdzeta"},
-        {33, "em_nobtag_highmsv_mediumdzeta"},
-        {34, "em_nobtag_highmsv_lowdzeta"}, // No bbA
-
-        {35, "em_btag_highdzeta"},
-        {36, "em_btag_mediumdzeta"},
-        {37, "em_btag_lowdzeta"},
+        {35, "em_NbtagGt1_DZetaGt30"},
+        {36, "em_NbtagGt1_DZetam10To30"},
+        {37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
@@ -445,107 +418,164 @@ int main(int argc, char **argv) {
 
 
   // Introduce ordering of categories for the final discriminator in MSSM
-  std::vector<int> sm_categories = {2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                    11,12,13,14,15,16,17,18,19,20,
-                                    21,22,23,24,25,26,27,28,29,30,31}; // SM-like categories with m_sv as discriminator
+  std::vector<int> sm_categories = {2,13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> control_region_categories = {1}; // control regions with mt_tot as discriminator
+  std::vector<int> sm_signal_category = {1}; // category for the SM signal
+
 
   for (auto chn : chns) {
+  // build category maps used for the different analyses
+    Categories sm_and_btag_cats = cats[chn]; // contain 1-31
+    Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
+    Categories mssm_cats = cats[chn]; // contain 32-37
+    Categories sm_signal_cat = cats[chn]; // contain 1, 32-37
+    for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
+    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        sm_signal_cat.erase(catit);
+        --catit;
+      }
+      if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
+        sm_signal_cat.erase(catit);
+        --catit;
+      }
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        sm_signal_cat.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        mssm_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+    {
+      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+        mssm_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    {
+      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+
+    for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
+    {
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        sm_and_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+    // std::cout << "[INFO] Using the following categories:" << std::endl;
+    // std::cout << "   sm_and_btag_cats:" << std::endl;
+    // for (const auto i: sm_and_btag_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
+    // std::cout << "    mssm_cats:" << std::endl;
+    // for (const auto i: mssm_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
+    // std::cout << "    mssm_btag_cats:" << std::endl;
+    // for (const auto i: mssm_btag_cats)
+    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    // std::cout  << std::endl;
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
+    // currently possible analysis:
+    // 1. sm
+    // 2. mssm
+    // 3. mssm_classic
+    // 3. mssm_vs_sm_h125
+    // 4. mssm_vs_sm
+
+
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
-      if(analysis != "mssm_vs_sm" && analysis != "mssm_vs_sm_h125")
-      {
-        if(analysis != "mssm_vs_sm_classic_h125"){
-          cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-        }
-        else {
-          cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, cats[chn], true);
-        }
-        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
+    if(analysis == "mssm"){
+      // filter masses above treshold:
+      std::vector<std::string> masses_SM_bbH;
+      std::vector<std::string> masses_SM_ggH;
+      int bbH_threshold = SM_thresholds_bbH[era][chn];
+      int ggH_threshold = SM_thresholds_ggH[era][chn];
+      if(sm){
+          MH.setRange(90., std::max(bbH_threshold,ggH_threshold));
       }
-      else
-      {
-        Categories sm_and_btag_cats = cats[chn]; // contain 1-31
-        Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
-        Categories mssm_cats = cats[chn]; // contain 1, 32-37
+      std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
+      std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
+      std::cout << "[INFO] Using masses for SM: ";
+        // printVector(masses_SM_bbH);
+        // printVector(masses_SM_ggH);
+      cb.AddProcesses(masses_SM_bbH, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
+      cb.AddProcesses(masses_SM_ggH, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
+    }
+    else if(analysis == "mssm_classic"){
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
+    }
+    else if(analysis == "mssm_vs_sm"){
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+    }
+    else if(analysis == "mssm_vs_sm_h125"){
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+    }
 
-        for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
-        {
-          if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
-            mssm_cats.erase(catit);
-            --catit;
-          }
-        }
-
-        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-        {
-          if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
-            mssm_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-        for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-        {
-          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
-            mssm_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-
-        for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
-        {
-          if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
-            sm_and_btag_cats.erase(catit);
-            --catit;
-          }
-        }
-
-        if(analysis == "mssm_vs_sm"){
-          cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        }
-        cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-
-        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-        cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        if(analysis == "mssm_vs_sm_h125"){
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-        }
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-      }
-      if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-        if(analysis != "mssm_vs_sm_CPV"){
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
-        }
-        if(analysis == "mssm_vs_sm_classic_h125")
-        {
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, cats[chn], true);
-        }
-      }
+    else if(analysis == "mssm_vs_sm_CPV"){
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
     }
   }
 
   // Add systematics
-  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb);
-  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva);
+  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
 
   // Define restriction to the desired category
   if(category != "all"){
     cb = cb.bin({category});
   }
-  // cb.PrintAll();
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
-    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
@@ -674,51 +704,13 @@ int main(int argc, char **argv) {
     binning_map["mt"] = {};
     binning_map["tt"] = {};
 
+
     binning_map["em"][1] = {};
-
-    binning_map["em"][10] = {};
-    binning_map["em"][10][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][10][1] = {50.0, 160.0, 5.0};
-    binning_map["em"][10][2] = {160.0, 250.0, 10.0};
-
-    binning_map["em"][11] = {};
-    binning_map["em"][11][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][11][1] = {50.0, 140.0, 5.0};
-    binning_map["em"][11][2] = {140.0, 250.0, 10.0};
-
-    binning_map["em"][12] = {};
-    binning_map["em"][12][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][12][1] = {50.0, 160.0, 5.0};
-    binning_map["em"][12][2] = {160.0, 250.0, 10.0};
-
     binning_map["em"][13] = {};
-    binning_map["em"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][13][1] = {50.0, 140.0, 5.0};
-    binning_map["em"][13][2] = {140.0, 250.0, 10.0};
-
     binning_map["em"][14] = {};
-    binning_map["em"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][14][1] = {50.0, 150.0, 5.0};
-    binning_map["em"][14][2] = {150.0, 250.0, 10.0};
-
-    binning_map["em"][15] = {};
-    binning_map["em"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][15][1] = {50.0, 150.0, 5.0};
-    binning_map["em"][15][2] = {150.0, 250.0, 10.0};
-
     binning_map["em"][16] = {};
-    binning_map["em"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][16][1] = {50.0, 250.0, 10.0};
-
-    binning_map["em"][17] = {};
-    binning_map["em"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][17][1] = {50.0, 250.0, 20.0};
-
-    binning_map["em"][18] = {};
-
+    binning_map["em"][20] = {};
     binning_map["em"][19] = {};
-    binning_map["em"][19][0] = {0.0, 50.0, 50.0};
-    binning_map["em"][19][1] = {50.0, 250.0, 10.0};
 
     binning_map["em"][32] = {};
     binning_map["em"][33] = {};
@@ -728,143 +720,36 @@ int main(int argc, char **argv) {
     binning_map["em"][37] = {};
 
     binning_map["et"][1] = {};
-    binning_map["et"][1][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][1][1] = {50.0, 150.0, 20.0};
-    binning_map["et"][1][2] = {150.0, 500.0, 10.0};
-    binning_map["et"][1][3] = {500.0, 1000.0, 25.0};
-    binning_map["et"][1][4] = {1000.0, 2000.0, 50.0};
-    binning_map["et"][1][5] = {2000.0, 5000.0, 100.0};
-
-    binning_map["et"][10] = {};
-    binning_map["et"][10][0] = {0.0, 70.0, 70.0};
-    binning_map["et"][10][1] = {70.0, 150.0, 5.0};
-    binning_map["et"][10][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][11] = {};
-    binning_map["et"][11][0] = {0.0, 60.0, 60.0};
-    binning_map["et"][11][1] = {60.0, 150.0, 5.0};
-    binning_map["et"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][12] = {};
-    binning_map["et"][12][0] = {0.0, 70.0, 70.0};
-    binning_map["et"][12][1] = {70.0, 250.0, 5.0};
-
     binning_map["et"][13] = {};
-    binning_map["et"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][13][1] = {50.0, 250.0, 10.0};
-
-    binning_map["et"][14] = {};
-    binning_map["et"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][14][1] = {50.0, 250.0, 10.0};
-
     binning_map["et"][15] = {};
-    binning_map["et"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][15][1] = {50.0, 250.0, 20.0};
-
     binning_map["et"][16] = {};
-    binning_map["et"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][16][1] = {50.0, 150.0, 5.0};
-    binning_map["et"][16][2] = {150.0, 250.0, 10.0};
-
-    binning_map["et"][17] = {};
-    binning_map["et"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][17][1] = {50.0, 250.0, 10.0};
-
-    binning_map["et"][18] = {};
-    binning_map["et"][18][0] = {0.0, 50.0, 50.0};
-    binning_map["et"][18][1] = {50.0, 250.0, 20.0};
+    binning_map["et"][20] = {};
+    binning_map["et"][21] = {};
 
     binning_map["et"][32] = {};
     binning_map["et"][33] = {};
     binning_map["et"][35] = {};
     binning_map["et"][36] = {};
 
+
     binning_map["mt"][1] = {};
-    binning_map["mt"][1][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][1][1] = {50.0, 150.0, 20.0};
-    binning_map["mt"][1][2] = {150.0, 500.0, 10.0};
-    binning_map["mt"][1][3] = {500.0, 1000.0, 25.0};
-    binning_map["mt"][1][4] = {1000.0, 2000.0, 50.0};
-    binning_map["mt"][1][5] = {2000.0, 5000.0, 100.0};
-
-    binning_map["mt"][10] = {};
-    binning_map["mt"][10][0] = {0.0, 70.0, 70.0};
-    binning_map["mt"][10][1] = {70.0, 150.0, 5.0};
-    binning_map["mt"][10][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][11] = {};
-    binning_map["mt"][11][0] = {0.0, 60.0, 60.0};
-    binning_map["mt"][11][1] = {60.0, 150.0, 5.0};
-    binning_map["mt"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][12] = {};
-    binning_map["mt"][12][0] = {0.0, 70.0, 70.0};
-    binning_map["mt"][12][1] = {70.0, 250.0, 5.0};
-
     binning_map["mt"][13] = {};
-    binning_map["mt"][13][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][13][1] = {50.0, 150.0, 5.0};
-    binning_map["mt"][13][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][14] = {};
-    binning_map["mt"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][14][1] = {50.0, 250.0, 10.0};
-
     binning_map["mt"][15] = {};
-    binning_map["mt"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][15][1] = {50.0, 250.0, 20.0};
-
     binning_map["mt"][16] = {};
-    binning_map["mt"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][16][1] = {50.0, 150.0, 5.0};
-    binning_map["mt"][16][2] = {150.0, 250.0, 10.0};
-
-    binning_map["mt"][17] = {};
-    binning_map["mt"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][17][1] = {50.0, 250.0, 10.0};
-
-    binning_map["mt"][18] = {};
-    binning_map["mt"][18][0] = {0.0, 50.0, 50.0};
-    binning_map["mt"][18][1] = {50.0, 250.0, 20.0};
+    binning_map["mt"][20] = {};
+    binning_map["mt"][21] = {};
 
     binning_map["mt"][32] = {};
     binning_map["mt"][33] = {};
     binning_map["mt"][35] = {};
     binning_map["mt"][36] = {};
 
+
+    binning_map["tt"][1] = {};
     binning_map["tt"][10] = {};
-
-    binning_map["tt"][11] = {};
-    binning_map["tt"][11][0] = {0.0, 80.0, 80.0};
-    binning_map["tt"][11][1] = {80.0, 150.0, 5.0};
-    binning_map["tt"][11][2] = {150.0, 250.0, 10.0};
-
-    binning_map["tt"][12] = {};
-    binning_map["tt"][12][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][12][1] = {50.0, 150.0, 5.0};
-    binning_map["tt"][12][2] = {200.0, 250.0, 50.0};
-
-    binning_map["tt"][13] = {};
-    binning_map["tt"][13][0] = {0.0, 100.0, 100.0};
-    binning_map["tt"][13][1] = {100.0, 250.0, 5.0};
-
-    binning_map["tt"][14] = {};
-    binning_map["tt"][14][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][14][1] = {50.0, 150.0, 10.0};
-    binning_map["tt"][14][2] = {150.0, 250.0, 20.0};
-
-    binning_map["tt"][15] = {};
-    binning_map["tt"][15][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][15][1] = {50.0, 150.0, 10.0};
-    binning_map["tt"][15][2] = {150.0, 250.0, 20.0};
-
     binning_map["tt"][16] = {};
-    binning_map["tt"][16][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][16][1] = {50.0, 250.0, 20.0};
-
-    binning_map["tt"][17] = {};
-    binning_map["tt"][17][0] = {0.0, 50.0, 50.0};
-    binning_map["tt"][17][1] = {50.0, 250.0, 20.0};
+    binning_map["tt"][20] = {};
+    binning_map["tt"][21] = {};
 
     binning_map["tt"][32] = {};
     binning_map["tt"][35] = {};
@@ -882,6 +767,41 @@ int main(int argc, char **argv) {
       }
     }
   }
+  // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
+  if (rebin_sm && sm) {
+    // Rebin background categories
+    // for(auto chn : chns)
+    // {
+      for(auto b : cb.cp().bin_id_set())
+      {
+        TString bstr = b;
+        TString cat = category;
+        std::cout << "[INFO] Desciding the binning for " << b << "/" << category << std::endl;
+        if (cat.Contains("xxh")){
+          std::cout << "[INFO] Performing auto-rebinning for SM signal category.\n";
+          auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+          rebin.Rebin(cb, cb);
+        }
+        else {
+          std::cout << "[INFO] Rebin background bin " << b << "\n";
+          auto shape = cb.cp().bin_id({b}).backgrounds().GetShape();
+          auto min = shape.GetBinLowEdge(1);
+          std::vector<double> sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+          if(bstr.Contains("em") && bstr.Contains("misc")) sm_binning = {min, 0.4, 1.0};
+          else if(bstr.Contains("em_emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("et") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("mt") && bstr.Contains("misc")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else if(bstr.Contains("mt") && bstr.Contains("emb")) sm_binning = {min, 0.4, 0.5, 0.6, 1.0};
+          else sm_binning = {min, 0.4, 0.5, 0.6, 0.7, 1.0};
+          std::cout << "[INFO] Using binning: ";
+          printVector(sm_binning);
+          std::cout << "\n";
+          cb.cp().bin_id({b}).VariableRebin(sm_binning);
+        }
+      // }
+    }
+  }
+
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
   cb.cp().ForEachSyst([category, mssm_signals](ch::Systematic *s){
@@ -895,6 +815,7 @@ int main(int argc, char **argv) {
       double yield_d = s->shape_d()->IntegralAndError(1,nbins,err_d);
       double value_u = s->value_u();
       double value_d = s->value_d();
+      // std::cout << "value_u: " << value_u << " value_d: " << value_d << " unc: " << err_u/yield_u+err_d/yield_d << " diff: " << std::abs(value_u-1.0)+std::abs(value_d-1.0) << std::endl;
       if (std::abs(value_u-1.0)+std::abs(value_d-1.0)<err_u/yield_u+err_d/yield_d){
         s->set_type("lnN");
         std::cout << "\tSetting systematic " << s->name() << " of process " << s->process() << " to lnN" << std::endl;
@@ -902,6 +823,7 @@ int main(int argc, char **argv) {
       else{
         std::cout << "\tLeaving systematic " << s->name() << " of process " << s->process() << " as shape" << std::endl;
       }
+      // std::cout << ch::Systematic::PrintHeader << *s << "\n";
     }
   });
 
@@ -1011,8 +933,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Perform auto-rebinning
-  if (auto_rebin) {
+  if (auto_rebin && !sm) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
     auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
@@ -1064,11 +985,12 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
+    std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");
