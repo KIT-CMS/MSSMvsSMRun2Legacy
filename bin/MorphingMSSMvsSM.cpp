@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"};
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
@@ -191,12 +191,18 @@ int main(int argc, char **argv) {
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
     bkgs.push_back("jetFakesSM");
+
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "wFakes"), bkgs_tt.end());
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "jetFakes"), bkgs_tt.end());
+    bkgs_tt.push_back("jetFakesSM");
   }
   update_vector_by_byparser(bkgs, parser_bkgs, "bkgs");
+  update_vector_by_byparser(bkgs_tt, parser_bkgs, "bkgs_tt");
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
@@ -223,13 +229,17 @@ int main(int argc, char **argv) {
     std::cout << "For em channel : \n\t";
     printVector(bkgs_em);
   }
-  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
-    std::cout << "For et,mt,tt channels : \n\t";
+  if (chan.find("tt") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For tt channels : \n\t";
+    printVector(bkgs_tt);
+  }
+  if (chan.find("mt") != std::string::npos || chan.find("et") != std::string::npos || chan.find("all") != std::string::npos) {
+    std::cout << "For et,mt channels : \n\t";
     printVector(bkgs);
   }
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
-  bkg_procs["tt"] = bkgs;
+  bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
   if(analysis == "sm"){
@@ -351,7 +361,6 @@ int main(int argc, char **argv) {
 
         {32, "et_Nbtag0_MTLt40_MHGt250"},
         {33, "et_Nbtag0_MT40To70_MHGt250"},
-
         {35, "et_NbtagGt1_MTLt40"},
         {36, "et_NbtagGt1_MT40To70"},
     };
@@ -384,6 +393,8 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_xxh"}, // SM Signal Category
 
+        { 2, "em_DZetaLtm35"}, // TODO check how we will hande the control region and overlap with SM
+
         {13, "em_tt"},
         {14, "em_ss"},
         {16, "em_misc"},
@@ -407,7 +418,7 @@ int main(int argc, char **argv) {
 
 
   // Introduce ordering of categories for the final discriminator in MSSM
-  std::vector<int> sm_categories = {13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
+  std::vector<int> sm_categories = {2,13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> sm_signal_category = {1}; // category for the SM signal
@@ -515,18 +526,18 @@ int main(int argc, char **argv) {
       std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
       std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
       std::cout << "[INFO] Using masses for SM: ";
-        printVector(masses_SM_bbH);
-        printVector(masses_SM_ggH);
+        // printVector(masses_SM_bbH);
+        // printVector(masses_SM_ggH);
       cb.AddProcesses(masses_SM_bbH, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(masses_SM_ggH, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
     }
-    if(analysis == "mssm_classic"){
+    else if(analysis == "mssm_classic"){
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
     }
-    if(analysis == "mssm_vs_sm"){
+    else if(analysis == "mssm_vs_sm"){
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
@@ -534,7 +545,7 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
     }
-    if(analysis == "mssm_vs_sm_h125"){
+    else if(analysis == "mssm_vs_sm_h125"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
@@ -543,7 +554,7 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
     }
 
-    if(analysis == "mssm_vs_sm_CPV"){
+    else if(analysis == "mssm_vs_sm_CPV"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
@@ -977,9 +988,9 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");

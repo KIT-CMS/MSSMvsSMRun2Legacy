@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, sm_signals, main_sm_signals, mssm_bbH_signals, hww_signals;
+  VString bkgs, bkgs_tt, bkgs_em, sm_signals, main_sm_signals, mssm_bbH_signals, hww_signals;
 
   sm_signals = {"WH125", "ZH125", "ttH125"};
   hww_signals = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
@@ -131,12 +131,13 @@ int main(int argc, char **argv) {
   auto all_signals = ch::JoinStr({main_sm_signals, sm_signals, hww_signals, mssm_bbH_signals});
 
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
 
 
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
-  bkg_procs["tt"] = bkgs;
+  bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
 
@@ -148,24 +149,16 @@ int main(int argc, char **argv) {
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
     cats["et"] = {
-        {  0, "et_inclusive"},
-        {  2, "et_signal_region"},
-        {  3, "et_nobtag_lowmsv"},
+        {  300, "et_" + variable},
     };
     cats["mt"] = {
-        {  0, "mt_inclusive"},
-        {  2, "mt_signal_region"},
-        {  3, "mt_nobtag_lowmsv"},
+        {  300, "mt_" + variable},
     };
     cats["tt"] = {
-        {  0, "tt_inclusive"},
-        {  2, "tt_signal_region"},
-        {  3, "tt_nobtag_lowmsv"},
+        {  300, "tt_" + variable},
     };
     cats["em"] = {
-        {  0, "em_inclusive"},
-        {  2, "em_signal_region"},
-        {  3, "em_nobtag_lowmsv"},
+        {  300, "em_" + variable},
     };
 
   // Create combine harverster object
@@ -177,7 +170,7 @@ int main(int argc, char **argv) {
   for (auto chn : chns) {
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
-    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, all_signals, cats[chn], true);
+    cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
   }
 
   // Add systematics
@@ -191,11 +184,11 @@ int main(int argc, char **argv) {
 
   // Extract shapes from input ROOT files
   for (string chn : chns) {
-    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    string input_file_base = input_dir[chn] + "htt_" + category + ".inputs-mssm-vs-sm-Run" + era_tag + ".root";
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(all_signals).ExtractShapes(
+    cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
       input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
   }
 
