@@ -908,7 +908,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as background, so it is sufficient to consider the bg shape
-      else if(analysis == "mssm" || analysis == "mssm_vs_sm_heavy"){
+      else if(analysis == "mssm" || analysis == "mssm_classic"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -921,7 +921,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
-      else if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
+      else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
@@ -990,7 +990,7 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
-  if(analysis == "mssm")
+  if(analysis == "mssm" || analysis == "mssm_classic")
   {
     mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
@@ -1043,7 +1043,7 @@ int main(int argc, char **argv) {
     }
 
   dout("[INFO] Prepare demo.");
-  if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
+  if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
