@@ -84,7 +84,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
     jetFakes = {"jetFakesSM"};
-    std::cout << "Using jetFakesSM instead of jetFakes !";
+    std::cout << "[INFO] Using jetFakesSM instead of jetFakes" << std::endl;
   }
   // All processes being taken from simulation
   std::vector<std::string> mc_processes =
@@ -514,7 +514,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .channel({"tt"})
           .process({"EMB"})
           .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
-      if (not sm) {
+      if (!sm) {
           // di-tau trigger
           cb.cp()
               .channel({"tt"})
@@ -534,7 +534,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       }
   }
 
- if (not sm) {
+ if (!sm) {
   // Single tau trigger
   cb.cp()
       .channel({"mt", "et", "tt"})
@@ -569,10 +569,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "highpT_100-500", "highpT_500-inf"};
   if (sm) {
-    std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "500-1000", "1000-inf"};
+    tauIDptbins[3] = "500-1000";
+    tauIDptbins[4] = "1000-inf";
   }
   std::string tauIDdmbins[4] = {"0", "1", "10", "11"};
-
   // Common component acting on MC
   
   // Electron ID
@@ -607,7 +607,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
-  if (not sm){
+  if (!sm){
+      std::cout << sm << std::endl;
       cb.cp()
       .channel({"tt"})
       .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
@@ -655,7 +656,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"EMB"})
         .AddSyst(cb, "CMS_eff_t_emb_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.866));
   }
-  if (not sm){
+  if (!sm){
     cb.cp()
         .channel({"tt"})
         .process({"EMB"})
@@ -704,7 +705,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"EMB"})
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
   }
-  if (not sm){
+  if (!sm){
     cb.cp()
         .channel({"tt"})
         .process({"EMB"})
@@ -1009,7 +1010,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"em"})
      .process({"QCD"})
      .AddSyst(cb, "CMS_htt_qcd_iso", "shape", SystMap<>::init(1.00));
-  if (not sm){
+  if (!sm){
       // em closure correction uncertainties in btag categories.
       // from https://indico.cern.ch/event/999841/contributions/4199219/attachments/2176453/3675294/MSSM_HTT_20210122.pdf
     if (era == 2016) {
@@ -1346,7 +1347,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes:
   // - FIXME: add 2017 norm uncertainties, and properly correlate across years
   // ##########################################################################
-  if (not sm){
+  if (!sm){
     std::string jet_bins[2] = {"njet0", "njet1"};
     std::string jet_bins_lt[2] = {"njets0", "njets1"};
     std::string unc_regions[3] = {"low", "med", "high"};
