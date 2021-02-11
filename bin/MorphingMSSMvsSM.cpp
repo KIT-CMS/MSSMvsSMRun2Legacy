@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
   // Define categories
   map<string, Categories> cats;
   // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_CPV"){
+  if(analysis == "mssm_classic"){
     cats["et"] = {
         { 32, "et_Nbtag0_MTLt40"},
         { 33, "et_Nbtag0_MT40To70"},
@@ -301,7 +301,7 @@ int main(int argc, char **argv) {
         { 35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        {  1, "em_DZetaLtm35"},
+        {  2, "em_DZetaLtm35"},
         { 32, "em_Nbtag0_DZetaGt30"},
         { 33, "em_Nbtag0_DZetam10To30"},
         { 34, "em_Nbtag0_DZetam35Tom10"},
@@ -573,23 +573,55 @@ int main(int argc, char **argv) {
     cb = cb.bin({category});
   }
 
-  // Extract shapes from input ROOT files
+
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
 
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+
     if(analysis == "sm"){
       cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
-    if(analysis == "mssm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm_heavy" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
-      if(analysis != "mssm_vs_sm_h125" and analysis != "mssm_vs_sm_classic_h125" and analysis != "mssm_vs_sm_CPV"){
-        cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
+
+    else if(analysis == "mssm" || analysis == "mssm_classic"){
+      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
           input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      }
-      else if(analysis == "mssm_vs_sm_CPV")
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
+        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+    }
+
+    else if(analysis == "mssm_vs_sm_h125"){
+       cb.cp().channel({chn}).process({"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
+          input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
+        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+    }
+
+    else if(analysis == "mssm_vs_sm"){
+      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+          input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
+        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+    }
+
+    else if(analysis == "mssm_vs_sm_CPV")
       {
         // use the ggH_t,b,i shapes for all H1, H2, H3 and the bbH shape for H1, H2, H3 as a starting point
         cb.cp().channel({chn}).process({"ggH1_i", "ggH2_i", "ggH3_i"}).ExtractShapes(
@@ -601,24 +633,12 @@ int main(int argc, char **argv) {
 
         // Included in ggH1_x ?
         // cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
-        //   input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");        
-      }
-      else
-      {
-        cb.cp().channel({chn}).process({"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
-          input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
-      }
-      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-    }
-    if(analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_classic_h125" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
-      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
+        //   input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-    }
+        cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+          input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+      }
   }
 
   // Delete processes (other than mssm signals) with 0 yield
