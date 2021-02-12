@@ -409,6 +409,30 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "lumi_13TeV_GS", "lnN", SystMap<>::init(lumi_ghost));
 
   // ##########################################################################
+  // Uncertainty: ggH Reweighting Hdamp uncertainty
+  // References:
+  // - 
+  // Notes:
+  // ##########################################################################
+
+  // cb.cp()
+  //     .channel({"et", "mt", "tt", "em"})
+  //     .process(mssm_ggH_signals)
+  //     .AddSyst(cb, "Hdamp_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+  // ##########################################################################
+  // Uncertainty: ggH Reweighting QCDscale uncertainty
+  // References:
+  // - 
+  // Notes:
+  // ##########################################################################
+
+  // cb.cp()
+  //     .channel({"et", "mt", "tt", "em"})
+  //     .process(mssm_ggH_signals)
+  //     .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+  // ##########################################################################
   // Uncertainty: Prefiring
   // References:
   // - "https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe"
@@ -1014,21 +1038,24 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // from https://indico.cern.ch/event/999841/contributions/4199219/attachments/2176453/3675294/MSSM_HTT_20210122.pdf
     if (era == 2016) {
             cb.cp()
-            .channel({"em"})
-            .process({"QCD"})
-            .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<>::init(1.07));
-        }
+              .channel({"em"})
+              .process({"QCD"})
+              .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
+                      ({35,36,37}, 1.07));
+    }
     else {
-        cb.cp()
+      cb.cp()
         .channel({"em"})
         .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<>::init(1.06));
+        .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
+                ({35,36,37}, 1.06));
     }
     cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<>::init(1.05));
-    }
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
+               ({35,36,37}, 1.05));
+  }
 
   // ##########################################################################
   // Uncertainty: Drell-Yan LO->NLO reweighting
