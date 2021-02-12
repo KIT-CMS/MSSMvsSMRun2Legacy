@@ -24,7 +24,7 @@ git clone git@github.com:KIT-CMS/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/C
 git clone git@github.com:KIT-CMS/CombineHarvester.git CombineHarvester # fixes & extensions for morphing (22.08.2019)
 
 # MSSM vs SM analysis specific code
-git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy -b ntuple_processor
+git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsSMRun2Legacy
 
 # SM analysis specific code
 git clone git@github.com:KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
