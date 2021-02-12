@@ -608,7 +608,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   if (!sm){
-      std::cout << sm << std::endl;
       cb.cp()
       .channel({"tt"})
       .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
