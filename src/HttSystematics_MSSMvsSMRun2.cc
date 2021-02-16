@@ -1036,25 +1036,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   if (!sm){
       // em closure correction uncertainties in btag categories.
       // from https://indico.cern.ch/event/999841/contributions/4199219/attachments/2176453/3675294/MSSM_HTT_20210122.pdf
-    if (era == 2016) {
-            cb.cp()
-              .channel({"em"})
-              .process({"QCD"})
-              .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
-                      ({35,36,37}, 1.07));
-    }
-    else {
-      cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
-                ({35,36,37}, 1.06));
-    }
     cb.cp()
-       .channel({"em"})
-       .process({"QCD"})
-       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
-               ({35,36,37}, 1.05));
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
+              ({35,36,37}, 1.07));
+    cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
+              ({35,36,37}, 1.05));
   }
 
   // ##########################################################################
