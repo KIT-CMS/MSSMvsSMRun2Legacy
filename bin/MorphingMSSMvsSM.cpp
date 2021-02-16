@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 
   mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
   mssm_bbH_signals = {"bbA", "bbH", "bbh"};
-  if(analysis == "mssm")
+  if(analysis == "mssm" || analysis == "mssm_classic")
   {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-  else if(analysis == "mssm" || analysis == "mssm_vs_sm_heavy"){
+  else if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm_heavy"){
     for(auto chn : chns){
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
     }
@@ -436,11 +436,11 @@ int main(int argc, char **argv) {
         sm_signal_cat.erase(catit);
         --catit;
       }
-      if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         sm_signal_cat.erase(catit);
         --catit;
       }
-      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+      if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
         sm_signal_cat.erase(catit);
         --catit;
       }
@@ -586,7 +586,7 @@ int main(int argc, char **argv) {
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
 
-    else if(analysis == "mssm" || analysis == "mssm_classic"){
+    else if(analysis == "mssm"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
           input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
@@ -595,6 +595,13 @@ int main(int argc, char **argv) {
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
         input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+    }
+
+    else if (analysis == "mssm_classic") {
+      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
+        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
 
     else if(analysis == "mssm_vs_sm_h125"){
@@ -1053,7 +1060,7 @@ int main(int argc, char **argv) {
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
 
-    if(analysis == "mssm"){
+    if(analysis == "mssm" || analysis == "mssm_classic"){
       // Adding 'norm' terms into workspace according to desired signals
       for (auto bin : cb.cp().bin_set())
       {
