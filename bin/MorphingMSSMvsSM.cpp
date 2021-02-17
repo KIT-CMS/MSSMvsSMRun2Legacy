@@ -1048,7 +1048,7 @@ int main(int argc, char **argv) {
     }
 
   dout("[INFO] Prepare demo.");
-  if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
+  if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
