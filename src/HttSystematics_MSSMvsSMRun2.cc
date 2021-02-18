@@ -943,11 +943,19 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: Clustered vs unclustered MET? Inclusion of JES splitting?
   // - FIXME: References?
   // ##########################################################################
-
-  cb.cp()
+  if (sm){
+    cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"})
+      .AddSyst(cb, "CMS_scale_met_unclustered", "shape", SystMap<>::init(1.00));
+  }
+  else{
+    cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"})
       .AddSyst(cb, "CMS_scale_met_unclustered_$ERA", "shape", SystMap<>::init(1.00));
+  }
+
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "ZL", "ZJ", "W"}}))
