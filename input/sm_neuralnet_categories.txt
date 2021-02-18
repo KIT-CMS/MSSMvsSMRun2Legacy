@@ -14,3 +14,9 @@ tt_xxh
 tt_misc
 tt_emb
 tt_ff
+em_xxh
+em_emb
+em_tt
+em_db
+em_misc
+em_ss
