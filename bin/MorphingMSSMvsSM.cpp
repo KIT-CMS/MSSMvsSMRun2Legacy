@@ -9,7 +9,7 @@
 #include "CombineHarvester/CombineTools/interface/Process.h"
 #include "CombineHarvester/CombineTools/interface/Systematics.h"
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
-#include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_lnN_MSSMvsSMRun2.h"
+#include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_MSSMvsSMRun2.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
 #include "RooRealVar.h"
@@ -87,6 +87,7 @@ int main(int argc, char **argv) {
   bool mva(false), no_emb(false);
   bool sm = false;
   bool rebin_sm = true;
+  unsigned no_shape_systs = 0;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -569,12 +570,18 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  dout("Add systematics AddMSSMvsSMRun2Systematics_lnN, embedding:", ! no_emb, " sm categories:", sm);
-  ch::AddMSSMvsSMRun2Systematics_lnN(cb, true, ! no_emb, true, true, true, era, mva, sm);
+  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
 
   // Define restriction to the desired category
   if(category != "all"){
     cb = cb.bin({category});
+  }
+
+  if(no_shape_systs==1){
+    cb.FilterSysts([&](ch::Systematic *s){
+      return s->type().find("shape") != std::string::npos;
+    });
   }
 
 

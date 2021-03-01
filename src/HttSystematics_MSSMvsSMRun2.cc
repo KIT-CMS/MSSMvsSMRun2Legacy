@@ -752,15 +752,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: References?
   // ##########################################################################
 
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+  // NEED TO ADD B TAG EFFICIENCY
 
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"et", "mt", "tt", "em"})
+  //    .process(mc_processes)
+  //    .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+
+  //cb.cp()
+  //    .channel({"et", "mt", "tt", "em"})
+  //    .process(mc_processes)
+  //    .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
@@ -1133,44 +1135,47 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   //    .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_endcap_$ERA", "shape",
   //             SystMap<>::init(1.00));
 
+
+  // STILL NEED TO ADD
+
   // Electron fakes
-  cb.cp()
-      .channel({"et"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_e_BA_$ERA", "shape",
-               SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"et"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_e_EC_$ERA", "shape",
-               SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"et"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_e_BA_$ERA", "shape",
+  //             SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"et"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_e_EC_$ERA", "shape",
+  //             SystMap<>::init(1.00));
 
   // Muon fakes
-  cb.cp()
-      .channel({"mt"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_m_WH1_$ERA", "shape",
-               SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"mt"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_m_WH2_$ERA", "shape",
-               SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"mt"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_m_WH3_$ERA", "shape",
-               SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"mt"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_m_WH4_$ERA", "shape",
-               SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"mt"})
-      .process({"ZL"})
-      .AddSyst(cb, "CMS_fake_m_WH5_$ERA", "shape",
-               SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"mt"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_m_WH1_$ERA", "shape",
+  //             SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"mt"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_m_WH2_$ERA", "shape",
+  //             SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"mt"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_m_WH3_$ERA", "shape",
+  //             SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"mt"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_m_WH4_$ERA", "shape",
+  //             SystMap<>::init(1.00));
+  //cb.cp()
+  //    .channel({"mt"})
+  //    .process({"ZL"})
+  //    .AddSyst(cb, "CMS_fake_m_WH5_$ERA", "shape",
+  //             SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Theory uncertainties
