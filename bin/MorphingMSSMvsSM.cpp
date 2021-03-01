@@ -9,7 +9,7 @@
 #include "CombineHarvester/CombineTools/interface/Process.h"
 #include "CombineHarvester/CombineTools/interface/Systematics.h"
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
-#include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_MSSMvsSMRun2.h"
+#include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_lnN_MSSMvsSMRun2.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
 #include "RooRealVar.h"
@@ -167,7 +167,8 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-  sm_signals = {"WH125", "ZH125", "ttH125"};
+  //sm_signals = {"WH125", "ZH125", "ttH125"};
+  sm_signals = {"WH125","ZH125"};
   main_sm_signals = {"ggH125", "qqH125"};
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
@@ -190,8 +191,10 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  //bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  //bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
@@ -213,7 +216,8 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYggH_masses;
   SUSYggH_masses[2016] = {"110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
   SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","400","450","600","700","800","1200","1400","1500","1600","1800","2000","2600","2900","3200"};
 
   map<int, VString> SUSYbbH_masses;
   SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
@@ -565,8 +569,8 @@ int main(int argc, char **argv) {
   }
 
   // Add systematics
-  dout("Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
-  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
+  dout("Add systematics AddMSSMvsSMRun2Systematics_lnN, embedding:", ! no_emb, " sm categories:", sm);
+  ch::AddMSSMvsSMRun2Systematics_lnN(cb, true, ! no_emb, true, true, true, era, mva, sm);
 
   // Define restriction to the desired category
   if(category != "all"){
@@ -1013,9 +1017,12 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+    //RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    //RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    //RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");
