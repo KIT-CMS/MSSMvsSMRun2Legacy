@@ -805,11 +805,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_scale_e", "shape", SystMap<>::init(1.00));
 
 
-  // Not using electron resolution
-  //cb.cp()
-  //    .channel({"em", "et"})
-  //    .process(mc_processes)
-  //    .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.00));
+  // Only using electron resolution for SM categories
+  cb.cp()
+      .channel({"em", "et"})
+      .process(mc_processes)
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.00));
 
   // Embedded uncorrelated uncertainty
 
@@ -1135,29 +1136,48 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_$ERA", "shape",
                SystMap<>::init(1.00));
 
-  // Not needed for mssm_classic categories
-  //cb.cp()
-  //    .channel({"et"})
-  //    .process({"ZL"})
-  //    .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong_barrel_$ERA", "shape",
-  //             SystMap<>::init(1.00));
+  // split by eta for SM categories to match HIG-19-010, for MSSM it is included as a single uncertainty so will be decorrelated (should be fine as the m_sv cut removes all the ZL anyway for the MSSM+SM combinations)
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong_barrel_$ERA", "shape",
+               SystMap<>::init(1.00));
 
-  //cb.cp()
-  //    .channel({"et"})
-  //    .process({"ZL"})
-  //    .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_barrel_$ERA", "shape",
-  //             SystMap<>::init(1.00));
-  //cb.cp()
-  //    .channel({"et"})
-  //    .process({"ZL"})
-  //    .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong_endcap_$ERA", "shape",
-  //             SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_barrel_$ERA", "shape",
+               SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong_endcap_$ERA", "shape",
+               SystMap<>::init(1.00));
 
-  //cb.cp()
-  //    .channel({"et"})
-  //    .process({"ZL"})
-  //    .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_endcap_$ERA", "shape",
-  //             SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_endcap_$ERA", "shape",
+               SystMap<>::init(1.00));
+
+  //single eta bin for MSSM cats: 
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong_$ERA", "shape",
+               SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"et"})
+      .process({"ZL"})
+      .bin_id(mssm_categories)
+      .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_$ERA", "shape",
+               SystMap<>::init(1.00));
 
 
   // Lepton fake rate uncertainties are kept as shape uncertainties for SM categories to match HIG-19-010 but converted to lnN uncertainties for MSSM categories
