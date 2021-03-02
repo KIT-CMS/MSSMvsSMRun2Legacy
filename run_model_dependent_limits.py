@@ -12,6 +12,8 @@ args = parser.parse_args()
 channel = args.channel 
 output = args.output 
 year = args.year 
+
+analysis = 'mssm_vs_sm_classic_h125'
  
 ### Set up channel input ### 
 if channel == "all": 
@@ -19,7 +21,7 @@ if channel == "all":
 elif channel == "fake": 
   cat_file = 'mssm_fake_categories.txt' 
 elif channel in ["et","tt","mt","em"]: 
-  cat_file = 'mssm_%(channel)s_classic_categories.txt' % vars() 
+  cat_file = 'mssm_%(channel)s_categories.txt' % vars() 
  
 ### Set up year input ### 
 if year == "all": 
@@ -32,11 +34,12 @@ else:
  
 variable="mt_tot_puppi" 
 
-directory = "model_dependent_limits/%(output)s_mssm_vs_sm_classic_h125" % vars()
+directory = "model_dependent_limits/%(output)s_%(analysis)s" % vars()
 
 
 ### Datacard creation ###
-os.system("morph_parallel.py --output model_dependent_limits/%(output)s --analysis mssm_vs_sm_classic_h125 --eras %(year_text)s --category_list input/%(cat_file)s --variable %(variable)s --parallel 5" % vars())
+print "morph_parallel.py --output model_dependent_limits/%(output)s --analysis %(analysis)s --eras %(year_text)s --category_list input/%(cat_file)s --variable %(variable)s --parallel 5" % vars()
+os.system("morph_parallel.py --output model_dependent_limits/%(output)s --analysis mssm_vs_sm_h125 --eras %(year_text)s --category_list input/%(cat_file)s --variable %(variable)s --parallel 5" % vars())
 os.system("mkdir -p %(directory)s/combined/cmb/; rsync -av --progress %(directory)s/201?/htt_*/*  %(directory)s/combined/cmb/" % vars())
 
 ### Workspace creation ###
