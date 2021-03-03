@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
   bool mva(false), no_emb(false);
   bool sm = false;
   bool rebin_sm = true;
-  unsigned no_shape_systs = 1;
+  unsigned no_shape_systs = 0;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
