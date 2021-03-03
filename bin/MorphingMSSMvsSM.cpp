@@ -65,6 +65,17 @@ std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>>
     return binning;
 }
 
+void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
+  auto cb_syst = cb.cp().syst_name({name});
+  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+    if (syst->type().find("shape") != std::string::npos) {
+      std::cout << "Converting systematic " << syst->name() << " for process " << syst->process() << " in bin " << syst->bin() << " to lnN." <<std::endl;
+      syst->set_type("lnN");
+      return;
+    }
+  }); 
+}
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -87,7 +98,7 @@ int main(int argc, char **argv) {
   bool mva(false), no_emb(false);
   bool sm = false;
   bool rebin_sm = true;
-  unsigned no_shape_systs = 0;
+  bool no_shape_systs = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -594,7 +605,7 @@ int main(int argc, char **argv) {
     cb = cb.bin({category});
   }
 
-  if(no_shape_systs==1){
+  if(no_shape_systs){
     cb.FilterSysts([&](ch::Systematic *s){
       return s->type().find("shape") != std::string::npos;
     });
@@ -855,9 +866,11 @@ int main(int argc, char **argv) {
     }
   }
 
+  std::vector<int> mssm_bins = {2,32,33,34,35,36,37};
+
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
-  cb.cp().ForEachSyst([category, mssm_signals](ch::Systematic *s){
+  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
     TString sname = TString(s->name());
     if((s->type().find("shape") != std::string::npos) && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
     {
@@ -879,6 +892,39 @@ int main(int argc, char **argv) {
       // std::cout << ch::Systematic::PrintHeader << *s << "\n";
     }
   });
+
+  // turn all JES+JER+met-unclustered uncertainties into lnN for MSSM categories - should check the met recoil uncertainties as well for small processes
+  std::vector<std::string> jetmet_systs = {
+    "CMS_scale_j_Absolute",
+    "CMS_scale_j_BBEC1",
+    "CMS_scale_j_EC2",
+    "CMS_scale_j_FlavorQCD",          
+    "CMS_scale_j_HF",
+    "CMS_scale_j_RelativeBal",
+    "CMS_scale_j_Absolute_2016",
+    "CMS_scale_j_Absolute_2017",
+    "CMS_scale_j_Absolute_2018",
+    "CMS_scale_j_BBEC1_2016",
+    "CMS_scale_j_BBEC1_2017",
+    "CMS_scale_j_BBEC1_2018",
+    "CMS_scale_j_EC2_2016",
+    "CMS_scale_j_EC2_2017",
+    "CMS_scale_j_EC2_2018",
+    "CMS_scale_j_HF_2016", 
+    "CMS_scale_j_HF_2017", 
+    "CMS_scale_j_HF_2018", 
+    "CMS_scale_j_RelativeSample_2016",
+    "CMS_scale_j_RelativeSample_2017",
+    "CMS_scale_j_RelativeSample_2018",
+    "CMS_res_j_2016",
+    "CMS_res_j_2017",
+    "CMS_res_j_2018",
+    "CMS_scale_met_unclustered_2016",
+    "CMS_scale_met_unclustered_2017",
+    "CMS_scale_met_unclustered_2018",
+  };
+
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u); 
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
