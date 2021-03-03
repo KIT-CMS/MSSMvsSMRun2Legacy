@@ -715,6 +715,7 @@ int main(int argc, char **argv) {
   });
 
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
+  // need to check this for low mass ggH i components as these can be negative
   std::cout << "[INFO] Setting mssm signals with negative yield to 0.\n";
   cb.ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
@@ -879,8 +880,9 @@ int main(int argc, char **argv) {
   });
 
   // At this point we can fix the negative bins for the remaining processes
+  // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       auto newhist = p->ClonedShape();
       ch::ZeroNegativeBins(newhist.get());
@@ -888,7 +890,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
