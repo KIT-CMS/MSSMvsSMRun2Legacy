@@ -965,6 +965,86 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_res_met_$ERA", "shape", SystMap<>::init(1.00));
 
+  // Embedded MET correction uncertainties.
+  // Source: https://indico.cern.ch/event/1005631/contributions/4221822/attachments/2185217/3693362/Embed_MET_correction.pdf
+  if (not sm) {
+      if (era == 2016) {
+          // Statistical component
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_stat_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.10)
+                          ({"et"}, 0.07)
+                          ({"mt"}, 0.05)
+                          ({"em"}, 0.25));
+          // Systematic component from MC.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_syst_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.48)
+                          ({"et"}, 0.95)
+                          ({"mt"}, 1.25)
+                          ({"em"}, 1.48));
+          // Additional fractional correction for determination of correction.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_frac_$CHANNEL_$ERA", "shape", SystMap<>::init(0.20));
+      }
+      else if (era == 2017) {
+          // Statistical component
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_stat_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.06)
+                          ({"et"}, 0.08)
+                          ({"mt"}, 0.04)
+                          ({"em"}, 0.05));
+          // Systematic component from MC.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_syst_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.15)
+                          ({"et"}, 0.47)
+                          ({"mt"}, 0.29)
+                          ({"em"}, 0.36));
+          // Additional fractional correction for determination of correction.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_frac_$CHANNEL_$ERA", "shape", SystMap<>::init(0.20));
+      }
+      else if (era == 2018) {
+          // Statistical component
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_stat_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.05)
+                          ({"et"}, 0.05)
+                          ({"mt"}, 0.03)
+                          ({"em"}, 0.05));
+          // Systematic component from MC.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_syst_$CHANNEL_$ERA", "shape", SystMap<channel>::init
+                          ({"tt"}, 0.26)
+                          ({"et"}, 0.40)
+                          ({"mt"}, 0.38)
+                          ({"em"}, 0.68));
+          // Additional fractional correction for determination of correction.
+          cb.cp()
+              .channel({"tt", "et", "mt", "em"})
+              .process({"EMB"})
+              .AddSyst(cb, "CMS_scale_embed_met_frac_$CHANNEL_$ERA", "shape", SystMap<>::init(0.20));
+      }
+  }
+
   // ##########################################################################
   // Uncertainty: Background normalizations
   // References:
