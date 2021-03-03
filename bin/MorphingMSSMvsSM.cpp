@@ -181,8 +181,7 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   //sm_signals = {"WH125", "ZH125", "ttH125"};
   sm_signals = {"WH125","ZH125"};
-  //main_sm_signals = {"ggH125", "qqH125"};
-  main_sm_signals = {"qqH125"};
+  main_sm_signals = {"ggH125", "qqH125"};
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -190,7 +189,7 @@ int main(int argc, char **argv) {
   mssm_bbH_signals = {"bbA", "bbH", "bbh"};
   if(analysis == "mssm" || analysis == "mssm_classic")
   {
-    mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i"};
+    mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
   }
   else if(analysis == "mssm_vs_sm_heavy")
@@ -1073,12 +1072,12 @@ int main(int argc, char **argv) {
   if(analysis == "mssm" || analysis == "mssm_classic")
   {
     mass_var = {
-      {"ggH_t", &MH}, {"ggH_b", &MH}, {"ggH_i", &MH},
+      {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
       {"bbh", &MH}
     };
 
     process_norm_map = {
-      {"ggH_t", "prenorm"}, {"ggH_b", "prenorm"}, {"ggH_i", "prenorm"},
+      {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
       {"bbh", "norm"}
     };
 

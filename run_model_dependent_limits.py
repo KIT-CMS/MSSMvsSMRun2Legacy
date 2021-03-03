@@ -13,7 +13,7 @@ channel = args.channel
 output = args.output 
 year = args.year 
 
-analysis = 'mssm_vs_sm_classic_h125'
+analysis = 'mssm_vs_sm_classic'
  
 ### Set up channel input ### 
 if channel == "all": 
