@@ -37,16 +37,16 @@ if [[ $MODE == "initial" ]]; then
         --eras $ERA \
         --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
         --variable nnscore \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
+        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v0.root \
         --sm \
-        --parallel 6 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+        --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
         --eras $ERA \
         --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
         --variable mt_tot_puppi \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
+        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v0.root \
         --parallel 6 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
