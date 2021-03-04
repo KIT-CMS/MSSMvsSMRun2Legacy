@@ -1081,7 +1081,7 @@ int main(int argc, char **argv) {
   // Adding bin-by-bin uncertainties
   if (use_automc) {
     std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-    cb.SetAutoMCStats(cb, 0.0);
+    cb.SetAutoMCStats(cb, 10.);
   }
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
