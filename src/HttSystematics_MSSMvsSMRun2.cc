@@ -1105,15 +1105,38 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   // NEED TO ADD B TAG EFFICIENCY
 
-  //cb.cp()
-  //    .channel({"et", "mt", "tt", "em"})
-  //    .process(mc_processes)
-  //    .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mc_processes)
+      .bin_id(mssm_categories, false) 
+      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
 
-  //cb.cp()
-  //    .channel({"et", "mt", "tt", "em"})
-  //    .process(mc_processes)
-  //    .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .bin_id(mssm_categories, false)
+      .process(mc_processes)
+      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+
+  // MSSM btag uncertainties will be lnN - for now just adding placeholders, need to be properly determined
+
+  cb.cp()
+      .bin_id(btag_catagories)
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMap<>::init(1.05));
+  cb.cp()
+      .bin_id(nobtag_catagories)
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMap<>::init(0.95));
+
+  cb.cp()
+      .bin_id(btag_catagories)
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMap<>::init(1.025));
+  cb.cp()
+      .bin_id(nobtag_catagories)
+      .process({"EMB"})
+      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMap<>::init(0.975));
+
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
