@@ -103,6 +103,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   std::vector<int> mssm_categories = {2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for 
 
+  std::vector<int> mssm_nobtag_catagories = {32,33,34};
+
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.
    // References:
@@ -753,20 +755,20 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: for Hdamp scales t, b, and i components are decorrelated
   // ##########################################################################
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process({"ggh_i","ggH_i","ggA_i"})
-  //     .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
+   cb.cp()
+       .channel({"et", "mt", "tt", "em"})
+       .process({"ggh_i","ggH_i","ggA_i"})
+       .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process({"ggh_t","ggH_t","ggA_t"})
-  //     .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
+   cb.cp()
+       .channel({"et", "mt", "tt", "em"})
+       .process({"ggh_t","ggH_t","ggA_t"})
+       .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process({"ggh_b","ggH_b","ggA_b"})
-  //     .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
+   cb.cp()
+       .channel({"et", "mt", "tt", "em"})
+       .process({"ggh_b","ggH_b","ggA_b"})
+       .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: ggH Reweighting QCDscale uncertainty
@@ -775,10 +777,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: t,b, and i are correlated in this case
   // ##########################################################################
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process(mssm_ggH_signals)
-  //     .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+   cb.cp()
+       .channel({"et", "mt", "tt", "em"})
+       .process(mssm_ggH_signals)
+       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Prefiring
@@ -1319,6 +1321,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_res_met_$ERA", "shape", SystMap<>::init(1.00));
 
+  //cb.cp()
+  //    .process({"EMB"})
+  //    .bin_id(mssm_categories) // not to be applied for SM categories?
+  //    .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.4)); // change scaling to proper values in future
+
   // ##########################################################################
   // Uncertainty: Background normalizations
   // References:
@@ -1800,11 +1807,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     std::string qcd_tt_uncs[3] = {"unc1", "unc2", "unc3"};
     std::string wjets_uncs[4] = {"unc1", "unc2", "unc3", "unc4"};
 
+
     // QCD shape stat.
     for (auto njet: jet_bins) {
+        //only add njets0 uncerts for nobtag categories
+        std::vector<int> bins = mssm_categories;
+        if(njet=="njet0") bins = mssm_nobtag_catagories;
         for (auto reg: unc_regions) {
             for (auto unc: qcd_tt_uncs) {
                 cb.cp()
+                    .bin_id(bins)
                     .channel({"et", "mt", "tt"})
                     .process({"jetFakes"})
                     .AddSyst(cb, "CMS_ff_total_qcd_stat_"+njet+"_jet_pt_"+reg+"_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
@@ -1814,9 +1826,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
     // W shape stat.
     for (auto njet: jet_bins) {
+        //only add njets0 uncerts for nobtag categories
+        std::vector<int> bins = mssm_categories;
+        if(njet=="njet0") bins = mssm_nobtag_catagories;
         for (auto reg: unc_regions) {
             for (auto unc: wjets_uncs) {
                 cb.cp()
+                    .bin_id(bins)
                     .channel({"et", "mt"})
                     .process({"jetFakes"})
                     .AddSyst(cb, "CMS_ff_total_wjets_stat_"+njet+"_jet_pt_"+reg+"_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
@@ -1836,7 +1852,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
     for (auto unc: extra_uncs) {
         for (auto njet: jet_bins_lt) {
+          //only add njets0 uncerts for nobtag categories
+          std::vector<int> bins = mssm_categories;
+          if(njet=="njet0") bins = mssm_nobtag_catagories;
             cb.cp()
+                .bin_id(bins)
                 .channel({"et", "mt"})
                 .process({"jetFakes"})
                 .AddSyst(cb, "CMS_ff_total_qcd_stat_ss_"+njet+"_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
@@ -1865,12 +1885,21 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         cb.cp()
             .channel({"et", "mt"})
             .process({"jetFakes"})
+            .AddSyst(cb, "CMS_ff_total_qcd_stat_os_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+        cb.cp()
+            .channel({"et", "mt"})
+            .process({"jetFakes"})
             .AddSyst(cb, "CMS_ff_total_wjets_stat_extrap_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
         cb.cp()
             .channel({"et", "mt"})
             .process({"jetFakes"})
             .AddSyst(cb, "CMS_ff_total_ttbar_stat_met_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+        cb.cp()
+            .channel({"et", "mt"})
+            .process({"jetFakes"})
+            .AddSyst(cb, "CMS_ff_total_ttbar_stat_l_pt_"+unc+"_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
         cb.cp()
             .channel({"tt"})
@@ -1917,10 +1946,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"jetFakes"})
         .AddSyst(cb, "CMS_ff_total_low_pt_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-  cb.cp()
-      .channel({"tt"})
-      .process({"wFakes"})
-      .AddSyst(cb, "CMS_ff_total_wFakesNorm_$ERA", "lnN", SystMap<>::init(1.2));
+    cb.cp()
+        .channel({"tt"})
+        .process({"wFakes"})
+        .AddSyst(cb, "CMS_ff_total_wFakesNorm_$ERA", "lnN", SystMap<>::init(1.2));
 
   }
   else {
