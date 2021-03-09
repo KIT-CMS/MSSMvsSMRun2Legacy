@@ -1974,6 +1974,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"wFakes"})
         .AddSyst(cb, "CMS_ff_total_wFakesNorm_$ERA", "lnN", SystMap<>::init(1.2));
 
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_sub_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
   }
   else {
     // QCD shape stat.
