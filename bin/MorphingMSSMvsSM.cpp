@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
-  main_sm_signals = {"ggH125", "qqH125"};
+  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -238,6 +238,7 @@ int main(int argc, char **argv) {
   SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
 
   map<int, VString> SUSYbbH_masses;
+
   // old signal masses
   //SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
   //SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
@@ -1120,12 +1121,9 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    //RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
-    //RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
-    //RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");
@@ -1166,9 +1164,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
-    std::cout << "-----------------------1------------------------\n";
     morphFactory.Run(cb, ws, process_norm_map);
-    std::cout << "-----------------------2------------------------\n";
 
     if(analysis == "mssm" || analysis == "mssm_classic"){
       // Adding 'norm' terms into workspace according to desired signals
