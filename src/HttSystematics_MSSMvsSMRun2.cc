@@ -78,7 +78,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh"}});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
-  std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  std::vector<std::string> mssm_ggH_t_signals = {"ggh_t", "ggH_t", "ggA_t"};
+  std::vector<std::string> mssm_ggH_b_signals = {"ggh_b", "ggH_b", "ggA_b"};
+  std::vector<std::string> mssm_ggH_i_signals = {"ggh_i", "ggH_i", "ggA_i"};
+  std::vector<std::string> mssm_ggH_signals = JoinStr({mssm_ggH_t_signals, mssm_ggH_b_signals, mssm_ggH_i_signals});
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH_500", "bbH_1400"};
   std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
@@ -415,10 +418,18 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes:
   // ##########################################################################
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process(mssm_ggH_signals)
-  //     .AddSyst(cb, "Hdamp_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_t_signals)
+      .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_b_signals)
+      .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_i_signals)
+      .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: ggH Reweighting QCDscale uncertainty
@@ -427,10 +438,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes:
   // ##########################################################################
 
-  // cb.cp()
-  //     .channel({"et", "mt", "tt", "em"})
-  //     .process(mssm_ggH_signals)
-  //     .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_signals)
+      .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Prefiring
