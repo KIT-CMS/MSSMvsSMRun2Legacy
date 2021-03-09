@@ -1121,12 +1121,9 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] 1 --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
     w_sm->var("mh")->SetName("MH");
-    //RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
-    //RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
-    //RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_SM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_SM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_SM_frac");
+    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
     t_frac->SetName("ggh_t_frac");
     b_frac->SetName("ggh_b_frac");
     i_frac->SetName("ggh_i_frac");
@@ -1167,9 +1164,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
-    std::cout << "-----------------------1------------------------\n";
     morphFactory.Run(cb, ws, process_norm_map);
-    std::cout << "-----------------------2------------------------\n";
 
     if(analysis == "mssm" || analysis == "mssm_classic"){
       // Adding 'norm' terms into workspace according to desired signals
