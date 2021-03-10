@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
@@ -202,10 +202,9 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  //bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  //bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
+  bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
@@ -281,7 +280,18 @@ int main(int argc, char **argv) {
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
+    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
+      bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
+    }
+    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff"){
+      bkg_procs["mt"] = JoinStr({bkg_procs["mt"],sm_signals,main_sm_signals,bkgs_HWW});
+    }
+    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff"){
+      bkg_procs["tt"] = JoinStr({bkg_procs["tt"],sm_signals,main_sm_signals,bkgs_HWW});
+    }
+
     bkg_procs["em"] = JoinStr({bkg_procs["em"],sm_signals,main_sm_signals});
+  }
 
   std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
     {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
