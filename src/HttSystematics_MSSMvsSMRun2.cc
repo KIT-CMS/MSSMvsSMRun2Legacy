@@ -1944,7 +1944,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .AddSyst(cb, "CMS_ff_total_qcd_syst_iso_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
     cb.cp()
-        .channel({"et", "mt"})
+        .channel({"et", "mt", "tt"})
         .process({"jetFakes"})
         .AddSyst(cb, "CMS_ff_total_wjets_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
@@ -1972,6 +1972,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"tt"})
         .process({"wFakes"})
         .AddSyst(cb, "CMS_ff_total_wFakesNorm_$ERA", "lnN", SystMap<>::init(1.2));
+
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_sub_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
   }
   else {
