@@ -22,19 +22,19 @@ fi
 if [[ $MODEL == "mh125" ]]; then
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=60
+    min_mass=110
     max_mass=3200
     scenario_label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)"
 elif [[ $MODEL == "mh125_lc" ]]; then
     wsoutput="ws_mh125_lc.root"
     modelfile="13,Run2017,mh125_lc_13.root"
-    min_mass=60
+    min_mass=110
     max_mass=3200
     scenario_label="M_{h}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
 elif [[ $MODEL == "mh125_ls" ]]; then
     wsoutput="ws_mh125_ls.root"
     modelfile="13,Run2017,mh125_ls_13.root"
-    min_mass=60
+    min_mass=110
     max_mass=3200
     scenario_label="M_{h}^{125}(#tilde{#tau}) scenario (h,H,A#rightarrow#tau#tau)"
 elif [[ $MODEL == "mh125_align" ]]; then
@@ -92,11 +92,12 @@ elif [[ $MODEL == "mh125EFT_lc" ]]; then
 else
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=60
+    min_mass=110
     max_mass=3200
 fi
-
-defaultdir=$(readlink -f analysis/$TAG)
+defaultdir="analysis/$TAG"
+[[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
+defaultdir=$(readlink -f ${defaultdir})
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits_${MODEL}/condor ]] && mkdir -p ${defaultdir}/limits_${MODEL}/condor
@@ -207,6 +208,19 @@ elif [[ $MODE == "submit-local" ]]; then
     cp scripts/run_limits_locally.py ${defaultdir}/limits_${MODEL}/condor
     cd ${defaultdir}/limits_${MODEL}/condor
     python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
+
+elif [[ $MODE == "submit-gc" ]]; then
+    ############
+    # job submission
+    ############
+    python scripts/build_gc_job.py \
+        --combine-script ${defaultdir}/limits_${MODEL}/condor/condor_${taskname}.sh \
+        --workspace ${datacarddir}/combined/cmb/${wsoutput} \
+        --workdir /work/sbrommer/workdirs/combine/${taskname} \
+        --tag ${taskname} \
+        --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}
+
+    ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}/${taskname}.conf -Gc -m 3
 
 elif [[ $MODE == "delete-crashed-jobs" ]]; then
     ############
