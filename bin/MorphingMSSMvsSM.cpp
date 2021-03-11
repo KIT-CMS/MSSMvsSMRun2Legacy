@@ -165,7 +165,7 @@ if(analysis == "nmssm"){
       { 2 , "et_tt"},
       { 3 , "et_misc"},
       { 4 , "et_ff"},
-      { 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch},
+      {5, "et_NMSSM"}            //{ 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch},
     };
 
 
@@ -175,7 +175,7 @@ if(analysis == "nmssm"){
       { 2 , "mt_tt"},
       { 3 , "mt_misc"},
       { 4 , "mt_ff"},
-      { 5 , "mt_NMSSM_MH"+training_mass+"_"+training_batch}
+      {5, "mt_NMSSM"} //{5, "et_NMSSM"} { 5 , "mt_NMSSM_MH"+training_mass+"_"+training_batch}
     };
 
     cats["tt"] = {
@@ -183,14 +183,14 @@ if(analysis == "nmssm"){
       { 2 , "tt_tt"},
       { 3 , "tt_misc"},
       { 4 , "tt_ff"},
-      { 5 , "tt_NMSSM_MH"+training_mass+"_"+training_batch}
+      {5, "tt_NMSSM"} //{ 5 , "tt_NMSSM_MH"+training_mass+"_"+training_batch}
     };
     cats["em"] = {
       { 1 , "em_emb"},
       { 2 , "em_tt"}, 
       { 3 , "em_misc"},
       { 4 , "em_ff"}, 
-      { 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch}
+      {5, "em_NMSSM"}      //{ 5 , "et_NMSSM_MH"+training_mass+"_"+training_batch}
     };
   }
 
