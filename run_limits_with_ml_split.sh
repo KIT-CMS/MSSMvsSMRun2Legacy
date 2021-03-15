@@ -6,7 +6,7 @@ MODE=$2
 CHANNEL=$3
 ERA=$4
 if [[ $TAG == "auto" ]]; then
-    TAG="${CHANNEL}_${ERA}_sm_only_h125"
+    TAG="${CHANNEL}_${ERA}_h125"
 fi
 
 if [[ $ERA == "2016" ]]; then
@@ -40,12 +40,12 @@ if [[ $MODE == "initial" ]]; then
         --sm \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
-    # morph_parallel.py --output ${defaultdir}/datacards \
-    #     --analysis ${analysis} \
-    #     --eras $ERA \
-    #     --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
-    #     --variable mt_tot_puppi \
-    #     --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+    morph_parallel.py --output ${defaultdir}/datacards \
+        --analysis ${analysis} \
+        --eras $ERA \
+        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
+        --variable mt_tot_puppi \
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
@@ -102,7 +102,7 @@ elif [[ $MODE == "submit-local" ]]; then
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits/condor
     cd ${defaultdir}/limits/condor
-    python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
+    python run_limits_locally.py --cores 10 --taskname condor_${taskname}.sh
 
 elif [[ $MODE == "collect" ]]; then
     ############

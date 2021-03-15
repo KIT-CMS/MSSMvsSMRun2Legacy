@@ -78,7 +78,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh"}});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
-  std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"};
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH_500", "bbH_1400"};
   std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
@@ -777,10 +777,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: t,b, and i are correlated in this case
   // ##########################################################################
 
-   cb.cp()
-       .channel({"et", "mt", "tt", "em"})
-       .process(mssm_ggH_signals)
-       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_signals)
+      .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
 
   // ##########################################################################
   // Uncertainty: Prefiring
@@ -1343,6 +1345,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_res_met_$ERA", "shape", SystMap<>::init(1.00));
 
+  // ToDo: Update with the corresponding scalings of the new systematics.
   //cb.cp()
   //    .process({"EMB"})
   //    .bin_id(mssm_categories) // not to be applied for SM categories?
