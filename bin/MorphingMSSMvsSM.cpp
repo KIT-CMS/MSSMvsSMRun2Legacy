@@ -65,6 +65,17 @@ std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>>
     return binning;
 }
 
+void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
+  auto cb_syst = cb.cp().syst_name({name});
+  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+    if (syst->type().find("shape") != std::string::npos) {
+      std::cout << "Converting systematic " << syst->name() << " for process " << syst->process() << " in bin " << syst->bin() << " to lnN." <<std::endl;
+      syst->set_type("lnN");
+      return;
+    }
+  }); 
+}
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -87,6 +98,7 @@ int main(int argc, char **argv) {
   bool mva(false), no_emb(false);
   bool sm = false;
   bool rebin_sm = true;
+  bool no_shape_systs = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -166,9 +178,9 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
   sm_signals = {"WH125", "ZH125", "ttH125"};
-  main_sm_signals = {"ggH125", "qqH125"};
+  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -190,8 +202,9 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
+  bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
+  bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
@@ -211,14 +224,30 @@ int main(int argc, char **argv) {
     bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
   }
   map<int, VString> SUSYggH_masses;
-  SUSYggH_masses[2016] = {"110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+
+  // old signal masses
+  //SUSYggH_masses[2016] = {"110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
+  //SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"}; // Available at KIT
+  //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","400","450","600","700","800","1200","1400","1500","1600","1800","2000","2600","2900","3200"}; // Available at ICL
+  
+  // new signal masses
+  SUSYggH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  SUSYggH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
 
   map<int, VString> SUSYbbH_masses;
-  SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  SUSYbbH_masses[2018] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+
+  // old signal masses
+  //SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  //SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  //SUSYbbH_masses[2018] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+
+  // new signal masses
+  SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; // Missing 300,700,1000
+  SUSYbbH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+ 
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
   update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
@@ -248,9 +277,20 @@ int main(int argc, char **argv) {
     }
   }
   else if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm_heavy"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals,main_sm_signals});
+    bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
+    bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
+    bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
+    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
+      bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
     }
+    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff"){
+      bkg_procs["mt"] = JoinStr({bkg_procs["mt"],sm_signals,main_sm_signals,bkgs_HWW});
+    }
+    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff"){
+      bkg_procs["tt"] = JoinStr({bkg_procs["tt"],sm_signals,main_sm_signals,bkgs_HWW});
+    }
+
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],sm_signals,main_sm_signals});
   }
 
   std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
@@ -575,6 +615,12 @@ int main(int argc, char **argv) {
     cb = cb.bin({category});
   }
 
+  if(no_shape_systs){
+    cb.FilterSysts([&](ch::Systematic *s){
+      return s->type().find("shape") != std::string::npos;
+    });
+  }
+
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
@@ -691,6 +737,7 @@ int main(int argc, char **argv) {
   });
 
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
+  // need to check this for low mass ggH i components as these can be negative
   std::cout << "[INFO] Setting mssm signals with negative yield to 0.\n";
   cb.ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
@@ -830,9 +877,11 @@ int main(int argc, char **argv) {
     }
   }
 
+  std::vector<int> mssm_bins = {2,32,33,34,35,36,37};
+
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
-  cb.cp().ForEachSyst([category, mssm_signals](ch::Systematic *s){
+  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
     TString sname = TString(s->name());
     if((s->type().find("shape") != std::string::npos) && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
     {
@@ -855,9 +904,78 @@ int main(int argc, char **argv) {
     }
   });
 
+  // turn all JES+JER+met-unclustered uncertainties into lnN for MSSM categories - should check the met recoil uncertainties as well for small processes
+  std::vector<std::string> jetmet_systs = {
+    "CMS_scale_j_Absolute",
+    "CMS_scale_j_BBEC1",
+    "CMS_scale_j_EC2",
+    "CMS_scale_j_FlavorQCD",          
+    "CMS_scale_j_HF",
+    "CMS_scale_j_RelativeBal",
+    "CMS_scale_j_Absolute_2016",
+    "CMS_scale_j_Absolute_2017",
+    "CMS_scale_j_Absolute_2018",
+    "CMS_scale_j_BBEC1_2016",
+    "CMS_scale_j_BBEC1_2017",
+    "CMS_scale_j_BBEC1_2018",
+    "CMS_scale_j_EC2_2016",
+    "CMS_scale_j_EC2_2017",
+    "CMS_scale_j_EC2_2018",
+    "CMS_scale_j_HF_2016", 
+    "CMS_scale_j_HF_2017", 
+    "CMS_scale_j_HF_2018", 
+    "CMS_scale_j_RelativeSample_2016",
+    "CMS_scale_j_RelativeSample_2017",
+    "CMS_scale_j_RelativeSample_2018",
+    "CMS_res_j_2016",
+    "CMS_res_j_2017",
+    "CMS_res_j_2018",
+    "CMS_scale_met_unclustered_2016",
+    "CMS_scale_met_unclustered_2017",
+    "CMS_scale_met_unclustered_2018",
+  };
+
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u); 
+
+  // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
+  for (string y : {"2016","2017","2018"}) {
+    ConvertShapesToLnN(cb.cp().bin_id({32,35}), "CMS_ff_total_qcd_stat_dR_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({32,35}), "CMS_ff_total_qcd_stat_pt_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_low_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_med_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
+  }
+
+  // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
+  for (string y : {"2016","2017","2018"}) {
+    for (string u : {"unc1", "unc2"}) {
+
+      cb.cp().bin_id({32}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_Nbtag0_"+y);
+      cb.cp().bin_id({35}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_NbtagGt1_"+y);
+
+      cb.cp().bin_id({32}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_Nbtag0_"+y);
+      cb.cp().bin_id({35}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_NbtagGt1_"+y);
+
+      for (string c : {"mt","et"}) {
+        cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MTLt40_"+y);
+        cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MT40To70_"+y);
+        cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MTLt40_"+y);
+        cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MT40To70_"+y);
+        
+        cb.cp().bin_id({32,35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MTLt40_"+y);
+        cb.cp().bin_id({33,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MT40To70_"+y);
+
+        cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_Nbtag0_"+y);
+        cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_NbtagGt1_"+y);
+
+      }
+    }
+  }
+
   // At this point we can fix the negative bins for the remaining processes
+  // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       auto newhist = p->ClonedShape();
       ch::ZeroNegativeBins(newhist.get());
@@ -865,7 +983,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -975,7 +1093,7 @@ int main(int argc, char **argv) {
   // Adding bin-by-bin uncertainties
   if (use_automc) {
     std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-    cb.SetAutoMCStats(cb, 0.0);
+    cb.SetAutoMCStats(cb, 10.);
   }
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
