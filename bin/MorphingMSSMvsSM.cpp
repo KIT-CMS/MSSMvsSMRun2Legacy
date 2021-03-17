@@ -76,6 +76,63 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   }); 
 }
 
+void CorrelateYears (ch::CombineHarvester& cb) {
+  // function to partially correlate FF systematics between years - need to check this works as expected
+  double scale = 0.70711; // sqrt(1/2) to give 50% correlation between years
+  auto cb_syst = cb.cp().process({"jetFakes"});
+  // first scale all non-statistical FF systematics by sqrt(0.5)
+  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+
+      if((syst->name().find("2016")!=std::string::npos || syst->name().find("2017")!=std::string::npos  || syst->name().find("2018")!=std::string::npos) && syst->name().find("ff_total") != std::string::npos&& syst->name().find("ff_total") != std::string::npos) {
+
+        std::cout << "scaling systematic " << syst->name() << " by 1/sqrt(2) for (bin, channel, era): " << syst->bin() << ", "  << syst->channel() << "," << syst->era() << std::endl;
+  
+        if (syst->type().find("shape") != std::string::npos) {
+          syst->set_scale(syst->scale() * scale);
+        }
+        if (syst->type().find("lnN") != std::string::npos) {
+          syst->set_value_u((syst->value_u() - 1.) * scale + 1.);
+          if (syst->asymm()){
+            syst->set_value_d((syst->value_d() - 1.) * scale + 1.);
+          }
+        }
+      }
+  });
+
+
+
+    //for(auto y : years){
+    //  string name = syst->name();
+    //  string new_name = name;
+    //  boost::replace_all(new_name,"_"+y,"");
+      // clone syst removing year from name and scale it by sqrt of correlation
+    //  ch::CloneSysts(cb_syst.cp().syst_name({name}).bin_id({syst->bin()}), cb, [&](ch::Systematic *s) {
+    //      s->set_name(new_name);
+    //      if (s->type().find("shape") != std::string::npos) {
+    //        s->set_scale(s->scale() * sqrt(scale));
+    //      }
+    //      if (s->type().find("lnN") != std::string::npos) {
+    //        s->set_value_u((s->value_u() - 1.) * sqrt(scale) + 1.);
+    //        if (s->asymm()){
+    //          s->set_value_d((s->value_d() - 1.) * sqrt(scale) + 1.);
+    //        }
+    //      }
+    //  });
+
+  //    // now also scale the origional syst by the sqrt(1-correlation^2)  
+  //    if (syst->type().find("shape") != std::string::npos) {
+  //      syst->set_scale(syst->scale() * sqrt(1.-scale*scale));
+  //    }
+  //    if (syst->type().find("lnN") != std::string::npos) {
+  //      syst->set_value_u((syst->value_u() - 1.) * sqrt(1.-scale*scale) + 1.);
+  //      if (syst->asymm()){
+  //        syst->set_value_d((syst->value_d() - 1.) * sqrt(1.-scale*scale) + 1.);
+  //      }
+  //    }
+  //  }
+  //});
+}
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
