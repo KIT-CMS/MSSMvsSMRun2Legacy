@@ -78,7 +78,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh"}});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
-  std::vector<std::string> mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"};
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH_500", "bbH_1400"};
   std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
@@ -777,10 +777,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: t,b, and i are correlated in this case
   // ##########################################################################
 
-   cb.cp()
-       .channel({"et", "mt", "tt", "em"})
-       .process(mssm_ggH_signals)
-       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process(mssm_ggH_signals)
+      .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
 
   // ##########################################################################
   // Uncertainty: Prefiring
@@ -904,7 +906,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           cb.cp()
               .channel({"tt"})
               .process({"EMB"})
-              .AddSyst(cb, "CMS_eff_xtrigger_t_emb_tt_dm"+tauTriggerbin+"_highpT_$ERA", "shape", SystMap<>::init(0.5));
+              .AddSyst(cb, "CMS_eff_xtrigger_t_tt_dm"+tauTriggerbin+"_highpT_$ERA", "shape", SystMap<>::init(0.5));
       }
   }
 
@@ -1064,8 +1066,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     cb.cp()
         .channel({"et", "mt"})
         .process({"EMB"})
-        .AddSyst(cb, "CMS_eff_t_emb_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
-        //.AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
+        .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(0.5));
   }
   cb.cp()
       .channel({"et", "mt"})
@@ -1347,7 +1348,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // met uncertainty templates are included from taking 100% variation in the correction
   // these are scaled here to take the correct 1-sigma ranges
 
- // small uncertainty decorrelated by channel to account for statistical differences
+  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections
   cb.cp()
       .process({"EMB"})
       .channel({"et", "mt", "tt"})

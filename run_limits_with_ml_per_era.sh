@@ -4,8 +4,18 @@ ulimit -s unlimited
 TAG=$1
 MODE=$2
 ERA=$3
-if [[ $TAG == "auto" ]]; then
-    TAG="cmb_${ERA}_h125"
+ANALYSISTYPE=$4
+
+if [[ $ANALYSISTYPE == "classic" ]]; then
+    analysis="mssm_vs_sm_classic"
+    if [[ $TAG == "auto" ]]; then
+        TAG="cmb_${ERA}_classic"
+    fi
+else
+    analysis="mssm_vs_sm_h125"
+    if [[ $TAG == "auto" ]]; then
+        TAG="cmb_${ERA}_h125"
+    fi
 fi
 
 if [[ $ERA == "2016" ]]; then
@@ -17,7 +27,6 @@ elif [[ $ERA == "2018" ]]; then
 fi
 
 defaultdir=analysis/$TAG
-analysis="mssm_vs_sm_h125"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -31,20 +40,43 @@ if [[ $MODE == "initial" ]]; then
     ############
     # morphing
     ############
-    morph_parallel.py --output ${defaultdir}/datacards \
-        --analysis ${analysis} \
-        --eras $ERA \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
-        --variable nnscore \
-        --sm \
-        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+    if [[ $ANALYSISTYPE == "classic" ]]; then
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --eras $ERA \
+            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt\
+            --variable mt_tot_puppi \
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
-    morph_parallel.py --output ${defaultdir}/datacards \
-        --analysis ${analysis} \
-        --eras $ERA \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
-        --variable mt_tot_puppi \
-        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --eras $ERA \
+            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt\
+            --variable mt_tot_puppi \
+            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
+    else
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --eras $ERA \
+            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
+            --variable nnscore \
+            --sm \
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --eras $ERA \
+            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+            --variable mt_tot_puppi \
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --eras $ERA \
+            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt\
+            --variable mt_tot_puppi \
+            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
+    fi
 
     ############
     # combining outputs
@@ -96,7 +128,7 @@ elif [[ $MODE == "submit-local" ]]; then
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits/condor
     cd ${defaultdir}/limits/condor
-    python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
+    python run_limits_locally.py --cores 12 --taskname condor_${taskname}.sh
 
 elif [[ $MODE == "collect" ]]; then
     ############
