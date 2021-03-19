@@ -35,7 +35,7 @@ parser.add_argument(
 parser.add_argument(
     '--process', choices=['gg#phi','bb#phi','nmssm'], help='The process on which a limit has been calculated.', default="gg#phi")
 parser.add_argument(
-    '--cms-sub', default='', help="""Text below the CMS logo""")
+    '--cms-sub', default='Internal', help="""Text below the CMS logo""")
 parser.add_argument(
     '--title-right', default='', help="""Right header text above the frame""")
 parser.add_argument(
@@ -166,7 +166,7 @@ for src in args.input:
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
         plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
-        print graph_sets[-1]
+
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw()
@@ -206,7 +206,7 @@ for src in args.input:
 mass = args.mass
 
 
-if False and (mass>399 and mass<750):
+if (mass>399 and mass<750):
     theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
     theory_graph = theory_file.Get("g_bbtautau")
     theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
@@ -225,7 +225,8 @@ axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#fo
 if args.process == "bb#phi":
     axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
 if args.process == "nmssm":
-    axis[0].GetYaxis().SetTitle("#scale[0.9]{95% CL limit on #sigma#times #font[52]{B}#font[42]{(H#rightarrowh(#tau#tau) h_{S}(bb))}  (pb)}")
+    axis[0].GetYaxis().SetTitle("#scale[0.6]{95% CL limit on #sigma#font[42]{(gg#rightarrow H)}#upoint#font[52]{B}#font[42]{(H#rightarrow hh_{S})}#upoint#font[52]{B}#font[42]{(h#rightarrow#tau#tau)}#upoint#font[52]{B}#font[42]{(h_{S}#rightarrow bb)} (pb)}")
+
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)

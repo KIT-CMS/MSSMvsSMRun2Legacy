@@ -35,6 +35,8 @@ parser.add_argument(
 parser.add_argument(
     '--ratio-to', default=None)
 parser.add_argument(
+    '--mass', default=None, type=int)
+parser.add_argument(
     '--xmax', default=None, type=float)
 parser.add_argument(
     '--pad-style', default=None, help="""Extra style options for the pad, e.g. Grid=(1,1)""")
@@ -95,7 +97,7 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.33, 0.3, 3, 0.015)
+legend = plot.PositionedLegend(0.6, 0.3, 3, 0.015)
 legend.SetTextSize(0.03)
 
 axis = None
@@ -122,21 +124,22 @@ dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
 plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
 
 import json
-with open(args.input[0].split(":")[0],"r") as f:
-    base = json.load(f)
-with open(args.input[1].split(":")[0],"r") as f:
-    compare = json.load(f)
-max_ratio = 10.
-max_mass = -1
-avg_ratio = 0.
-for mass in base.keys():
-    ratio = compare[mass]["exp0"]/base[mass]["exp0"]
-    avg_ratio+=100.*(1.-ratio)
-    if ratio<max_ratio:
-        max_ratio = ratio
-        max_mass = mass
-max_ratio = 100.*(1.-max_ratio)
-avg_ratio /= float(len(base.keys()))
+if not "batches" in args.output and not "channel" in args.output:
+	with open(args.input[0].split(":")[0],"r") as f:
+	    base = json.load(f)
+	with open(args.input[3].split(":")[0],"r") as f:
+	    compare = json.load(f)
+	max_ratio = 10.
+	max_mass = -1
+	avg_ratio = 0.
+	for mass in base.keys():
+	    ratio = compare[mass]["exp0"]/base[mass]["exp0"]
+	    avg_ratio+=100.*(1.-ratio)
+	    if ratio<max_ratio:
+		max_ratio = ratio
+		max_mass = mass
+	max_ratio = 100.*(1.-max_ratio)
+	avg_ratio /= float(len(base.keys()))
 
 for src in args.input:
     splitsrc = src.split(':')
@@ -191,33 +194,29 @@ for src in args.input:
             axis = plot.CreateAxisHists(len(pads), graphs[-1], True)
             DrawAxisHists(pads, axis, pads[0])
         graphs[-1].Draw('PLSAME')
-        legend.AddEntry(graphs[-1], '', 'PL')
+        if settings['Title'] is not '':
+            print settings['Title']
+            legend.AddEntry(graphs[-1], '', 'PL')
 
 theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
 theory_graph = theory_file.Get("g_bbtautau")
 
-mass = [int(s) for s in args.output.split("_") if s.isdigit()][1]
-if mass<750 and mass>399:
-    theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
-    theory_line.SetLineColor(1)
-    theory_line.SetLineStyle(2)
-    theory_line.Draw("SAME")
-    theory_line_solid=ROOT.TLine(100.,theory_graph.Eval(mass),110.,theory_graph.Eval(mass))
-    theory_line_solid.SetLineColor(1)
-    theory_line_solid.SetLineWidth(2)
-    theory_line_solid.SetLineStyle(1)
-    theory_line_solid.Draw("SAME")
-    legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
-    # theory_graph.Draw("SAME")
-if len(splitsrc)<3:
-	pt = ROOT.TPaveText(62,0.8,200,5)
-	pt.SetTextAlign(11)
-	pt.AddText("Average improvement: {:.1f}%".format(avg_ratio))
-	pt.AddText("Maximal improvement: {:.1f}% for h'={} GeV".format(max_ratio,max_mass.split(".")[0]))
-	pt.SetTextFont(45)
-	pt.SetTextSize(14)
-	pt.SetFillStyle(4000)
-	pt.Draw("SAME")
+mass = args.mass
+
+if not "batches" in args.output and mass:
+    if mass<750 and mass>399:
+        theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
+        theory_line.SetLineColor(1)
+        theory_line.SetLineStyle(2)
+        theory_line.Draw("SAME")
+        theory_line_solid=ROOT.TLine(100.,theory_graph.Eval(mass),110.,theory_graph.Eval(mass))
+        theory_line_solid.SetLineColor(1)
+        theory_line_solid.SetLineWidth(2)
+        theory_line_solid.SetLineStyle(1)
+        theory_line_solid.Draw("SAME")
+        legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
+        # theory_graph.Draw("SAME")
+
 
 axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "bb#phi":
@@ -247,6 +246,28 @@ if args.logy:
 
 y_min, y_max = (plot.GetPadYMin(pads[0]), plot.GetPadYMax(pads[0]))
 plot.FixBothRanges(pads[0], y_min if args.logy else 0, 0.05 if args.logy else 0, y_max, 0.25)
+xbatches = [82.5,105.,160.,325.,525.,725.] if mass<1001. else [120,350,750,1300,1900]
+
+if not "batches" in args.output and not "channel" in args.output:
+	pt = ROOT.TPaveText(62,0.0005,200,0.005)
+	pt.SetTextAlign(11)
+	pt.AddText("Average improvement: {:.1f}%".format(avg_ratio))
+	pt.AddText("Maximal improvement: {:.1f}% for h'={} GeV".format(max_ratio,max_mass.split(".")[0]))
+	pt.SetTextFont(45)
+	pt.SetTextSize(14)
+	pt.SetFillStyle(4000)
+	pt.Draw("SAME")
+
+elif "batches" in args.output:
+    batch_lines = []
+    # for x_batch in [82.5,105.,160.,325.,525.,725.]:
+    for x_batch in xbatches:    
+        batch_line = ROOT.TLine(x_batch,float(args.y_axis_min),x_batch,float(args.y_axis_max))
+        batch_line.SetLineColor(12)
+        batch_line.SetLineStyle(2)
+        batch_lines.append(batch_line)
+    for batch_line in batch_lines:        
+        batch_line.Draw("SAME")
 
 if args.y_axis_min is not None or args.y_axis_max is not None:
   hobj = plot.GetAxisHist(pads[0])
@@ -283,12 +304,13 @@ if legend.GetNRows() == 1:
     legend.SetY1(legend.GetY2() - 0.5*(legend.GetY2()-legend.GetY1()))
 legend.Draw()
 
-channel_label = {"mt": "#mu#tau_{h}",
-                "tt": "#tau_{h}#tau_{h}",
-                "et":  "e#tau_{h}",
+channel_label = {"mt": "#mu^{}_{}#tau^{}_{h}",
+                "tt": "#tau^{}_{h}#tau^{}_{h}",
+                "et":  "e^{}_{}#tau^{}_{h}",
                 "em": "e#mu",
-                "all": "e#tau_{h}+#mu#tau_{h}+#tau_{h}#tau_{h}"
+                "all": "e^{}_{}#tau^{}_{h}+#mu^{}_{}#tau^{}_{h}+#tau^{}_{h}#tau^{}_{h}"
                 }
+
 for ch in channel_label.keys():
     if ch in args.title_left:
         title_left = args.title_left.replace(ch,channel_label[ch])

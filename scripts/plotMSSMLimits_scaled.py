@@ -72,9 +72,9 @@ colors = [
     Color(0.87, 0.73, 0.53, "myyellow"),
     Color(0.57, 0.69, 0.32, "mygreen"),
     Color(0.93, 0.65, 0.17, "myorange"),
-    Color(0.96, 0.65, 0.36, "myorange2"),
-    Color(0.97, 0.91, 0.40, "myyellow2"),
-    Color(0.66, 0.81, 0.33, "mygreen2"),
+    Color(0.96, 0.65, 0.36, "myorange3"),
+    Color(0.97, 0.91, 0.40, "myyellow3"),
+    Color(0.66, 0.81, 0.33, "mygreen3"),
                 ]
                 
 for color in colors:
@@ -84,8 +84,8 @@ for color in colors:
 style_dict_hig_17_020 = {
         'style' : {
             'exp0' : { 'LineColor' : 12, 'LineStyle' : 7, 'LineWidth' : 3},
-            'exp1' : { 'FillColor' : ROOT.mygreen2}, 
-            'exp2' : { 'FillColor' : ROOT.myyellow2}
+            'exp1' : { 'FillColor' : ROOT.mygreen3}, 
+            'exp2' : { 'FillColor' : ROOT.myyellow3}
             },
         'legend' : {
             'exp1' : { 'Label' : '68% expected'},
@@ -112,11 +112,12 @@ ROOT.gStyle.SetNdivisions(510, 'XYZ') # probably looks better
 canv = ROOT.TCanvas(args.output, args.output)
 
 if args.ratio_to is not None:
-    pads = plot.TwoPadSplit(0.30, 0.01, 0.01)
+    pads = plot.TwoPadSplit(0.4, 0.01, 0.01)
 else:
     pads = plot.OnePad()
 
 # Set the style options of the pads
+
 for padx in pads:
     # Use tick marks on oppsite axis edges
     plot.Set(padx, Tickx=1, Ticky=1, Logx=args.logx)
@@ -129,7 +130,7 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.33, 0.25, 3, 0.015)
+legend = plot.PositionedLegend(0.24, 0.2, 3, 0.015)
 legend.SetTextSize(0.03)
 
 axis = None
@@ -151,11 +152,37 @@ if args.auto_style is not None:
 
 # Process each input argument
 has_band = False
-
 dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
 plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
+scale_factors = {
+    "240": 22,
+    "280": 21,
+    "320": 20,
+    "360": 19,
+    "400": 18,
+    "450": 17,
+    "500": 16,
+    "550": 15,
+    "600": 14,
+    "700": 13,
+    "800": 12,
+    "900": 11,
+    "1000": 10,
+    "1200": 9,
+    "1400": 8,
+    "1600": 7,
+    "1800": 6,
+    "2000": 4,
+    "2500": 2,
+    "3000": 0
 
-for src in args.input:
+}
+texts = []
+arrows = []
+xtemp, ytemp = ROOT.Double(0.0), ROOT.Double(0.0)
+
+for i,src in enumerate(args.input):
+    mass =  src.split("_")[4]
     splitsrc = src.split(':')
     file = splitsrc[0]
     # limit.json => Draw as full obs + exp limit band
@@ -165,8 +192,53 @@ for src in args.input:
             axis = plot.CreateAxisHists(len(pads), graph_sets[-1].values()[0], True)
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
-        plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
-        print graph_sets[-1]
+        filler = ""
+        # style_dict["legend"]["obs"] = {"Label": "m_{H} = %s GeV%s (#times 10^{%s})" % (mass, filler, str(scale_factors[mass]))}
+        if i==0:
+            plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+        else:
+            plot.DrawLimitBand(pads[0], graph_sets[-1])
+        if True:
+            if not mass in ["2000","2500","3000"]:
+                texts.append(ROOT.TLatex(1.12*(float(mass)),10**(scale_factors[mass]-1),"m_{H} = %s GeV%s (#times 10^{%s})" % (mass, filler, str(scale_factors[mass]))))
+                texts[-1].SetTextFont(42)
+                texts[-1].SetTextSize(0.025)
+                texts[-1].Draw()
+
+                graph_sets[-1]["exp0"].GetPoint(graph_sets[-1]["exp0"].GetN()-1,xtemp,ytemp)
+
+                arrows.append(ROOT.TArrow(1.12*(float(mass)-10),10**(scale_factors[mass]-1),1.05*xtemp,1.05*ytemp,0.01,"|>"))
+                arrows[-1].Draw()
+            elif mass=="2000":
+                texts.append(ROOT.TLatex(1.1*(float(mass)),10**(scale_factors[mass]-1),"m_{H} = %s GeV%s (#times 10^{%s})" % (mass, filler, str(scale_factors[mass]))))
+                texts[-1].SetTextFont(42)
+                texts[-1].SetTextSize(0.025)
+                texts[-1].Draw()
+
+                graph_sets[-1]["exp0"].GetPoint(graph_sets[-1]["exp0"].GetN()-1,xtemp,ytemp)
+
+                arrows.append(ROOT.TArrow(1.1*(float(mass)),10**(scale_factors[mass]-1),1.05*xtemp,1.05*ytemp,0.01,"|>"))
+                arrows[-1].Draw()
+            elif mass=="2500":
+                texts.append(ROOT.TLatex(1.0*(float(mass)-340),10**(scale_factors[mass]-1),"m_{H} = %s GeV%s (#times 10^{%s})" % (mass, filler, str(scale_factors[mass]))))
+                texts[-1].SetTextFont(42)
+                texts[-1].SetTextSize(0.024)
+                texts[-1].Draw()
+
+                graph_sets[-1]["exp0"].GetPoint(graph_sets[-1]["exp0"].GetN()-1,xtemp,ytemp)
+
+                arrows.append(ROOT.TArrow(1.0*(float(mass)-340),10**(scale_factors[mass]-1),0.9*xtemp,2.0*ytemp,0.01,"|>"))
+                arrows[-1].Draw()                
+            else:
+                texts.append(ROOT.TLatex(int(mass)-600,1.1*10**(scale_factors[mass]-1),"m_{H} = %s GeV%s (#times 10^{%s})" % (mass, filler, str(scale_factors[mass]))))
+                texts[-1].SetTextFont(42)
+                texts[-1].SetTextSize(0.0233)
+                texts[-1].Draw()
+
+                graph_sets[-1]["exp0"].GetPoint(graph_sets[-1]["exp0"].GetN()-1,xtemp,ytemp)
+
+                arrows.append(ROOT.TArrow(int(mass)-600,10**(scale_factors[mass]-1),2300.,0.01,0.01,"|>"))
+                arrows[-1].Draw()            
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw()
@@ -205,22 +277,6 @@ for src in args.input:
 
 mass = args.mass
 
-
-if False and (mass>399 and mass<750):
-    theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
-    theory_graph = theory_file.Get("g_bbtautau")
-    theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
-    theory_line.SetLineColor(46)
-    theory_line.SetLineStyle(2)
-    theory_line.SetLineWidth(2)
-    theory_line.Draw("SAME")
-    theory_line_solid=ROOT.TLine(100.,theory_graph.Eval(mass),110.,theory_graph.Eval(mass))
-    theory_line_solid.SetLineColor(46)
-    theory_line_solid.SetLineWidth(3)
-    theory_line_solid.SetLineStyle(1)
-    theory_line_solid.Draw("SAME")
-    legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
-
 axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
 if args.process == "bb#phi":
     axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
@@ -233,7 +289,7 @@ axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
 if args.xmax is not None:
-    axis[0].GetXaxis().SetLimits(60.,args.xmax)
+    axis[0].GetXaxis().SetLimits(59.9,args.xmax)
 
 if args.logy:
     axis[0].SetMinimum(0.1)  # we'll fix this later
@@ -292,6 +348,7 @@ for x_batch in xbatches:
 pads[0].cd()
 if legend.GetNRows() == 1:
     legend.SetY1(legend.GetY2() - 0.5*(legend.GetY2()-legend.GetY1()))
+legend.SetFillStyle(0)
 legend.Draw()
 
 channel_label = {"mt": "#mu^{}_{}#tau^{}_{h}",

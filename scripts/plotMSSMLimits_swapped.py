@@ -25,7 +25,7 @@ parser.add_argument(
 parser.add_argument(
     '--show', default='exp,obs')
 parser.add_argument(
-    '--x-title', default="m_{h_{S}} (GeV)", help="""Title for the x-axis""")
+    '--x-title', default="m_{H} (GeV)", help="""Title for the x-axis""")
 parser.add_argument(
     '--y-title', default=None, help="""Title for the y-axis""")
 parser.add_argument(
@@ -233,7 +233,7 @@ axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
 if args.xmax is not None:
-    axis[0].GetXaxis().SetLimits(60.,args.xmax)
+    axis[0].GetXaxis().SetLimits(280.,args.xmax)
 
 if args.logy:
     axis[0].SetMinimum(0.1)  # we'll fix this later
@@ -306,7 +306,6 @@ for ch in channel_label.keys():
         break
 plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
 plot.DrawTitle(pads[0], args.title_right, 3)
-plot.DrawTitle(pads[0], title_left, 1)
-
+plot.DrawTitle(pads[0], title_left, 1,0.31)
 canv.Print('.pdf')
 canv.Print('.png')

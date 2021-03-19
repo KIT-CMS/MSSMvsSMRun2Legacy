@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+
 import ROOT
 import CombineHarvester.CombineTools.plotting as plot
 import argparse
@@ -25,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     '--show', default='exp,obs')
 parser.add_argument(
-    '--x-title', default="m_{h_{S}} (GeV)", help="""Title for the x-axis""")
+    '--x-title', default="m_{H} (GeV)", help="""Title for the x-axis""")
 parser.add_argument(
     '--y-title', default=None, help="""Title for the y-axis""")
 parser.add_argument(
@@ -35,7 +37,7 @@ parser.add_argument(
 parser.add_argument(
     '--process', choices=['gg#phi','bb#phi','nmssm'], help='The process on which a limit has been calculated.', default="gg#phi")
 parser.add_argument(
-    '--cms-sub', default='', help="""Text below the CMS logo""")
+    '--cms-sub', default='Internal', help="""Text below the CMS logo""")
 parser.add_argument(
     '--title-right', default='', help="""Right header text above the frame""")
 parser.add_argument(
@@ -56,18 +58,6 @@ parser.add_argument(
     '--auto-style', nargs='?', const='', default=None, help="""Take line colors and styles from a pre-defined list""")
 args = parser.parse_args()
 
-# style_dict_hig_17_020 = {
-#         'style' : {
-#             'exp0' : { 'LineColor' : ROOT.kBlack, 'LineStyle' : 2},
-#             'exp1' : { 'FillColor' : ROOT.kGreen+1}, 
-#             'exp2' : { 'FillColor' : ROOT.kOrange}
-#             },
-#         'legend' : {
-#             'exp1' : { 'Label' : '68% expected'},
-#             'exp2' : { 'Label' : '95% expected'}
-#             }
-
-#         }
 colors = [
     Color(0.87, 0.73, 0.53, "myyellow"),
     Color(0.57, 0.69, 0.32, "mygreen"),
@@ -88,11 +78,13 @@ style_dict_hig_17_020 = {
             'exp2' : { 'FillColor' : ROOT.myyellow2}
             },
         'legend' : {
+            'exp0' : { 'Label' : "Expected for m(h_{S})=120 GeV"},
             'exp1' : { 'Label' : '68% expected'},
             'exp2' : { 'Label' : '95% expected'}
             }
 
         }
+
 style_dict = style_dict_hig_17_020
 
 def DrawAxisHists(pads, axis_hists, def_pad=None):
@@ -112,7 +104,7 @@ ROOT.gStyle.SetNdivisions(510, 'XYZ') # probably looks better
 canv = ROOT.TCanvas(args.output, args.output)
 
 if args.ratio_to is not None:
-    pads = plot.TwoPadSplit(0.30, 0.01, 0.01)
+    pads = plot.TwoPadSplit(0.33, 0.01, 0.01)
 else:
     pads = plot.OnePad()
 
@@ -129,7 +121,7 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.33, 0.25, 3, 0.015)
+legend = plot.PositionedLegend(0.53, 0.25, 3, 0.025)
 legend.SetTextSize(0.03)
 
 axis = None
@@ -166,7 +158,7 @@ for src in args.input:
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
         plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
-        print graph_sets[-1]
+
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw()
@@ -195,7 +187,15 @@ for src in args.input:
         graph = plot.LimitTGraphFromJSONFile(file, splitsrc[1])
         graphs.append(graph)
         if len(splitsrc) >= 3:
-            settings.update({x.split('=')[0]: eval(x.split('=')[1]) for x in splitsrc[2].split(',')})
+            for x in splitsrc[2].split(','):
+                if x.split('=')[0] == "Title":
+                    if len(x.split('='))>2:
+                        title = x.split('=')[1]+"="+x.split('=')[2]
+                    else:
+                        title = x.split('=')[1]
+                    settings['Title'] = title
+                else:
+                    settings.update({x.split('=')[0]: eval(x.split('=')[1])})
         plot.Set(graphs[-1], **settings)
         if axis is None:
             axis = plot.CreateAxisHists(len(pads), graphs[-1], True)
@@ -206,26 +206,26 @@ for src in args.input:
 mass = args.mass
 
 
-if False and (mass>399 and mass<750):
+if (mass>399 and mass<750):
     theory_file=ROOT.TFile("HXSG_NMSSM_recommendations_00.root")
     theory_graph = theory_file.Get("g_bbtautau")
     theory_line=ROOT.TLine(60.,theory_graph.Eval(mass),args.xmax,theory_graph.Eval(mass))
-    theory_line.SetLineColor(46)
+    theory_line.SetLineColor(1)
     theory_line.SetLineStyle(2)
-    theory_line.SetLineWidth(2)
     theory_line.Draw("SAME")
     theory_line_solid=ROOT.TLine(100.,theory_graph.Eval(mass),110.,theory_graph.Eval(mass))
-    theory_line_solid.SetLineColor(46)
-    theory_line_solid.SetLineWidth(3)
+    theory_line_solid.SetLineColor(1)
+    theory_line_solid.SetLineWidth(2)
     theory_line_solid.SetLineStyle(1)
     theory_line_solid.Draw("SAME")
     legend.AddEntry(theory_line,"#splitline{Max. allowed #sigma #times BR}{in NMSSM}","L")
 
-axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
+axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "bb#phi":
-    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
+    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)}(pb)')
 if args.process == "nmssm":
-    axis[0].GetYaxis().SetTitle("#scale[0.9]{95% CL limit on #sigma#times #font[52]{B}#font[42]{(H#rightarrowh(#tau#tau) h_{S}(bb))}  (pb)}")
+    axis[0].GetYaxis().SetTitle("#scale[0.85]{95% CL limit on #sigma#times #font[52]{B}#font[42]{(H#rightarrowh(#tau#tau) h_{S}(bb))}  (pb)}")
+
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)
@@ -233,7 +233,7 @@ axis[0].GetXaxis().SetNoExponent()
 axis[0].GetXaxis().SetMoreLogLabels()
 axis[0].GetXaxis().SetLabelOffset(axis[0].GetXaxis().GetLabelOffset()*2)
 if args.xmax is not None:
-    axis[0].GetXaxis().SetLimits(60.,args.xmax)
+    axis[0].GetXaxis().SetLimits(280.,args.xmax)
 
 if args.logy:
     axis[0].SetMinimum(0.1)  # we'll fix this later
@@ -278,16 +278,6 @@ if args.ratio_to is not None:
     ry_min, ry_max = (plot.GetPadYMin(pads[1]), plot.GetPadYMax(pads[1]))
     plot.FixBothRanges(pads[1], ry_min, 0.1, ry_max, 0.1)
 
-xbatches = [85,110,170,350,550,750] if mass<1001. else [120,350,800,1300,2000]
-
-batch_lines = []
-for x_batch in xbatches:
-    batch_line = ROOT.TLine(x_batch,float(args.y_axis_min),x_batch,float(args.y_axis_max))
-    batch_line.SetLineColor(12)
-    batch_line.SetLineStyle(2)
-    batch_lines.append(batch_line)
-# for batch_line in batch_lines:        
-#     batch_line.Draw("SAME")
 
 pads[0].cd()
 if legend.GetNRows() == 1:
