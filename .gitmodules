@@ -1,0 +1,4 @@
+[submodule "Dumbledraw"]
+	path = Dumbledraw
+	url = git@github.com:KIT-CMS/Dumbledraw.git
+	branch = ntuple_processor
