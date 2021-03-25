@@ -2044,57 +2044,57 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"jetFakes"})
         .AddSyst(cb, "CMS_ff_total_sub_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // // new additional uncertainties
+    // new additional uncertainties
 
-   // cb.cp()
-   //     .channel({"et", "mt", "tt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_syst_alt_func_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_syst_alt_func_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"tt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_qcd_syst_pt_2_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_pt_2_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"tt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_qcd_syst_dr_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_dr_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt", "tt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_qcd_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_ttbar_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_ttbar_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_wjets_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_ttbar_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_ttbar_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_wjets_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_wjets_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
-   // cb.cp()
-   //     .channel({"et", "mt"})
-   //     .process({"jetFakes"})
-   //     .AddSyst(cb, "CMS_ff_total_qcd_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
   }
   else {

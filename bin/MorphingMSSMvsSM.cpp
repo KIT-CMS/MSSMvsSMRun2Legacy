@@ -16,6 +16,7 @@
 #include "RooWorkspace.h"
 #include "TF1.h"
 #include "TH2.h"
+#include "TCanvas.h"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/algorithm/string/split.hpp"
 #include "boost/lexical_cast.hpp"
@@ -78,14 +79,15 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
 
 void CorrelateYears (ch::CombineHarvester& cb) {
   // function to partially correlate FF systematics between years - need to check this works as expected
-  double scale = 0.70711; // sqrt(1/2) to give 50% correlation between years
+  double scale = 0.70711; // 1/sqrt(1/2) to give 50% correlation between years
   auto cb_syst = cb.cp().process({"jetFakes"});
-  // first scale all non-statistical FF systematics by sqrt(0.5)
   cb_syst.ForEachSyst([&](ch::Systematic *syst) {
 
-      if((syst->name().find("2016")!=std::string::npos || syst->name().find("2017")!=std::string::npos  || syst->name().find("2018")!=std::string::npos) && syst->name().find("ff_total") != std::string::npos&& syst->name().find("ff_total") != std::string::npos) {
+      // first scale all non-statistical FF systematics by 1/sqrt(2)
+      
+      if((syst->name().find("2016")!=std::string::npos || syst->name().find("2017")!=std::string::npos  || syst->name().find("2018")!=std::string::npos) && syst->name().find("ff_total") != std::string::npos&& syst->name().find("syst") != std::string::npos) {
 
-        std::cout << "scaling systematic " << syst->name() << " by 1/sqrt(2) for (bin, channel, era): " << syst->bin() << ", "  << syst->channel() << "," << syst->era() << std::endl;
+        std::cout << "scaling fake-factor systematic " << syst->name() << " by 1/sqrt(2) for (bin, channel, era): " << syst->bin() << ", "  << syst->channel() << "," << syst->era() << std::endl;
   
         if (syst->type().find("shape") != std::string::npos) {
           syst->set_scale(syst->scale() * scale);
@@ -96,41 +98,16 @@ void CorrelateYears (ch::CombineHarvester& cb) {
             syst->set_value_d((syst->value_d() - 1.) * scale + 1.);
           }
         }
+
+        // now copy the systematic removing era from the name to make the correlated component
+        string new_name = syst->name();
+        boost::replace_all(new_name,"_"+syst->era(),"");
+        std::cout << ".. and creating clone with name " << new_name << std::endl;       
+        ch::Systematic cpy = *syst;
+        cpy.set_name(new_name);
+        cb.InsertSystematic(cpy);
       }
   });
-
-
-
-    //for(auto y : years){
-    //  string name = syst->name();
-    //  string new_name = name;
-    //  boost::replace_all(new_name,"_"+y,"");
-      // clone syst removing year from name and scale it by sqrt of correlation
-    //  ch::CloneSysts(cb_syst.cp().syst_name({name}).bin_id({syst->bin()}), cb, [&](ch::Systematic *s) {
-    //      s->set_name(new_name);
-    //      if (s->type().find("shape") != std::string::npos) {
-    //        s->set_scale(s->scale() * sqrt(scale));
-    //      }
-    //      if (s->type().find("lnN") != std::string::npos) {
-    //        s->set_value_u((s->value_u() - 1.) * sqrt(scale) + 1.);
-    //        if (s->asymm()){
-    //          s->set_value_d((s->value_d() - 1.) * sqrt(scale) + 1.);
-    //        }
-    //      }
-    //  });
-
-  //    // now also scale the origional syst by the sqrt(1-correlation^2)  
-  //    if (syst->type().find("shape") != std::string::npos) {
-  //      syst->set_scale(syst->scale() * sqrt(1.-scale*scale));
-  //    }
-  //    if (syst->type().find("lnN") != std::string::npos) {
-  //      syst->set_value_u((syst->value_u() - 1.) * sqrt(1.-scale*scale) + 1.);
-  //      if (syst->asymm()){
-  //        syst->set_value_d((syst->value_d() - 1.) * sqrt(1.-scale*scale) + 1.);
-  //      }
-  //    }
-  //  }
-  //});
 }
 
 int main(int argc, char **argv) {
@@ -138,11 +115,12 @@ int main(int argc, char **argv) {
   typedef vector<pair<int, string>> Categories;
   using ch::syst::bin_id;
   using ch::JoinStr;
+  using ch::syst::SystMap;
 
   // Define program options
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
-  string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root";
+  string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root";
   string chan = "mt";
   string category = "mt_nobtag_lowmsv_0jet_tightmt";
   string variable = "m_sv_puppi";
@@ -187,6 +165,7 @@ int main(int argc, char **argv) {
       ("bkgs_em", po::value<vector<string>>(&parser_bkgs_em)->multitoken(), "backgrounds-em")
       ("sm_signals", po::value<vector<string>>(&parser_sm_signals)->multitoken(), "sm_signals")
       ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
+      ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -236,7 +215,7 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-  sm_signals = {"WH125", "ZH125", "ttH125"};
+  sm_signals = {};//{"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
@@ -402,9 +381,9 @@ int main(int argc, char **argv) {
         { 32, "em_Nbtag0_DZetaGt30"},
         { 33, "em_Nbtag0_DZetam10To30"},
         { 34, "em_Nbtag0_DZetam35Tom10"},
-        { 35, "em_NbtagGt1_DZetaGt30"},
-        { 36, "em_NbtagGt1_DZetam10To30"},
-        { 37, "em_NbtagGt1_DZetam35Tom10"},
+        { 35, "em_Nbtag1_DZetaGt30"},
+        { 36, "em_Nbtag1_DZetam10To30"},
+        { 37, "em_Nbtag1_DZetam35Tom10"},
     };
   }
   else if(analysis == "sm"){
@@ -794,9 +773,9 @@ int main(int argc, char **argv) {
   });
 
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
-  // need to check this for low mass ggH i components as these can be negative
-  std::cout << "[INFO] Setting mssm signals with negative yield to 0.\n";
-  cb.ForEachProc([mssm_signals](ch::Process *p) {
+  // don't use this treatment for interference
+  std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -804,12 +783,12 @@ int main(int argc, char **argv) {
         std::cout << ch::Process::PrintHeader << *p << "\n";
         auto newhist = p->ClonedShape();
         newhist->Scale(0.0);
-        p->set_shape(std::move(newhist), false);
+        p->set_shape(std::move(newhist), true);
       }
     }
   });
 
-  cb.ForEachSyst([mssm_signals](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
     {
       if (s->type() == "shape") {
@@ -823,6 +802,118 @@ int main(int argc, char **argv) {
           s->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
         }
       }
+    }
+  });
+
+
+  std::cout << "[Info] Summary of process yields: \n ";
+  cb.cp().ForEachProc([&](ch::Process *p) {
+    std::cout << ch::Process::PrintHeader << *p << "\n";
+  });
+
+  // Special treatment for horizontally morphed mssm ggX interference signals: 
+  // 1. Scale processes with negative yields by -1
+  // 2. Introduce fixed rate parameter = -1 to ensure that these processes are correctly set negative in the physics model
+  // 3. If a systematic variation has an opposite sign to the nominal then set it to the nominal
+ 
+//  cb.cp().process({"ggH_i","ggh_i","ggA_i"}).ForEachProc([&](ch::Process *p) {
+//      if(p->rate() < 0.0){
+//        std::cout << "[WARNING] Scaling ggX interference signal has negative yield: \n ";
+//        std::cout << ch::Process::PrintHeader << *p << "\n";
+//        std::string bin_name = "$ANALYSIS_$CHANNEL_$BINID_$ERA_$PROCESS";
+//        boost::replace_all(bin_name, "$BINID", boost::lexical_cast<std::string>(p->bin_id()));
+//        boost::replace_all(bin_name, "$BIN", p->bin());
+//        boost::replace_all(bin_name, "$PROCESS", p->process());
+//        //boost::replace_all(bin_name, "$MASS", p->mass());
+//        boost::replace_all(bin_name, "$ERA", p->era());
+//        boost::replace_all(bin_name, "$CHANNEL", p->channel());
+//        boost::replace_all(bin_name, "$ANALYSIS", p->analysis());
+//        std::cout << p->bin() << "  " << bin_name << std::endl;
+////        auto newhist = p->ClonedShape();
+////        double rate = newhist->Integral();
+////        newhist->Scale(-1.);
+////        //newhist->Scale(0.);
+////        //newhist->Scale(0.);
+////        p->set_shape(std::move(newhist), true);
+////
+////        // loop over all the systematics and make sure these are correctly normalised and have correct values
+//        cb.cp().ForEachSyst([&](ch::Systematic *syst){
+//          bool match_proc = (MatchingProcess(*p,*syst));
+//          if(match_proc) {
+//            std::cout << "[WARNING] Systematics for process with negative yield: \n ";
+//            std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+//            //if (syst->type() == "shape") {
+//              //auto nomhist = p->ClonedShape();
+//              //auto newhist_u = syst->ClonedShapeU();
+//              //auto newhist_d = syst->ClonedShapeD();
+//              //std::cout << "old: " << p->rate() << " " << nomhist->Integral() << "  " << newhist_u->Integral() << "  " << newhist_d->Integral() << "  " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
+////              // make sure correct values are set for value_u and value_d
+////              // if the sign of the yield is different for a systematic variation this is likly just due to statistical fluctuations
+////              // set these values to -1 and later on they will be fixed to the nominal values/shapes 
+////              if(syst->shape_u()->Integral()*rate > 0.) {
+////                syst->set_value_u(syst->shape_u()->Integral()/rate);
+////              } else syst->set_value_u(-1.); // systematics with negative values will be dealt later on
+////              if(syst->shape_d()->Integral()*rate > 0.) {
+////                syst->set_value_d(syst->shape_d()->Integral()/rate);
+////              } else syst->set_value_d(-1.); // systematics with negative values will be dealt later on
+////              std::cout << "new1: " << p->rate() << " " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
+////              newhist_u->Scale(-1.);
+////              newhist_d->Scale(-1.);
+////              syst->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
+////              std::cout << "new2: " << p->rate() << " " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
+//            //}
+//          }
+//        });
+////
+////        // now introduce a rate parameter which will be used to scale the corresponding templates by -1 in the physics model
+////        //cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "MinusOne","rateParam",SystMap<>::init(-1.0));
+////        cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "InterferenceScale","rateParam",SystMap<>::init(-1.0));
+////        cb.GetParameter("InterferenceScale")->set_range(-1.0,-1.0);
+//      } //else {
+////        //cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "InterferenceScale","lnN",SystMap<>::init(1.0));
+////      //}
+//  });
+
+
+  // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
+  // This is needed otherwise we get complaints about functions that evaluate as NaN  
+  cb.ForEachSyst([&](ch::Systematic *syst) {
+    if (syst->type().find("lnN") != std::string::npos) {
+      if(syst->value_u()<0.0) {
+        std::cout << "[WARNING] Setting lnN systematic variation to the nominal as the yields would change sign otherwise \n ";
+        std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+        syst->set_value_u(1.0);
+      }
+      if (syst->asymm() && syst->value_d()<0.0){
+        std::cout << "[WARNING] Setting lnN systematic variation to the nominal as the yields would change sign otherwise \n ";
+        std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+        syst->set_value_d(1.0);
+      }
+    }
+    if (syst->type().find("shape") != std::string::npos) {
+      double value_u = syst->value_u();
+      double value_d = syst->value_d();
+
+      if(value_u <0 || value_d <0) {
+        std::cout << "[WARNING] Setting shape systematic variation to the nominal as the yields would change sign otherwise \n ";
+        std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+        TH1D *shape_u = (TH1D*)syst->ClonedShapeU().get()->Clone();
+        TH1D *shape_d = (TH1D*)syst->ClonedShapeD().get()->Clone();
+        TH1D* nominal = new TH1D();
+        cb.cp().ForEachProc([&](ch::Process *proc){
+          bool match_proc = (MatchingProcess(*proc,*syst));
+          if(match_proc) nominal = (TH1D*)proc->ClonedShape().get()->Clone();
+        });
+        if(value_u<0){
+          syst->set_value_u(1.0);
+          shape_u=(TH1D*)nominal->Clone();
+        }
+        if(value_d<0){
+          syst->set_value_d(1.0);
+          shape_d=(TH1D*)nominal->Clone();
+        }
+        syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
+      } 
     }
   });
 
@@ -1034,6 +1125,8 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Fixing negative bins.\n";
   cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
+      std::cout << "[WARNING] Fixing negative bins for process: \n ";
+      std::cout << ch::Process::PrintHeader << *p << "\n";
       auto newhist = p->ClonedShape();
       ch::ZeroNegativeBins(newhist.get());
       p->set_shape(std::move(newhist), false);
@@ -1045,6 +1138,8 @@ int main(int argc, char **argv) {
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
         ch::HasNegativeBins(s->shape_d())) {
+      std::cout << "[WARNING] Fixing negative bins for systematic: \n ";
+      std::cout << ch::Systematic::PrintHeader << *s << "\n";
       auto newhist_u = s->ClonedShapeU();
       auto newhist_d = s->ClonedShapeD();
       ch::ZeroNegativeBins(newhist_u.get());
@@ -1138,7 +1233,8 @@ int main(int argc, char **argv) {
 
   if (auto_rebin && !sm) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    //auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(0.0).SetBinUncertFraction(0.5).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
