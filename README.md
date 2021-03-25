@@ -147,6 +147,13 @@ do
 done
 ```
 
+**Prefit shapes:**
+```
+prefit_postfit_shapes_parallel.py --datacard_pattern "output_mssm_classic/combined/htt_*/combined.txt.cmb" --workspace_name ws.root --output_name prefit_shapes.root --freeze arguments "--freeze MH=1200,r_ggH=0.1,r_bbH=0.1" --parallel 5
+
+hadd output_mssm_classic/combined/cmb/prefit_shapes.root output_mssm_classic/combined/htt_*/prefit_shapes.root
+```
+
 # Model-dependent MSSM analysis
 
 In case of the calculation of model-dependent limits, several choices of signal models and categorization are available, denoted with an appropriate `--analysis`.

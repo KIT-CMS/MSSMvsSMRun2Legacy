@@ -1188,10 +1188,15 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       std::vector<std::string> tau_es_processes = JoinStr({{"ZTT", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, jetFakes});
       std::vector<std::string> tau_es_processes_emb =  JoinStr({{"EMB"}, jetFakes});
   }
-    cb.cp()
+  cb.cp()
       .channel({"et", "mt", "tt"})
       .process(tau_es_processes)
       .AddSyst(cb, "CMS_scale_t_1prong_$ERA","shape", SystMap<>::init(1.0));
+
+  cb.cp()
+      .channel({"et", "mt", "tt"})
+      .process(tau_es_processes)
+      .AddSyst(cb, "CMS_scale_t_1prong1pizero_$ERA","shape", SystMap<>::init(1.0));
 
   cb.cp()
       .channel({"et", "mt", "tt"})
