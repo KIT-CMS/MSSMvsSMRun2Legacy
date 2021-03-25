@@ -16,7 +16,6 @@
 #include "RooWorkspace.h"
 #include "TF1.h"
 #include "TH2.h"
-#include "TCanvas.h"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/algorithm/string/split.hpp"
 #include "boost/lexical_cast.hpp"
@@ -811,70 +810,6 @@ int main(int argc, char **argv) {
     std::cout << ch::Process::PrintHeader << *p << "\n";
   });
 
-  // Special treatment for horizontally morphed mssm ggX interference signals: 
-  // 1. Scale processes with negative yields by -1
-  // 2. Introduce fixed rate parameter = -1 to ensure that these processes are correctly set negative in the physics model
-  // 3. If a systematic variation has an opposite sign to the nominal then set it to the nominal
- 
-//  cb.cp().process({"ggH_i","ggh_i","ggA_i"}).ForEachProc([&](ch::Process *p) {
-//      if(p->rate() < 0.0){
-//        std::cout << "[WARNING] Scaling ggX interference signal has negative yield: \n ";
-//        std::cout << ch::Process::PrintHeader << *p << "\n";
-//        std::string bin_name = "$ANALYSIS_$CHANNEL_$BINID_$ERA_$PROCESS";
-//        boost::replace_all(bin_name, "$BINID", boost::lexical_cast<std::string>(p->bin_id()));
-//        boost::replace_all(bin_name, "$BIN", p->bin());
-//        boost::replace_all(bin_name, "$PROCESS", p->process());
-//        //boost::replace_all(bin_name, "$MASS", p->mass());
-//        boost::replace_all(bin_name, "$ERA", p->era());
-//        boost::replace_all(bin_name, "$CHANNEL", p->channel());
-//        boost::replace_all(bin_name, "$ANALYSIS", p->analysis());
-//        std::cout << p->bin() << "  " << bin_name << std::endl;
-////        auto newhist = p->ClonedShape();
-////        double rate = newhist->Integral();
-////        newhist->Scale(-1.);
-////        //newhist->Scale(0.);
-////        //newhist->Scale(0.);
-////        p->set_shape(std::move(newhist), true);
-////
-////        // loop over all the systematics and make sure these are correctly normalised and have correct values
-//        cb.cp().ForEachSyst([&](ch::Systematic *syst){
-//          bool match_proc = (MatchingProcess(*p,*syst));
-//          if(match_proc) {
-//            std::cout << "[WARNING] Systematics for process with negative yield: \n ";
-//            std::cout << ch::Systematic::PrintHeader << *syst << "\n";
-//            //if (syst->type() == "shape") {
-//              //auto nomhist = p->ClonedShape();
-//              //auto newhist_u = syst->ClonedShapeU();
-//              //auto newhist_d = syst->ClonedShapeD();
-//              //std::cout << "old: " << p->rate() << " " << nomhist->Integral() << "  " << newhist_u->Integral() << "  " << newhist_d->Integral() << "  " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
-////              // make sure correct values are set for value_u and value_d
-////              // if the sign of the yield is different for a systematic variation this is likly just due to statistical fluctuations
-////              // set these values to -1 and later on they will be fixed to the nominal values/shapes 
-////              if(syst->shape_u()->Integral()*rate > 0.) {
-////                syst->set_value_u(syst->shape_u()->Integral()/rate);
-////              } else syst->set_value_u(-1.); // systematics with negative values will be dealt later on
-////              if(syst->shape_d()->Integral()*rate > 0.) {
-////                syst->set_value_d(syst->shape_d()->Integral()/rate);
-////              } else syst->set_value_d(-1.); // systematics with negative values will be dealt later on
-////              std::cout << "new1: " << p->rate() << " " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
-////              newhist_u->Scale(-1.);
-////              newhist_d->Scale(-1.);
-////              syst->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
-////              std::cout << "new2: " << p->rate() << " " << syst->shape_u()->Integral() << "  " << syst->shape_d()->Integral() << "  " << syst->value_u() << "  " << syst->value_d() << std::endl;
-//            //}
-//          }
-//        });
-////
-////        // now introduce a rate parameter which will be used to scale the corresponding templates by -1 in the physics model
-////        //cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "MinusOne","rateParam",SystMap<>::init(-1.0));
-////        cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "InterferenceScale","rateParam",SystMap<>::init(-1.0));
-////        cb.GetParameter("InterferenceScale")->set_range(-1.0,-1.0);
-//      } //else {
-////        //cb.cp().process({p->process()}).bin_id({p->bin_id()}).era({p->era()}).channel({p->channel()}).mass({p->mass()}).AddSyst(cb, "InterferenceScale","lnN",SystMap<>::init(1.0));
-////      //}
-//  });
-
-
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
   // This is needed otherwise we get complaints about functions that evaluate as NaN  
   cb.ForEachSyst([&](ch::Systematic *syst) {
@@ -1233,8 +1168,8 @@ int main(int argc, char **argv) {
 
   if (auto_rebin && !sm) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    //auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
-    auto rebin = ch::AutoRebin().SetBinThreshold(0.0).SetBinUncertFraction(0.5).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    //auto rebin = ch::AutoRebin().SetBinThreshold(0.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
