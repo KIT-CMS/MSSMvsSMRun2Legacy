@@ -147,12 +147,30 @@ do
 done
 ```
 
-**Prefit shapes:**
+## Plotting of prefit shapes
+
+**Workspace creation:**
+In order to create prefit shapes from the available datacards, separate workspaces for the different analysis categories have to be created. This can be done with the following command
+```bash
+ulimit -s unlimited
+combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_mssm_classic/combined/htt_* -m 110 --parallel 5
 ```
-prefit_postfit_shapes_parallel.py --datacard_pattern "output_mssm_classic/combined/htt_*/combined.txt.cmb" --workspace_name ws.root --output_name prefit_shapes.root --freeze arguments "--freeze MH=1200,r_ggH=0.1,r_bbH=0.1" --parallel 5
+
+**Prefit shapes:**
+An exemplary command to extract prefit shapes from the created workspaces and datacards is
+```bash
+prefit_postfit_shapes_parallel.py --datacard_pattern "output_mssm_classic/combined/htt_*/combined.txt.cmb" --workspace_name ws.root --output_name prefit_shapes.root --freeze_arguments "--freeze MH=1200,r_ggH=0.1,r_bbH=0.1" --parallel 5
 
 hadd output_mssm_classic/combined/cmb/prefit_shapes.root output_mssm_classic/combined/htt_*/prefit_shapes.root
 ```
+where the freeze arguments can be chosen freely.
+
+**Plotting of the created shapes:**
+Plotting scripts are provided in the [`plotting`](https://github.com/KIT-CMS/MSSMvsSMRun2Legacy/tree/master/plotting) directory of this repository. The command to produce the plots of the prefit shapes created above is
+```bash
+plot_shapes_mssm_model_independent.sh $ERA output_mssm_classic/combined/cmb/prefit_shapes.root $OUTPUT_DIR et,mt,tt,em 1200
+```
+The last parameter given to the script is optional and will be the mass that is displayed in the legend of the plot. Currently the plotting is only possible for one experiment era a time. The output directory can be freely chosen and will be created if it is not yet present.
 
 # Model-dependent MSSM analysis
 
