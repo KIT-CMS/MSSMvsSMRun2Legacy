@@ -153,7 +153,7 @@ done
 In order to create prefit shapes from the available datacards, separate workspaces for the different analysis categories have to be created. This can be done with the following command
 ```bash
 ulimit -s unlimited
-combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_mssm_classic/combined/htt_* -m 110 --parallel 5
+combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i output_mssm_classic/{2016,2017,2018}/htt_* -m 110 --parallel 5
 ```
 
 **Prefit shapes:**
