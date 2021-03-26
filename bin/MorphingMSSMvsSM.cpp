@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
-    bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals});
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals,bkgs_HWW});
     if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
       bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
     }
