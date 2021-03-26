@@ -1168,8 +1168,7 @@ int main(int argc, char **argv) {
 
   if (auto_rebin && !sm) {
     std::cout << "[INFO] Performing auto-rebinning.\n";
-    auto rebin = ch::AutoRebin().SetBinThreshold(5.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
-    //auto rebin = ch::AutoRebin().SetBinThreshold(0.0).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
+    auto rebin = ch::AutoRebin().SetBinThreshold(0.2).SetBinUncertFraction(0.9).SetRebinMode(1).SetPerformRebin(true).SetVerbosity(1);
     rebin.Rebin(cb, cb);
   }
 
@@ -1177,11 +1176,13 @@ int main(int argc, char **argv) {
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
   ch::CombineHarvester cb_obs = cb.deep().backgrounds();
+  // We use cb_obs only to get correct bin boundaries later on. For technical reason change the sm higgs to a signal process to avoid problems further down the line
+  cb.cp().process(main_sm_signals).ForEachProc([](ch::Process *p) { p->set_signal(true);});
 
   // Adding bin-by-bin uncertainties
   if (use_automc) {
     std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
-    cb.SetAutoMCStats(cb, 10.);
+    cb.SetAutoMCStats(cb, 0.);
   }
   // Setup morphed mssm signals for model-independent case
   RooWorkspace ws("htt", "htt");
@@ -1336,8 +1337,8 @@ int main(int argc, char **argv) {
 
       writer.WriteCards("", cb);
 
-      ch::CardWriter writer_restore(output_folder + "/" + era_tag + "/restore_binning/$BIN/$BIN.txt",
-                                    output_folder + "/" + era_tag + "/restore_binning/$BIN/common/$BIN_input.root");
+      ch::CardWriter writer_restore(output_folder + "/restore_binning/$BIN.txt",
+                                    output_folder + "/restore_binning/common/$BIN_input.root");
 
       // We're not using mass as an identifier - which we need to tell the
       // CardWriter
