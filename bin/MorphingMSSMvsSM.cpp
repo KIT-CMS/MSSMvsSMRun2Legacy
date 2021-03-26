@@ -636,6 +636,7 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, cats[chn], true);
     }
   }
 
@@ -720,7 +721,9 @@ int main(int argc, char **argv) {
         // cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
         //   input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"qqH1"}).ExtractShapes(
+          input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
       }
   }
 
