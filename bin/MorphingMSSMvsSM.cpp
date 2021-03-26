@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-  sm_signals = {};//{"WH125", "ZH125", "ttH125"};
+  sm_signals = {"WH125", "ZH125", "ttH125"};
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
