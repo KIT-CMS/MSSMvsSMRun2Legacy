@@ -1350,11 +1350,74 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "ZL", "ZJ", "W"}}))
       .AddSyst(cb, "CMS_htt_boson_res_met_$ERA", "shape", SystMap<>::init(1.00));
 
-  // ToDo: Update with the corresponding scalings of the new systematics.
-  //cb.cp()
-  //    .process({"EMB"})
-  //    .bin_id(mssm_categories) // not to be applied for SM categories?
-  //    .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.4)); // change scaling to proper values in future
+  // met uncertainty templates are included from taking 100% variation in the correction
+  // these are scaled here to take the correct 1-sigma ranges
+
+  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections
+  cb.cp()
+      .process({"EMB"})
+      .channel({"et", "mt", "tt"})
+      .bin_id(mssm_categories)
+      .AddSyst(cb, "scale_embed_met_$CHANNEL_$ERA", "shape", SystMap<>::init(0.1)); 
+
+  // the other component of the uncertainty is systematic and correlated between channels (but decorrelated by era) 
+
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"tt"})
+      .era({"2016"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.22));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"tt"})
+      .era({"2017"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.25));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"tt"})
+      .era({"2018"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.2));
+
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"mt"})
+      .era({"2016"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(1.0));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"mt"})
+      .era({"2017"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.67));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"mt"})
+      .era({"2018"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.85));
+
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"et"})
+      .era({"2016"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.84));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"et"})
+      .era({"2017"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.63));
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .channel({"et"})
+      .era({"2018"})
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.73));
 
   // ##########################################################################
   // Uncertainty: Background normalizations
@@ -1985,6 +2048,58 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"et", "mt", "tt"})
         .process({"jetFakes"})
         .AddSyst(cb, "CMS_ff_total_sub_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    // new additional uncertainties
+
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_syst_alt_func_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_pt_2_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_dr_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_ttbar_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_met_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_ttbar_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_l_pt_closure_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_qcd_syst_bkg_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
   }
   else {
