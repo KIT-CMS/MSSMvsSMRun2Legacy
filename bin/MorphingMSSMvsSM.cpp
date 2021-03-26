@@ -1182,8 +1182,6 @@ int main(int argc, char **argv) {
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
   ch::CombineHarvester cb_obs = cb.deep().backgrounds();
-  // We use cb_obs only to get correct bin boundaries later on. For technical reason change the sm higgs to a signal process to avoid problems further down the line
-  cb.cp().process(main_sm_signals).ForEachProc([](ch::Process *p) { p->set_signal(true);});
 
   // Adding bin-by-bin uncertainties
   if (use_automc) {
