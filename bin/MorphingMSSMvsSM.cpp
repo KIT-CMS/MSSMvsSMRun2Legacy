@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL", "ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
+  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
     bkgs.push_back("jetFakesSM");
@@ -315,6 +315,7 @@ int main(int argc, char **argv) {
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals,bkgs_HWW});
     if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
       bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
     }
@@ -324,8 +325,9 @@ int main(int argc, char **argv) {
     else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff"){
       bkg_procs["tt"] = JoinStr({bkg_procs["tt"],sm_signals,main_sm_signals,bkgs_HWW});
     }
-
-    bkg_procs["em"] = JoinStr({bkg_procs["em"],sm_signals,main_sm_signals});
+    else if (category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb") {
+      bkg_procs["em"] = JoinStr({bkg_procs["em"], sm_signals, main_sm_signals,bkgs_HWW});
+    }
   }
 
   std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
@@ -480,9 +482,9 @@ int main(int argc, char **argv) {
         {33, "em_Nbtag0_DZetam10To30_MHGt250"},
         {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
 
-        {35, "em_NbtagGt1_DZetaGt30"},
-        {36, "em_NbtagGt1_DZetam10To30"},
-        {37, "em_NbtagGt1_DZetam35Tom10"},
+        {35, "em_Nbtag1_DZetaGt30"},
+        {36, "em_Nbtag1_DZetam10To30"},
+        {37, "em_Nbtag1_DZetam35Tom10"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
@@ -590,7 +592,7 @@ int main(int argc, char **argv) {
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    if(analysis == "mssm"){
+    else if(analysis == "mssm"){
       // filter masses above treshold:
       std::vector<std::string> masses_SM_bbH;
       std::vector<std::string> masses_SM_ggH;
@@ -615,12 +617,19 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
     }
-    else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic"){
+    else if(analysis == "mssm_vs_sm_classic"){
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
+    }
+    else if(analysis == "mssm_vs_sm"){
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
     }
     else if(analysis == "mssm_vs_sm_h125"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
@@ -630,14 +639,11 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
     }
-
     else if(analysis == "mssm_vs_sm_CPV"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, cats[chn], true);
     }
   }
 
@@ -722,8 +728,8 @@ int main(int argc, char **argv) {
         // cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
         //   input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"qqH1"}).ExtractShapes(
           input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
       }
   }
