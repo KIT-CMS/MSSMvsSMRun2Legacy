@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
   bool verbose = false;
   bool use_automc = true;
   bool manual_rebinning = false;
+  bool use_mc = false;
 
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
@@ -79,6 +80,7 @@ int main(int argc, char **argv) {
       ("manual_rebinning", po::value<bool>(&manual_rebinning)->default_value(manual_rebinning))
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
+      ("use_mc", po::value<bool>(&use_mc)->default_value(use_mc))
       ("era", po::value<int>(&era)->default_value(era))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
@@ -134,6 +136,19 @@ int main(int argc, char **argv) {
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
 
+  if (use_mc) {
+    std::cout << "WARNING: the EMB process is removed from backgrounds" << std::endl;
+    // Remove embedded shapes.
+    bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "EMB"), bkgs_tt.end());
+    bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
+    VString to_add = {"ZTT", "TTT", "VVT"};
+    for (auto proc: to_add) {
+        bkgs.push_back(proc);
+        bkgs_tt.push_back(proc);
+        bkgs_em.push_back(proc);
+    }
+  }
 
   bkg_procs["et"] = bkgs;
   bkg_procs["mt"] = bkgs;
