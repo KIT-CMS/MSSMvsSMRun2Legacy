@@ -65,7 +65,12 @@ def parse_arguments():
         "-m", "--mass",
         type=str,
         default=None,
-        help="Higgs boson mass displayed on the legend.")
+        help="Higgs boson mass displayed in the legend.")
+    parser.add_argument(
+        "--cross-section", "--x-sec",
+        default=None,
+        type=str,
+        help="Cross sections displayed in the legend.")
     parser.add_argument(
         "--tanbeta",
         default=None,
@@ -489,8 +494,8 @@ def main(args):
                     pass
                 else:
                     if args.model_independent:
-                        plot.legend(i).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i], "#splitline{ggH}{(m_{H} = %s GeV)}" % args.mass, 'l')
-                        plot.legend(i).add_entry(0 if args.linear else 1, "bbH%s" % suffix[i], "#splitline{bbH}{(m_{H} = %s GeV)}" % args.mass, 'l')
+                        plot.legend(i).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i], "#splitline{ggH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section, args.mass), 'l')
+                        plot.legend(i).add_entry(0 if args.linear else 1, "bbH%s" % suffix[i], "#splitline{bbH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section, args.mass), 'l')
                     else:
                         plot.legend(i).add_entry(0 if args.linear else 1, "mssm_sig%s" % suffix[i], "#splitline{H #rightarrow #tau#tau}{#splitline{(m_{A}= %s GeV,}{ tan #beta = %s)}}" %(args.mass, args.tanbeta), 'l')
                 if not args.blinded:
