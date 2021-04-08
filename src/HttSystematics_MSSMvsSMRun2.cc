@@ -756,19 +756,36 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
    cb.cp()
-       .channel({"et", "mt", "tt", "em"})
+       .channel({"et", "mt", "tt"})
        .process({"ggh_i","ggH_i","ggA_i"})
        .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
-       .channel({"et", "mt", "tt", "em"})
+       .channel({"et", "mt", "tt"})
        .process({"ggh_t","ggH_t","ggA_t"})
        .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
-       .channel({"et", "mt", "tt", "em"})
+       .channel({"et", "mt", "tt"})
        .process({"ggh_b","ggH_b","ggA_b"})
        .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+   // Temp fix for incorrect naming
+   cb.cp()
+       .channel({"em"})
+       .process({"ggh_i","ggH_i","ggA_i"})
+       .AddSyst(cb, "Hdamp_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+       .channel({"em"})
+       .process({"ggh_t","ggH_t","ggA_t"})
+       .AddSyst(cb, "Hdamp_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+       .channel({"em"})
+       .process({"ggh_b","ggH_b","ggA_b"})
+       .AddSyst(cb, "Hdamp_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
+
 
   // ##########################################################################
   // Uncertainty: ggH Reweighting QCDscale uncertainty
