@@ -101,7 +101,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                     31,32,33,34}; // SM and MSSM no-btag categories
   std::vector<int> btag_catagories = {35,36,37};
 
-  std::vector<int> mssm_categories = {2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for 
+  std::vector<int> mssm_categories = {300,2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for 
 
   std::vector<int> mssm_nobtag_catagories = {32,33,34};
 
