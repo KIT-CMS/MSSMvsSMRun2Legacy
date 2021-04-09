@@ -76,7 +76,7 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   }); 
 }
 
-void CorrelateYears (ch::CombineHarvester& cb) {
+void CorrelateFFYears (ch::CombineHarvester& cb) {
   // function to partially correlate FF systematics between years - need to check this works as expected
   double scale = 0.70711; // 1/sqrt(1/2) to give 50% correlation between years
   auto cb_syst = cb.cp().process({"jetFakes"});
@@ -90,6 +90,8 @@ void CorrelateYears (ch::CombineHarvester& cb) {
   
         if (syst->type().find("shape") != std::string::npos) {
           syst->set_scale(syst->scale() * scale);
+          // convert to lnN for now just to check it is working!
+          syst->set_type("lnN");
         }
         if (syst->type().find("lnN") != std::string::npos) {
           syst->set_value_u((syst->value_u() - 1.) * scale + 1.);
@@ -1063,6 +1065,9 @@ int main(int argc, char **argv) {
       }
     }
   }
+  
+  // partially correlate some FF systematics between years
+  //CorrelateFFYears(cb);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
@@ -1301,6 +1306,10 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
+
+  // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU 
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {

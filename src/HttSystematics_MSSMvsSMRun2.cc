@@ -1455,10 +1455,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_htt_vvXsec", "lnN", SystMap<>::init(1.05));
 
   // TT
+//  cb.cp()
+//      .channel({"et", "mt", "tt", "em"})
+//      .process({"TTT", "TTL", "TTJ", "TT"})
+//      .AddSyst(cb, "CMS_htt_tjXsec", "lnN", SystMap<>::init(1.06));
+
+  // use unconstrained rate parameter for ttbar yield
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
-      .AddSyst(cb, "CMS_htt_tjXsec", "lnN", SystMap<>::init(1.06));
+      .AddSyst(cb, "rate_ttbar","rateParam",SystMap<>::init(1.0));
+  cb.GetParameter("rate_ttbar")->set_range(0.0,5.0);
 
   // W
   cb.cp()
@@ -1556,7 +1563,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
-      .AddSyst(cb, "CMS_htt_ttbarShape", "shape", SystMap<>::init(1.00));
+      .AddSyst(cb, "CMS_htt_ttbarShape", "shapeU", SystMap<>::init(1.00));
+  cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
 
   // ##########################################################################
   // Uncertainty: Electron/muon to tau fakes and ZL energy scale
