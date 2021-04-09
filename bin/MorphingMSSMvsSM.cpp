@@ -9,6 +9,7 @@
 #include "CombineHarvester/CombineTools/interface/Process.h"
 #include "CombineHarvester/CombineTools/interface/Systematics.h"
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
+#include "CombineHarvester/CombineTools/interface/CopyTools.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_MSSMvsSMRun2.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
@@ -74,41 +75,6 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
       return;
     }
   }); 
-}
-
-void CorrelateFFYears (ch::CombineHarvester& cb) {
-  // function to partially correlate FF systematics between years - need to check this works as expected
-  double scale = 0.70711; // 1/sqrt(1/2) to give 50% correlation between years
-  auto cb_syst = cb.cp().process({"jetFakes"});
-  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
-
-      // first scale all non-statistical FF systematics by 1/sqrt(2)
-      
-      if((syst->name().find("2016")!=std::string::npos || syst->name().find("2017")!=std::string::npos  || syst->name().find("2018")!=std::string::npos) && syst->name().find("ff_total") != std::string::npos&& syst->name().find("syst") != std::string::npos) {
-
-        std::cout << "scaling fake-factor systematic " << syst->name() << " by 1/sqrt(2) for (bin, channel, era): " << syst->bin() << ", "  << syst->channel() << "," << syst->era() << std::endl;
-  
-        if (syst->type().find("shape") != std::string::npos) {
-          syst->set_scale(syst->scale() * scale);
-          // convert to lnN for now just to check it is working!
-          syst->set_type("lnN");
-        }
-        if (syst->type().find("lnN") != std::string::npos) {
-          syst->set_value_u((syst->value_u() - 1.) * scale + 1.);
-          if (syst->asymm()){
-            syst->set_value_d((syst->value_d() - 1.) * scale + 1.);
-          }
-        }
-
-        // now copy the systematic removing era from the name to make the correlated component
-        string new_name = syst->name();
-        boost::replace_all(new_name,"_"+syst->era(),"");
-        std::cout << ".. and creating clone with name " << new_name << std::endl;       
-        ch::Systematic cpy = *syst;
-        cpy.set_name(new_name);
-        cb.InsertSystematic(cpy);
-      }
-  });
 }
 
 int main(int argc, char **argv) {
@@ -1065,9 +1031,6 @@ int main(int argc, char **argv) {
       }
     }
   }
-  
-  // partially correlate some FF systematics between years
-  //CorrelateFFYears(cb);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
