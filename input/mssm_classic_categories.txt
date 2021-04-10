@@ -9,7 +9,6 @@ et_NbtagGt1_MT40To70
 tt_Nbtag0
 tt_NbtagGt1
 em_DZetaLtm35
-em_DZetaLtm35
 em_Nbtag0_DZetaGt30
 em_Nbtag0_DZetam10To30
 em_Nbtag0_DZetam35Tom10

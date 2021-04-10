@@ -9,7 +9,6 @@
 #include "CombineHarvester/CombineTools/interface/Process.h"
 #include "CombineHarvester/CombineTools/interface/Systematics.h"
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
-#include "CombineHarvester/CombineTools/interface/CopyTools.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/HttSystematics_MSSMvsSMRun2.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
