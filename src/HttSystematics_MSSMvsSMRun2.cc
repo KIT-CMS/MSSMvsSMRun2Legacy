@@ -1459,13 +1459,20 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 //      .channel({"et", "mt", "tt", "em"})
 //      .process({"TTT", "TTL", "TTJ", "TT"})
 //      .AddSyst(cb, "CMS_htt_tjXsec", "lnN", SystMap<>::init(1.06));
-
+//
   // use unconstrained rate parameter for ttbar yield
+  // We don't need above uncertainty on cross section if using the rate parameter
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
       .AddSyst(cb, "rate_ttbar","rateParam",SystMap<>::init(1.0));
-  cb.GetParameter("rate_ttbar")->set_range(0.0,5.0);
+  cb.GetParameter("rate_ttbar")->set_range(0.5,1.5);
+
+  // We can also remove the lumi and em trigger uncertainties for ttbar if using the rate parameter
+  cb.FilterSysts([](ch::Systematic *syst) {
+      return (syst->name().find("lumi") != string::npos || syst->name().find("CMS_eff_trigger_em") != string::npos) &&
+        (syst->process() == "TT" || syst->process() == "TTT" || syst->process() == "TTL" || syst->process() == "TTJ");
+  });
 
   // W
   cb.cp()
