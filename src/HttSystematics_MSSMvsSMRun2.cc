@@ -1104,12 +1104,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: References?
   // ##########################################################################
 
-  // NEED TO ADD B TAG EFFICIENCY
-
+  // SM btag uncertainties uses shape systematic 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
+      .bin_id(mssm_categories, false)
       .process(mc_processes)
-      .bin_id(mssm_categories, false) 
       .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
 
   cb.cp()
@@ -1118,26 +1117,58 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(mc_processes)
       .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
 
-  // MSSM btag uncertainties will be lnN - for now just adding placeholders, need to be properly determined
+  // Classic MSSM categories btag uncertainties will be lnN
+  cb.cp().process(mc_processes).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+     ({"em"}, {"2016"}, btag_catagories, 1.0066, 0.9914)
+     ({"em"}, {"2016"}, nobtag_catagories, 1.0206, 0.9786)
+     ({"em"}, {"2017"}, btag_catagories, 1.0115, 0.9816)
+     ({"em"}, {"2017"}, nobtag_catagories, 1.0385, 0.9617)
+     ({"em"}, {"2018"}, btag_catagories, 1.0126, 0.985)
+     ({"em"}, {"2018"}, nobtag_catagories, 1.0222, 0.9771)
+     ({"mt"}, {"2017"}, nobtag_catagories, 1.073, 0.931)
+     ({"mt"}, {"2017"}, btag_catagories, 1.0183, 0.9807)
+     ({"mt"}, {"2016"}, nobtag_catagories, 1.016, 0.9658)
+     ({"mt"}, {"2016"}, btag_catagories, 1.0127, 0.9873)
+     ({"mt"}, {"2018"}, nobtag_catagories, 1.0425, 0.9608)
+     ({"mt"}, {"2018"}, btag_catagories, 1.0097, 0.9895)
+     ({"tt"}, {"2017"}, nobtag_catagories, 1.0348, 0.9345)
+     ({"tt"}, {"2017"}, btag_catagories, 1.0172, 0.9907)
+     ({"tt"}, {"2016"}, nobtag_catagories, 1.0138, 0.9784)
+     ({"tt"}, {"2016"}, btag_catagories, 1.0155, 0.9845)
+     ({"tt"}, {"2018"}, nobtag_catagories, 1.0417, 0.9732)
+     ({"tt"}, {"2018"}, btag_catagories, 1.0077, 0.9881)
+     ({"et"}, {"2017"}, nobtag_catagories, 1.0745, 0.9323)
+     ({"et"}, {"2017"}, btag_catagories, 1.0181, 0.9800)
+     ({"et"}, {"2016"}, nobtag_catagories, 1.0165, 0.9636)
+     ({"et"}, {"2016"}, btag_catagories, 1.0132, 0.9868)
+     ({"et"}, {"2018"}, nobtag_catagories, 1.0416, 0.9611)
+     ({"et"}, {"2018"}, btag_catagories, 1.0096, 0.9897));
 
-  cb.cp()
-      .bin_id(btag_catagories)
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMap<>::init(1.05));
-  cb.cp()
-      .bin_id(nobtag_catagories)
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMap<>::init(0.95));
-
-  cb.cp()
-      .bin_id(btag_catagories)
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMap<>::init(1.025));
-  cb.cp()
-      .bin_id(nobtag_catagories)
-      .process({"EMB"})
-      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMap<>::init(0.975));
-
+  cb.cp().process(mc_processes).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+     ({"em"}, {"2016"}, btag_catagories, 1.0000, 0.9982)
+     ({"em"}, {"2016"}, nobtag_catagories, 1.0039, 0.9961)
+     ({"em"}, {"2017"}, btag_catagories, 1.0014, 0.997)
+     ({"em"}, {"2017"}, nobtag_catagories, 1.0049, 0.9947)
+     ({"em"}, {"2018"}, btag_catagories, 1.0039, 0.9957)
+     ({"em"}, {"2018"}, nobtag_catagories, 1.0065, 0.9931)
+     ({"mt"}, {"2017"}, nobtag_catagories, 1.0045, 0.9953)
+     ({"mt"}, {"2017"}, btag_catagories, 1.0012, 0.9988)
+     ({"mt"}, {"2016"}, nobtag_catagories, 1.0136, 0.9864)
+     ({"mt"}, {"2016"}, btag_catagories, 1.0000, 0.9755)
+     ({"mt"}, {"2018"}, nobtag_catagories, 1.0079, 0.9924)
+     ({"mt"}, {"2018"}, btag_catagories, 1.0019, 0.9980)
+     ({"tt"}, {"2017"}, nobtag_catagories, 1.0005, 1.0000)
+     ({"tt"}, {"2017"}, btag_catagories, 1.0000, 0.9998)
+     ({"tt"}, {"2016"}, nobtag_catagories, 1.0000, 0.9902)
+     ({"tt"}, {"2016"}, btag_catagories, 1.0000, 0.9785)
+     ({"tt"}, {"2018"}, nobtag_catagories, 1.0077, 0.9923)
+     ({"tt"}, {"2018"}, btag_catagories, 1.0022, 0.9978)
+     ({"et"}, {"2017"}, nobtag_catagories, 1.0044, 0.9952)
+     ({"et"}, {"2017"}, btag_catagories, 1.0013, 0.9988)
+     ({"et"}, {"2016"}, nobtag_catagories, 1.0000, 0.9857)
+     ({"et"}, {"2016"}, btag_catagories, 1.0000, 0.9743)
+     ({"et"}, {"2018"}, nobtag_catagories, 1.0081, 0.9921)
+     ({"et"}, {"2018"}, btag_catagories, 1.0020, 0.9980));
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
