@@ -76,39 +76,6 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   }); 
 }
 
-void CorrelateYears (ch::CombineHarvester& cb) {
-  // function to partially correlate FF systematics between years - need to check this works as expected
-  double scale = 0.70711; // 1/sqrt(1/2) to give 50% correlation between years
-  auto cb_syst = cb.cp().process({"jetFakes"});
-  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
-
-      // first scale all non-statistical FF systematics by 1/sqrt(2)
-      
-      if((syst->name().find("2016")!=std::string::npos || syst->name().find("2017")!=std::string::npos  || syst->name().find("2018")!=std::string::npos) && syst->name().find("ff_total") != std::string::npos&& syst->name().find("syst") != std::string::npos) {
-
-        std::cout << "scaling fake-factor systematic " << syst->name() << " by 1/sqrt(2) for (bin, channel, era): " << syst->bin() << ", "  << syst->channel() << "," << syst->era() << std::endl;
-  
-        if (syst->type().find("shape") != std::string::npos) {
-          syst->set_scale(syst->scale() * scale);
-        }
-        if (syst->type().find("lnN") != std::string::npos) {
-          syst->set_value_u((syst->value_u() - 1.) * scale + 1.);
-          if (syst->asymm()){
-            syst->set_value_d((syst->value_d() - 1.) * scale + 1.);
-          }
-        }
-
-        // now copy the systematic removing era from the name to make the correlated component
-        string new_name = syst->name();
-        boost::replace_all(new_name,"_"+syst->era(),"");
-        std::cout << ".. and creating clone with name " << new_name << std::endl;       
-        ch::Systematic cpy = *syst;
-        cpy.set_name(new_name);
-        cb.InsertSystematic(cpy);
-      }
-  });
-}
-
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -1301,6 +1268,10 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
+
+  // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU 
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
