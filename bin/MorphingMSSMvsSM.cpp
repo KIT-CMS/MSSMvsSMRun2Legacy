@@ -214,7 +214,12 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-  sm_signals = {"WH125", "ZH125", "ttH125"};
+  if (sm == true){
+  	sm_signals = {"WH125", "ZH125", "ttH125"};
+  }
+  else{
+  	sm_signals = {};
+  }
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
@@ -267,7 +272,7 @@ int main(int argc, char **argv) {
   //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","400","450","600","700","800","1200","1400","1500","1600","1800","2000","2600","2900","3200"}; // Available at ICL
   
   // new signal masses
-  SUSYggH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  SUSYggH_masses[2016] = {"80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; // Missing 60
   SUSYggH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
   SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
 
@@ -282,7 +287,8 @@ int main(int argc, char **argv) {
   SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; // Missing 300,700,1000
   SUSYbbH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
   SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
- 
+
+
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
   update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
@@ -817,8 +823,25 @@ int main(int argc, char **argv) {
   });
 
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
-  // This is needed otherwise we get complaints about functions that evaluate as NaN  
+  // This is needed otherwise we get complaints about functions that evaluate as NaN
   cb.ForEachSyst([&](ch::Systematic *syst) {
+    if ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos || syst->name().find("CMS_scale_e") != std::string::npos) && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 && (syst->process() == "bbH" || (syst->process() == "bbA"))){
+          std::cout << "Found one... \n";
+          std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+          cb.cp().ForEachProc([&](ch::Process *proc){
+          bool match_proc = (MatchingProcess(*proc,*syst));
+          if(match_proc){
+            if (proc->ClonedShape()->Integral() != 0){
+              auto nominal = (TH1D*)proc->ClonedShape().get()->Clone();
+              syst->set_value_u(1.0);
+              syst->set_value_d(1.0);
+              auto shape_u=(TH1D*)nominal->Clone();
+              auto shape_d=(TH1D*)nominal->Clone();
+              syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
+            }
+            }
+          });
+        }
     if (syst->type().find("lnN") != std::string::npos) {
       if(syst->value_u()<0.0) {
         std::cout << "[WARNING] Setting lnN systematic variation to the nominal as the yields would change sign otherwise \n ";
@@ -854,7 +877,7 @@ int main(int argc, char **argv) {
           shape_d=(TH1D*)nominal->Clone();
         }
         syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
-      } 
+      }
     }
   });
 
