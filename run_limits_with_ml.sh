@@ -14,7 +14,7 @@ if [[ $ANALYSISTYPE == "classic" ]]; then
 else
     analysis="mssm_vs_sm_h125"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_h125"
+        TAG="cmb_h125_fixed"
     fi
 fi
 # Szenarios from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGMSSMNeutral?redirectedfrom=LHCPhysics.LHCHXSWGMSSMNeutral#Baseline_scenarios
@@ -82,12 +82,16 @@ elif [[ $MODEL == "mh125EFT" ]]; then
     modelfile="13,Run2017,mh125EFT_13.root"
     min_mass=110
     max_mass=3200
+    y_min=1
+    y_max=10
     scenario_label="M_{h,#text{EFT}}^{125} scenario (h,H,A#rightarrow#tau#tau)"
 elif [[ $MODEL == "mh125EFT_lc" ]]; then
     wsoutput="mh125EFT_lc.root"
     modelfile="13,Run2017,mh125EFT_lc_13.root"
     min_mass=110
     max_mass=3200
+    y_min=1
+    y_max=10
     scenario_label="M_{h,#text{EFT}}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
 else
     wsoutput="ws_mh125.root"
@@ -175,8 +179,18 @@ elif [[ $MODE == "ws" ]]; then
     --PO modelFile=${modelfile} \
     --PO minTemplateMass=${min_mass} \
     --PO maxTemplateMass=${max_mass} \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v0.root \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+
+    # combineTool.py -M T2W -o ${wsoutput} \
+    #     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
+    #     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+    #     --PO modelFile=${modelfile} \
+    #     --PO minTemplateMass=${min_mass} \
+    #     --PO maxTemplateMass=${max_mass} \
+    #     --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+    #     -i ${datacarddir}/201?/*/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+
     ############
     # job setup creation
     ############
@@ -209,6 +223,31 @@ elif [[ $MODE == "submit-local" ]]; then
     cd ${defaultdir}/limits_${MODEL}/condor
     python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
 
+elif [[ $MODE == "hybrid-gc" ]]; then
+
+    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid/condor
+    cd ${defaultdir}/limits_${MODEL}_hybrid/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_${MODEL}.json \
+    --cycles 2 \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'condor' \
+    --task-name ${taskname}_hybrid \
+    --dry-run | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid.txt
+    ############
+    # job submission
+    ############
+    cd -
+    # python scripts/build_gc_job.py \
+    #     --combine-script ${defaultdir}/limits_${MODEL}_hybrid/condor/condor_${taskname}_hybrid.sh \
+    #     --workspace ${datacarddir}/combined/cmb/${wsoutput} \
+    #     --workdir /work/sbrommer/workdirs/combine/${taskname}_hybrid \
+    #     --tag ${taskname}_hybrid \
+    #     --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}_hybrid
+
+    # ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}_hybrid/${taskname}_hybrid.conf -Gc -m 3
+
 elif [[ $MODE == "submit-gc" ]]; then
     ############
     # job submission
@@ -233,6 +272,12 @@ elif [[ $MODE == "delete-crashed-jobs" ]]; then
     rm ${p}
     done < wrong_files.txt
 
+elif [[ $MODE == "copy-results-gc" ]]; then
+    ############
+    # job submission
+    ############
+    rsync -avhP /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
+
 
 elif [[ $MODE == "collect" ]]; then
     ############
@@ -252,7 +297,7 @@ elif [[ $MODE == "collect" ]]; then
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs_${MODEL}.txt
 
-    condor_submit condor_${taskname2}.sub
+    # # condor_submit condor_${taskname2}.sub
     cp asymptotic_grid.root ..
     cd ${defaultdir}/limits_${MODEL}/
 
@@ -270,7 +315,7 @@ elif [[ $MODE == "collect" ]]; then
     --title-right="${title}" \
     --cms-sub="Own Work" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
-    --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \
     --y-range 2.0,60.0 \
+    --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \
     --x-title "m_{A} [GeV]" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
 fi
