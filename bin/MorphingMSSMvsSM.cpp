@@ -352,9 +352,9 @@ int main(int argc, char **argv) {
         { 32, "em_Nbtag0_DZetaGt30"},
         { 33, "em_Nbtag0_DZetam10To30"},
         { 34, "em_Nbtag0_DZetam35Tom10"},
-        { 35, "em_Nbtag1_DZetaGt30"},
-        { 36, "em_Nbtag1_DZetam10To30"},
-        { 37, "em_Nbtag1_DZetam35Tom10"},
+        { 35, "em_NbtagGt1_DZetaGt30"},
+        { 36, "em_NbtagGt1_DZetam10To30"},
+        { 37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else if(analysis == "sm"){
@@ -452,9 +452,9 @@ int main(int argc, char **argv) {
         {33, "em_Nbtag0_DZetam10To30_MHGt250"},
         {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
 
-        {35, "em_Nbtag1_DZetaGt30"},
-        {36, "em_Nbtag1_DZetam10To30"},
-        {37, "em_Nbtag1_DZetam35Tom10"},
+        {35, "em_NbtagGt1_DZetaGt30"},
+        {36, "em_NbtagGt1_DZetam10To30"},
+        {37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
   else throw std::runtime_error("Given categorization is not known.");
