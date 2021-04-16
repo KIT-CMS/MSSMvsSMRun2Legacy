@@ -118,7 +118,7 @@ def main(args):
                 "mt": ["32", "33",  "35", "36"],
                 #"tt": ["nobtag", "btag"]
                 "tt": ["32", "35"],
-                "em": ["2", "32", "33", "34", "35", "36", "37"]
+                "em": ["2","32", "33", "34", "35", "36", "37"]
             }
     else:
         channel_categories = {
@@ -261,6 +261,7 @@ def main(args):
                     jetfakes_hist.Add(rootfile.get(era, channel, category, "wFakes"))
                     plot.add_hist(jetfakes_hist, process, "bkg")
                 else:
+                    #print era, channel, category, process
                     plot.add_hist(
                         rootfile.get(era, channel, category, process), process, "bkg")
                 plot.setGraphStyle(
@@ -382,7 +383,7 @@ def main(args):
                 max(1.3 * plot.subplot(0).get_hist("total_bkg").GetMaximum(),
                     split_dict[channel] * 2))
 
-            plot.subplot(2).setYlims(0.75, 1.8)
+            plot.subplot(2).setYlims(0., 2.0)
 
             if args.linear != True:
                 # plot.subplot(1).setYlims(1.e-4, split_dict[channel])
