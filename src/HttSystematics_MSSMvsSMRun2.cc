@@ -1309,7 +1309,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Do signal b efficiency and mistag uncertainties. Load from json to solve memory issues
 
   Json::Value js;
-  string json_file = "input/signal_b_efficiencies.json";
+  string json_file = std::getenv("CMSSW_BASE") + std::string("/src/CombineHarvester/MSSMvsSMRun2Legacy/input/signal_b_efficiencies.json");
   js = ch::ExtractJsonFromFile(json_file);
   std::string systematic_names[2] = {"CMS_htt_eff_b_$ERA","CMS_htt_mistag_b_$ERA"};
   std::string channels[4] = {"em","et","mt","tt"};
