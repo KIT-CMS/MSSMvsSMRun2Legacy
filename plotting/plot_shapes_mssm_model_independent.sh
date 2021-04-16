@@ -8,8 +8,10 @@ INPUT=$2
 OUTPUT=$3  # Output directory the plots are written to.
 IFS="," read -a CHANNELS <<< $4
 MASS=$5
+XSEC=$6
 
 [[ -z $MASS ]] && MASS=1200
+[[ -z $XSEC ]] && XSEC=0.05
 
 
 if [[ ! -d "$OUTPUT" ]]
@@ -31,6 +33,7 @@ do
                                        -o $OUTPUT \
                                        --model-independent \
                                        --blinded \
-                                       --mass $MASS
+                                       --mass $MASS \
+                                       --x-sec $XSEC
     done
 done

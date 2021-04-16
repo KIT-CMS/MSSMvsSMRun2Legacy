@@ -159,9 +159,9 @@ combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:m
 **Prefit shapes:**
 An exemplary command to extract prefit shapes from the created workspaces and datacards is
 ```bash
-prefit_postfit_shapes_parallel.py --datacard_pattern "output_mssm_classic/combined/htt_*/combined.txt.cmb" --workspace_name ws.root --output_name prefit_shapes.root --freeze_arguments "--freeze MH=1200,r_ggH=0.1,r_bbH=0.1" --parallel 5
+prefit_postfit_shapes_parallel.py --datacard_pattern "output_mssm_classic/201?/htt_*/combined.txt.cmb" --workspace_name ws.root --output_name prefit_shapes.root --freeze_arguments "--freeze MH=1200,r_ggH=0.1,r_bbH=0.1" --parallel 5
 
-hadd output_mssm_classic/combined/cmb/prefit_shapes.root output_mssm_classic/combined/htt_*/prefit_shapes.root
+hadd output_mssm_classic/combined/cmb/prefit_shapes.root output_mssm_classic/{2016,2017,2018}/htt_*/prefit_shapes.root
 ```
 where the freeze arguments can be chosen freely.
 
