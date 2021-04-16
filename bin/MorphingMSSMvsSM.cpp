@@ -789,6 +789,23 @@ int main(int argc, char **argv) {
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
   // This is needed otherwise we get complaints about functions that evaluate as NaN  
   cb.ForEachSyst([&](ch::Systematic *syst) {
+    if ((syst->type().find("shape") != std::string::npos) && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.) && (syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" )){
+          std::cout << "Setting empty up and down templates to the nominal template \n";
+          std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+          cb.cp().ForEachProc([&](ch::Process *proc){
+          bool match_proc = (MatchingProcess(*proc,*syst));
+          if(match_proc){
+            if (proc->ClonedShape()->Integral() != 0){
+              auto nominal = (TH1D*)proc->ClonedShape().get()->Clone();
+              syst->set_value_u(1.0);
+              syst->set_value_d(1.0);
+              auto shape_u=(TH1D*)nominal->Clone();
+              auto shape_d=(TH1D*)nominal->Clone();
+              syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
+            }
+            }
+          });
+        }
     if (syst->type().find("lnN") != std::string::npos) {
       if(syst->value_u()<0.0) {
         std::cout << "[WARNING] Setting lnN systematic variation to the nominal as the yields would change sign otherwise \n ";
