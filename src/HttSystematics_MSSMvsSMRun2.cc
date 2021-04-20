@@ -1723,6 +1723,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"QCD"})
       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
               ({35,36,37}, 1.05));
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "subtrMC", "shape", SystMap<>::init(1.00));
   }
 
   // ##########################################################################
