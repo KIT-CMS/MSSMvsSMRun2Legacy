@@ -329,6 +329,42 @@ int main(int argc, char **argv) {
 
   // Define categories
   map<string, Categories> cats;
+  map<string, Categories> sm_cats;
+  sm_cats["et"] = {
+    { 1, "et_xxh"}, // SM Signal Category
+
+    {13, "et_tt"},
+    {15, "et_zll"},
+    {16, "et_misc"},
+    {20, "et_emb"},
+    {21, "et_ff"},
+  };
+  sm_cats["mt"] = {
+    { 1, "mt_xxh"}, // SM Signal Category
+
+    {13, "mt_tt"},
+    {15, "mt_zll"},
+    {16, "mt_misc"},
+    {20, "mt_emb"},
+    {21, "mt_ff"}
+  };
+  sm_cats["tt"] = {
+    { 1, "tt_xxh"}, // SM Signal Category
+
+    {16, "tt_misc"},
+    {20, "tt_emb"},
+    {21, "tt_ff"}
+  };
+  sm_cats["em"] = {
+    { 1, "em_xxh"}, // SM Signal Category
+
+    {13, "em_tt"},
+    {14, "em_ss"},
+    {16, "em_misc"},
+    {19, "em_db"},
+    {20, "em_emb"}
+  };
+
   // STXS stage 0 categories (optimized on ggH and VBF)
   if(analysis == "mssm_classic" || analysis == "mssm_vs_sm_CPV" || analysis == "mssm_vs_sm_classic"){
     cats["et"] = {
@@ -599,7 +635,8 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, sm_signals, sm_cats[chn], true);
     }
     else if(analysis == "mssm_vs_sm_h125"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
@@ -607,7 +644,8 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, sm_signals, sm_cats[chn], true);
     }
     else if(analysis == "mssm_vs_sm_CPV"){
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
