@@ -1017,7 +1017,7 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u); 
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
@@ -1068,7 +1068,7 @@ int main(int argc, char **argv) {
   });
 
   cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
-    if (s->type() =="shape")
+    if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
         ch::HasNegativeBins(s->shape_d())) {
