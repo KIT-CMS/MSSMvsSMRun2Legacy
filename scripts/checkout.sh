@@ -29,6 +29,9 @@ git clone git@github.com:KIT-CMS/MSSMvsSMRun2Legacy.git CombineHarvester/MSSMvsS
 # SM analysis specific code
 git clone git@github.com:KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
 
+# grid control
+git clone git://github.com/harrypuuter/grid-control.git
+
 # Install LHCHWGMSSMNeutral packages
 wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mssm_xs_tools.py_v2.4
 sed -i "s!./mssm_xs_tools_C.so!${CMSSW_BASE}/lib/${SCRAM_ARCH}/libCombineHarvesterMSSMvsSMRun2Legacy.so!g" CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py

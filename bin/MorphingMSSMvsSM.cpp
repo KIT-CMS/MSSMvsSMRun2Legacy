@@ -68,7 +68,7 @@ std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>>
 void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   auto cb_syst = cb.cp().syst_name({name});
   cb_syst.ForEachSyst([&](ch::Systematic *syst) {
-    if (syst->type().find("shape") != std::string::npos) {
+    if (syst->type() == "shape") {
       std::cout << "Converting systematic " << syst->name() << " for process " << syst->process() << " in bin " << syst->bin() << " to lnN." <<std::endl;
       syst->set_type("lnN");
       return;
@@ -181,7 +181,12 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
-  sm_signals = {"WH125", "ZH125", "ttH125"};
+  if (sm == true){
+  	sm_signals = {"WH125", "ZH125", "ttH125"};
+  }
+  else{
+  	sm_signals = {};
+  }
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
@@ -787,8 +792,26 @@ int main(int argc, char **argv) {
   });
 
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
-  // This is needed otherwise we get complaints about functions that evaluate as NaN  
+  // This is needed otherwise we get complaints about functions that evaluate as NaN
   cb.ForEachSyst([&](ch::Systematic *syst) {
+    // specific treatment for some uncertainties in the MSV > 250 regions for low masses due to low population
+    if ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos) && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 && (syst->process() == "bbH" || (syst->process() == "bbA"))){
+          std::cout << "Found one... \n";
+          std::cout << ch::Systematic::PrintHeader << *syst << "\n";
+          cb.cp().ForEachProc([&](ch::Process *proc){
+          bool match_proc = (MatchingProcess(*proc,*syst));
+          if(match_proc){
+            if (proc->ClonedShape()->Integral() != 0){
+              auto nominal = (TH1D*)proc->ClonedShape().get()->Clone();
+              syst->set_value_u(1.0);
+              syst->set_value_d(1.0);
+              auto shape_u=(TH1D*)nominal->Clone();
+              auto shape_d=(TH1D*)nominal->Clone();
+              syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
+            }
+            }
+          });
+        }
     if (syst->type().find("lnN") != std::string::npos) {
       if(syst->value_u()<0.0) {
         std::cout << "[WARNING] Setting lnN systematic variation to the nominal as the yields would change sign otherwise \n ";
@@ -801,7 +824,7 @@ int main(int argc, char **argv) {
         syst->set_value_d(1.0);
       }
     }
-    if (syst->type().find("shape") != std::string::npos) {
+    if (syst->type() =="shape") {
       double value_u = syst->value_u();
       double value_d = syst->value_d();
 
@@ -824,7 +847,7 @@ int main(int argc, char **argv) {
           shape_d=(TH1D*)nominal->Clone();
         }
         syst->set_shapes(std::unique_ptr<TH1>(static_cast<TH1*>(shape_u)),std::unique_ptr<TH1>(static_cast<TH1*>(shape_d)),nullptr);
-      } 
+      }
     }
   });
 
@@ -942,7 +965,7 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
   cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
     TString sname = TString(s->name());
-    if((s->type().find("shape") != std::string::npos) && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
+    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
     {
       double err_u = 0.0;
       double err_d = 0.0;
@@ -994,7 +1017,7 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u); 
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
@@ -1268,10 +1291,10 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
-
-  // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU 
+    // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
