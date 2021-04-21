@@ -68,7 +68,7 @@ std::vector<double> binning_from_map(std::map<unsigned int, std::vector<double>>
 void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   auto cb_syst = cb.cp().syst_name({name});
   cb_syst.ForEachSyst([&](ch::Systematic *syst) {
-    if (syst->type().find("shape") != std::string::npos) {
+    if (syst->type() == "shape") {
       std::cout << "Converting systematic " << syst->name() << " for process " << syst->process() << " in bin " << syst->bin() << " to lnN." <<std::endl;
       syst->set_type("lnN");
       return;
@@ -824,7 +824,7 @@ int main(int argc, char **argv) {
         syst->set_value_d(1.0);
       }
     }
-    if (syst->type().find("shape") != std::string::npos) {
+    if (syst->type() =="shape") {
       double value_u = syst->value_u();
       double value_d = syst->value_d();
 
@@ -965,7 +965,7 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
   cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
     TString sname = TString(s->name());
-    if((s->type().find("shape") != std::string::npos) && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
+    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
     {
       double err_u = 0.0;
       double err_d = 0.0;
@@ -1068,7 +1068,7 @@ int main(int argc, char **argv) {
   });
 
   cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
-    if (s->type().find("shape") == std::string::npos)
+    if (s->type() =="shape")
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
         ch::HasNegativeBins(s->shape_d())) {
@@ -1291,11 +1291,10 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
-  if (not sm){
     // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
-    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
-  }
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
