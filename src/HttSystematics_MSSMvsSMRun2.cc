@@ -511,13 +511,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   float lumi_beam_curr = 1.0;
   float lumi_ghost = 1.0;
   if (era == 2016) {
-      lumi_unc = 1.022;
-      lumi_xy_fact = 1.009;
-      lumi_len_scale = 1.000;
-      lumi_beam_beam = 1.004;
-      lumi_dyn_beta = 1.005;
-      lumi_beam_curr = 1.000;
-      lumi_ghost = 1.004;
+      lumi_unc = 1.007; // Total integration uncertainty, was 1.022
+      lumi_xy_fact = 1.005; // Transverse factorizability, was 1.009;
+      lumi_len_scale = 1.003; // Length scale calibration, was 1.000;
+      lumi_beam_beam = 1.005; // Beam-beam effects, was 1.004;
+      lumi_dyn_beta = 1.005; // Beam position monitoring total (0.1 + 0.5), was 1.005
+      lumi_beam_curr = 1.002; // Beam current normalization, was 1.000;
+      lumi_ghost = 1.001; // Ghost and satellite charge, was 1.004;
   } else if (era == 2017) {
       lumi_unc = 1.020;
       lumi_xy_fact = 1.008;
