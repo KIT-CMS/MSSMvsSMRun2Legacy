@@ -504,36 +504,19 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   float lumi_unc = 1.0;
-  float lumi_xy_fact = 1.0;
-  float lumi_len_scale = 1.0;
-  float lumi_beam_beam = 1.0;
-  float lumi_dyn_beta = 1.0;
-  float lumi_beam_curr = 1.0;
-  float lumi_ghost = 1.0;
+  float lumi_corr = 1.0;
+  float lumi_1718 = 1.0;
   if (era == 2016) {
-      lumi_unc = 1.022;
-      lumi_xy_fact = 1.009;
-      lumi_len_scale = 1.000;
-      lumi_beam_beam = 1.004;
-      lumi_dyn_beta = 1.005;
-      lumi_beam_curr = 1.000;
-      lumi_ghost = 1.004;
+      lumi_unc = 1.010;
+      lumi_unc_corr = 1.006;
   } else if (era == 2017) {
       lumi_unc = 1.020;
-      lumi_xy_fact = 1.008;
-      lumi_len_scale = 1.003;
-      lumi_beam_beam = 1.004;
-      lumi_dyn_beta = 1.005;
-      lumi_beam_curr = 1.003;
-      lumi_ghost = 1.001;
+      lumi_unc_corr = 1.009;
+      lumi_unc_1718 = 1.006;
   } else if (era == 2018) {
       lumi_unc = 1.015;
-      lumi_xy_fact = 1.020;
-      lumi_len_scale = 1.002;
-      lumi_beam_beam = 1.000;
-      lumi_dyn_beta = 1.000;
-      lumi_beam_curr = 1.002;
-      lumi_ghost = 1.000;
+      lumi_unc_corr = 1.020;
+      lumi_unc_1718 = 1.002;
   }
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -542,27 +525,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_XY", "lnN", SystMap<>::init(lumi_xy_fact));
+      .AddSyst(cb, "lumi_13TeV_correlated", "lnN", SystMap<>::init(lumi_unc_corr));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_LS", "lnN", SystMap<>::init(lumi_len_scale));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_BBD", "lnN", SystMap<>::init(lumi_beam_beam));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_DB", "lnN", SystMap<>::init(lumi_dyn_beta));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_BCC", "lnN", SystMap<>::init(lumi_beam_curr));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_GS", "lnN", SystMap<>::init(lumi_ghost));
+      .AddSyst(cb, "lumi_13TeV_1718", "lnN", SystMap<>::init(lumi_unc_1718));
 
   // ##########################################################################
   // Uncertainty: ggH Reweighting Hdamp uncertainty
