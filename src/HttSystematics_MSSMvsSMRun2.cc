@@ -504,8 +504,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   float lumi_unc = 1.0;
-  float lumi_corr = 1.0;
-  float lumi_1718 = 1.0;
+  float lumi_unc_corr = 1.0;
+  float lumi_unc_1718 = 1.0;
   if (era == 2016) {
       lumi_unc = 1.010;
       lumi_unc_corr = 1.006;
