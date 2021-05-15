@@ -377,3 +377,46 @@ accounting_group = cms.higgs
 ```
 
 **No additions needed for CERN or NAF batch systems**
+
+## Analysis of predictions for SM-like Higgs boson
+
+There is a script to analyze the preductions for the SM-like Higgs boson from the various MSSM benchmark scenarios.
+It can be used to plot the total scale factor to be applied to the SM(125.09) templates for `ggphi` and `qqphi`, as well
+as BSM contributions to its individual parts (with mass effects), and mass effects going into the scale factor by using SM(125.09) predictions as reference.
+
+The script is called [plotSMlikeHiggsPredictions.py](scripts/plotSMlikeHiggsPredictions.py). To use it, please open a **fresh** terminal to be able to source
+and use latest ROOT:
+
+```bash
+source /cvmfs/sft-nightlies.cern.ch/lcg/views/dev3/latest/x86_64-centos7-gcc10-opt/setup.sh
+```
+
+Then, to get the full ensemble of plots, use the following set of commands executed from your current `${CMSSW_BASE}/src` folder. Please note, that
+`${CMSSW_BASE}` is not set (you should **not** execute `cmsenv`), it serves rather as placeholder for the absolute path of your analysis setup.
+## Analysis of predictions for SM-like Higgs boson
+
+```bash
+# models with the light scalar h being SM-like
+for m in CombineHarvester/MSSMvsSMRun2Legacy/data/mh125*.root;
+do
+    python CombineHarvester/MSSMvsSMRun2Legacy/scripts/plotSMlikeHiggsPredictions.py \
+        --mssm-benchmark "${m}" --bsm-sm-like h \
+        --sm-predictions CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json; 
+done;
+
+# models with the heavy scalar H being SM-like
+for m in CombineHarvester/MSSMvsSMRun2Legacy/data/mHH125*.root;
+do
+    python CombineHarvester/MSSMvsSMRun2Legacy/scripts/plotSMlikeHiggsPredictions.py \
+        --mssm-benchmark "${m}" --bsm-sm-like H \
+        --sm-predictions CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json;
+done;
+
+# CP violating models with H1 being SM-like
+for m in CombineHarvester/MSSMvsSMRun2Legacy/data/mh1125*.root;
+do
+    python CombineHarvester/MSSMvsSMRun2Legacy/scripts/plotSMlikeHiggsPredictions.py
+        --mssm-benchmark "${m}" --bsm-sm-like H1
+        --sm-predictions CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json;
+done;
+```
