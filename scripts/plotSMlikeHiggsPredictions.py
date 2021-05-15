@@ -56,9 +56,9 @@ bsm_model_names = {
     "mh125_align_13" : "M_{h}^{125}(alignment)",
     "mHH125_13" : "M_{H}^{125}(alignment)",
     "mh1125_CPV_13" : "M_{h_{1}}^{125}(CPV)",
-    "mh125_muneg_1_13" : "M_{h}^{125}(#mu = #minus 1 TeV)",
-    "mh125_muneg_2_13" : "M_{h}^{125}(#mu = #minus 2 TeV)",
-    "mh125_muneg_3_13" : "M_{h}^{125}(#mu = #minus 3 TeV)",
+    "mh125_muneg_1_13" : "M_{h}^{125}(#mu = #minus1 TeV)",
+    "mh125_muneg_2_13" : "M_{h}^{125}(#mu = #minus2 TeV)",
+    "mh125_muneg_3_13" : "M_{h}^{125}(#mu = #minus3 TeV)",
 }
 
 sf_range = [0.9, 1.1]
