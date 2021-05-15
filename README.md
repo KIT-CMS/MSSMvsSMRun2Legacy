@@ -380,9 +380,9 @@ accounting_group = cms.higgs
 
 ## Analysis of predictions for SM-like Higgs boson
 
-There is a script to analyze the preductions for the SM-like Higgs boson from the various MSSM benchmark scenarios.
+There is a script to analyze the predictions for the SM-like Higgs boson from the various MSSM benchmark scenarios.
 It can be used to plot the total scale factor to be applied to the SM(125.09) templates for `ggphi` and `qqphi`, as well
-as BSM contributions to its individual parts (with mass effects), and mass effects going into the scale factor by using SM(125.09) predictions as reference.
+as BSM contributions to its individual parts (without mass effects), and mass effects going into the scale factor by using SM(125.09) predictions as reference.
 
 The script is called [plotSMlikeHiggsPredictions.py](scripts/plotSMlikeHiggsPredictions.py). To use it, please open a **fresh** terminal to be able to source
 and use latest ROOT:
