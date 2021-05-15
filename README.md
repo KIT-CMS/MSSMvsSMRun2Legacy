@@ -393,7 +393,6 @@ source /cvmfs/sft-nightlies.cern.ch/lcg/views/dev3/latest/x86_64-centos7-gcc10-o
 
 Then, to get the full ensemble of plots, use the following set of commands executed from your current `${CMSSW_BASE}/src` folder. Please note, that
 `${CMSSW_BASE}` is not set (you should **not** execute `cmsenv`), it serves rather as placeholder for the absolute path of your analysis setup.
-## Analysis of predictions for SM-like Higgs boson
 
 ```bash
 # models with the light scalar h being SM-like
