@@ -63,6 +63,7 @@ bsm_model_names = {
 
 sf_range = [0.9, 1.1]
 sf_contours = {0.9 : R.kBlue, 0.95 : R.kViolet-6, 0.99 : R.kCyan+1, 1.0 : R.kGreen+2, 1.02 : R.kRed+1, 1.1 : R.kMagenta, 1.3 : R.kBlack}
+r_sf_contours = {0.98 : R.kBlue, 1.0 : R.kViolet-6, 1.02 : R.kCyan+1, 1.05 : R.kGreen+2, 1.1 : R.kRed+1, 1.3 : R.kMagenta, 1.5 : R.kBlack}
 
 quantity_settings = {
     "sf_gg_{PHI}" : {
@@ -84,6 +85,16 @@ quantity_settings = {
         "range" : sf_range,
         "contours" : sf_contours,
         "name" : "mass-corrected SF(qq#rightarrow{PHI}#rightarrow#tau#tau)".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+    },
+    "r_sf_gg_{PHI}" : {
+        "range" : sf_range,
+        "contours" : r_sf_contours,
+        "name" : "SF ratio for gg#rightarrow{PHI}#rightarrow#tau#tau".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+    },
+    "r_sf_qq_{PHI}" : {
+        "range" : sf_range,
+        "contours" : r_sf_contours,
+        "name" : "SF ratio for qq#rightarrow{PHI}#rightarrow#tau#tau".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
     },
 }
 
@@ -207,7 +218,7 @@ for quantity in quantities:
 # Compute mass-only contributions to quantities by dividing SM-like quantities by the ones for SMH125
 for quantity in quantities:
     keyname = quantity + "_mass-only"
-    bsm_predictions[keyname] = bsm_predictions[quantity].Clone(keyname.format(PHI=args.bsm_sm_like))
+    bsm_predictions[keyname] = bsm_predictions[quantity + "_SM"].Clone(keyname.format(PHI=args.bsm_sm_like))
     bsm_predictions[keyname].Scale(1. / sm_predictions[quantity.format(PHI="SMH125")])
 
 # Compute total scale factors for ggPHI and qqPHI without mass correction (assuming signal templates are scaled to SMH125)
@@ -231,6 +242,15 @@ sfname = "sf_qq_{PHI}_mass-corr"
 bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau_non-mass"].Clone(sfname.format(PHI=args.bsm_sm_like))
 if args.bsm_sm_like in ['h', 'H']:
     bsm_predictions[sfname].Multiply(bsm_predictions["gsq_{PHI}_VV"])
+
+# Ratio of the two types of scale factors for ggPHI and qqPHI
+sfname = "r_sf_gg_{PHI}"
+bsm_predictions[sfname] = bsm_predictions["sf_gg_{PHI}"].Clone(sfname.format(PHI=args.bsm_sm_like))
+bsm_predictions[sfname].Divide(bsm_predictions["sf_gg_{PHI}_mass-corr"])
+
+sfname = "r_sf_qq_{PHI}"
+bsm_predictions[sfname] = bsm_predictions["sf_qq_{PHI}"].Clone(sfname.format(PHI=args.bsm_sm_like))
+bsm_predictions[sfname].Divide(bsm_predictions["sf_qq_{PHI}_mass-corr"])
 
 # Compute the contours for invalid mass values of SM-like Higgs boson
 mh122_contours = plot.contourFromTH2(bsm_predictions["m_{PHI}_inverted"], (1-1./mass_borders[0]), 5, frameValue=1)
