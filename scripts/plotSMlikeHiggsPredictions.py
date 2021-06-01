@@ -344,6 +344,8 @@ for key in contour_quantities:
         haxis.SetMinimum(quantity_settings[key]["range"][0])
         haxis.SetMaximum(quantity_settings[key]["range"][1])
         haxis.SetTitle(";".join(["",xtitle,"tan#beta"]))
+        if "EFT" in bsm_name:
+            haxis.GetXaxis().SetRangeUser(91.5, haxis.GetXaxis().GetXmax())
         haxis.Draw("axis")
         bsm_predictions[key].GetZaxis().SetTitle(quantity_settings[key]["name"])
         bsm_predictions[key].GetZaxis().SetTitleOffset(1.4)
