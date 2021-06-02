@@ -5,6 +5,7 @@ import CombineHarvester.CombineTools.plotting as plot
 import os
 import ROOT
 import sys
+import json
 import pprint
 import numpy as np
 import itertools
@@ -25,6 +26,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.energy = ''
         self.ggHatNLO = ''
         self.mssm_inputs = None
+        self.sm_predictions = None
         self.minTemplateMass = None
         self.maxTemplateMass = None
         self.quantity_map = {
@@ -57,6 +59,18 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 "tanb" : np.arange(1.0, 20.25, 0.25),
                 "mA" :   np.arange(120.0, 1005.0, 5.0),
             },
+            "mh125_muneg_1": {
+                "tanb" : np.arange(1.0, 61.0, 1.0),
+                "mA" :   np.arange(70.0, 2605.0, 5.0),
+            },
+            "mh125_muneg_2": {
+                "tanb" : np.arange(1.0, 61.0, 1.0),
+                "mA" :   np.arange(70.0, 2605.0, 5.0),
+            },
+            "mh125_muneg_3": {
+                "tanb" : np.arange(1.0, 61.0, 1.0),
+                "mA" :   np.arange(70.0, 2605.0, 5.0),
+            },
         }
         self.PROC_SETS = []
         self.SYST_DICT = defaultdict(list)
@@ -83,6 +97,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if po.startswith('MSSM-NLO-Workspace='):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
                 print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
+
+            if po.startswith('sm-predictions='):
+                sm_pred_path = po.replace('sm-predictions=','')
+                self.sm_predictions = json.load(open(sm_pred_path,'r'))
+                print "Using %s for SM predictions"%sm_pred_path
 
             if po.startswith('minTemplateMass='):
                 self.minTemplateMass = float(po.replace('minTemplateMass=', ''))
@@ -173,7 +192,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         F = ROOT.TFile.Open(self.filename, "read")
         g_Htt_hist = F.Get(accesskey)
         br_htautau_hist = F.Get(accesskey_br)
-        br_htautau_SM_125 = 0.06272 # Value for 125 GeV SM Higgs from YR4
+        br_htautau_SM_125 = self.sm_predictions["br_SMH125_tautau"]
 
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
@@ -218,8 +237,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         F = ROOT.TFile.Open(self.filename, "read")
         xs_ggh_hist = F.Get(accesskey_xs)
         br_htautau_hist = F.Get(accesskey_br)
-        br_htautau_SM_125 = 0.06272 # Value for 125 GeV SM Higgs from YR4
-        xs_ggh_SM_125 = 48.58 #Value for 125 GeV SM Higgs from YR4
+        br_htautau_SM_125 = self.sm_predictions["br_SMH125_tautau"]
+        xs_ggh_SM_125 = self.sm_predictions["xs_gg_SMH125"]
 
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):

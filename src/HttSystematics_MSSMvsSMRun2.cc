@@ -504,36 +504,19 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   float lumi_unc = 1.0;
-  float lumi_xy_fact = 1.0;
-  float lumi_len_scale = 1.0;
-  float lumi_beam_beam = 1.0;
-  float lumi_dyn_beta = 1.0;
-  float lumi_beam_curr = 1.0;
-  float lumi_ghost = 1.0;
+  float lumi_unc_corr = 1.0;
+  float lumi_unc_1718 = 1.0;
   if (era == 2016) {
-      lumi_unc = 1.022;
-      lumi_xy_fact = 1.009;
-      lumi_len_scale = 1.000;
-      lumi_beam_beam = 1.004;
-      lumi_dyn_beta = 1.005;
-      lumi_beam_curr = 1.000;
-      lumi_ghost = 1.004;
+      lumi_unc = 1.010;
+      lumi_unc_corr = 1.006;
   } else if (era == 2017) {
       lumi_unc = 1.020;
-      lumi_xy_fact = 1.008;
-      lumi_len_scale = 1.003;
-      lumi_beam_beam = 1.004;
-      lumi_dyn_beta = 1.005;
-      lumi_beam_curr = 1.003;
-      lumi_ghost = 1.001;
+      lumi_unc_corr = 1.009;
+      lumi_unc_1718 = 1.006;
   } else if (era == 2018) {
       lumi_unc = 1.015;
-      lumi_xy_fact = 1.020;
-      lumi_len_scale = 1.002;
-      lumi_beam_beam = 1.000;
-      lumi_dyn_beta = 1.000;
-      lumi_beam_curr = 1.002;
-      lumi_ghost = 1.000;
+      lumi_unc_corr = 1.020;
+      lumi_unc_1718 = 1.002;
   }
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -542,27 +525,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_XY", "lnN", SystMap<>::init(lumi_xy_fact));
+      .AddSyst(cb, "lumi_13TeV_correlated", "lnN", SystMap<>::init(lumi_unc_corr));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_LS", "lnN", SystMap<>::init(lumi_len_scale));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_BBD", "lnN", SystMap<>::init(lumi_beam_beam));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_DB", "lnN", SystMap<>::init(lumi_dyn_beta));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_BCC", "lnN", SystMap<>::init(lumi_beam_curr));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process(mc_processes)
-      .AddSyst(cb, "lumi_13TeV_GS", "lnN", SystMap<>::init(lumi_ghost));
+      .AddSyst(cb, "lumi_13TeV_1718", "lnN", SystMap<>::init(lumi_unc_1718));
 
   // ##########################################################################
   // Uncertainty: ggH Reweighting Hdamp uncertainty
@@ -1307,38 +1274,38 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   );
 
   // Do signal b efficiency and mistag uncertainties. Load from json to solve memory issues
-
-  Json::Value js;
-  string json_file = "input/signal_b_efficiencies.json";
-  js = ch::ExtractJsonFromFile(json_file);
-  std::string systematic_names[2] = {"CMS_htt_eff_b_$ERA","CMS_htt_mistag_b_$ERA"};
-  std::string channels[4] = {"em","et","mt","tt"};
-  std::string years[3] = {"2016","2017","2018"};
-  std::string masses[31] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  for (auto s: systematic_names) {
-    for (auto c: channels) {
-      for (auto yr: years) {
-        for (auto m: masses) {
-          double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-          double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-          cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_catagories,{m}, bbH_btag_down, bbH_btag_up));
-          double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-          double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-          cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-          ({c}, {yr}, btag_catagories, {m}, ggH_btag_down, ggH_btag_up));
-          double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-          double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-          cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-          ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
-          double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-          double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-          cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-          ({c}, {yr}, nobtag_catagories, {m}, ggH_nobtag_down, ggH_nobtag_up));
+  if (not sm){
+    Json::Value js;
+    string json_file = std::getenv("CMSSW_BASE") + std::string("/src/CombineHarvester/MSSMvsSMRun2Legacy/input/signal_b_efficiencies.json");
+    js = ch::ExtractJsonFromFile(json_file);
+    std::string systematic_names[2] = {"CMS_htt_eff_b_$ERA","CMS_htt_mistag_b_$ERA"};
+    std::string channels[4] = {"em","et","mt","tt"};
+    std::string years[3] = {"2016","2017","2018"};
+    std::string masses[31] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+    for (auto s: systematic_names) {
+        for (auto c: channels) {
+        for (auto yr: years) {
+            for (auto m: masses) {
+            double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
+            double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_catagories,{m}, bbH_btag_down, bbH_btag_up));
+            double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
+            double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, btag_catagories, {m}, ggH_btag_down, ggH_btag_up));
+            double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
+            double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
+            double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
+            double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, nobtag_catagories, {m}, ggH_nobtag_down, ggH_nobtag_up));
+            }
         }
-      }
+        }
     }
   }
-
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
@@ -1637,27 +1604,28 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"et", "mt", "tt", "em"})
       .process({"VVT", "VVJ", "VVL", "VV", "ST"})
       .AddSyst(cb, "CMS_htt_vvXsec", "lnN", SystMap<>::init(1.05));
+  if (sm){
+        // TT
+    cb.cp()
+        .channel({"et", "mt", "tt", "em"})
+        .process({"TTT", "TTL", "TTJ", "TT"})
+        .AddSyst(cb, "CMS_htt_tjXsec", "lnN", SystMap<>::init(1.06));
+  }
+  else{
+    // use unconstrained rate parameter for ttbar yield
+    // We don't need above uncertainty on cross section if using the rate parameter
+    cb.cp()
+        .channel({"et", "mt", "tt", "em"})
+        .process({"TTT", "TTL", "TTJ", "TT"})
+        .AddSyst(cb, "rate_ttbar","rateParam",SystMap<>::init(1.0));
+    cb.GetParameter("rate_ttbar")->set_range(0.5,1.5);
 
-  // TT
-//  cb.cp()
-//      .channel({"et", "mt", "tt", "em"})
-//      .process({"TTT", "TTL", "TTJ", "TT"})
-//      .AddSyst(cb, "CMS_htt_tjXsec", "lnN", SystMap<>::init(1.06));
-//
-  // use unconstrained rate parameter for ttbar yield
-  // We don't need above uncertainty on cross section if using the rate parameter
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"TTT", "TTL", "TTJ", "TT"})
-      .AddSyst(cb, "rate_ttbar","rateParam",SystMap<>::init(1.0));
-  cb.GetParameter("rate_ttbar")->set_range(0.5,1.5);
-
-  // We can also remove the lumi and em trigger uncertainties for ttbar if using the rate parameter
-  cb.FilterSysts([](ch::Systematic *syst) {
-      return (syst->name().find("lumi") != string::npos || syst->name().find("CMS_eff_trigger_em") != string::npos) &&
-        (syst->process() == "TT" || syst->process() == "TTT" || syst->process() == "TTL" || syst->process() == "TTJ");
-  });
-
+    // We can also remove the lumi and em trigger uncertainties for ttbar if using the rate parameter
+    cb.FilterSysts([](ch::Systematic *syst) {
+        return (syst->name().find("lumi") != string::npos || syst->name().find("CMS_eff_trigger_em") != string::npos) &&
+            (syst->process() == "TT" || syst->process() == "TTT" || syst->process() == "TTL" || syst->process() == "TTJ");
+    });
+  }
   // W
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -1723,6 +1691,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"QCD"})
       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
               ({35,36,37}, 1.05));
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "subtrMC", "shape", SystMap<>::init(1.00));
   }
 
   // ##########################################################################
