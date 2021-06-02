@@ -30,6 +30,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_ggH = {
       // STXS stage 0
       "ggH_htt125",
+      "ggH125",
       // STXS stage 1.1
       "ggH_FWDH_htt",
       "ggH_PTH_200_300_htt",
@@ -52,6 +53,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_qqH = {
       // STXS stage 0
       "qqH_htt125",
+      "qqH125", 
       // STXS stage 1
       "qqH_FWDH_htt",
       "qqH_0J_htt",
