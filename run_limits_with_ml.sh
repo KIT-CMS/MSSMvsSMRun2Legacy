@@ -43,16 +43,16 @@ elif [[ $MODEL == "mh125_align" ]]; then
     min_mass=110
     max_mass=3200
     scenario_label="M_{h}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "HH125" ]]; then
+elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
     min_mass=150
     max_mass=200
     scenario_label="M_{H}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "hm1125_cpv" ]]; then
+elif [[ $MODEL == "mh1125_CPV" ]]; then
     #TODO this still need more modifications in the code
-    wsoutput="ws_hm1125_cpv.root"
-    modelfile="13,Run2017,hm1125_CPV_13.root"
+    wsoutput="ws_mh1125_cpv.root"
+    modelfile="13,Run2017,mh1125_CPV_13.root"
     analysis="mssm_vs_sm_CPV"
     min_mass=130
     max_mass=1500
@@ -149,7 +149,7 @@ if [[ $MODE == "initial" ]]; then
             --eras 2016,2017,2018 \
             --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt \
             --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
     fi
 
     ############
