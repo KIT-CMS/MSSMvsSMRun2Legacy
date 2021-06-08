@@ -103,7 +103,10 @@ int main(int argc, char **argv) {
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
-  string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm_classic_h125", "mssm_vs_sm_heavy", "mssm_vs_sm", "mssm_vs_sm_h125", "mssm_vs_sm_CPV"
+  string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
+  string sub_analysis = "hSM-in-bg"; // analysis = "bsm-model-indep": "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
+  string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
+  string categorization = "classic"; // "with-sm-ml", "sm-ml-only", "classic"
   int era = 2016; // 2016, 2017 or 2018
   po::variables_map vm;
   po::options_description config("configuration");
@@ -120,6 +123,9 @@ int main(int argc, char **argv) {
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
+      ("sub-analysis", po::value<string>(&sub_analysis)->default_value(sub_analysis))
+      ("sm-like-hists", po::value<string>(&sm_like_hists)->default_value(sm_like_hists))
+      ("categorization", po::value<string>(&categorization)->default_value(categorization))
       ("era", po::value<int>(&era)->default_value(era))
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
@@ -180,7 +186,10 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
+  VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
+  VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
+  VString mssm_signals;
   if (sm == true){
   	sm_signals = {"WH125", "ZH125", "ttH125"};
   }
@@ -191,24 +200,75 @@ int main(int argc, char **argv) {
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
-  mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
-  mssm_bbH_signals = {"bbA", "bbH", "bbh"};
-  if(analysis == "mssm" || analysis == "mssm_classic")
+  if(analysis == "bsm-model-indep")
   {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
   }
-  else if(analysis == "mssm_vs_sm_heavy")
+  else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")
   {
-    mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i","ggA_t", "ggA_b", "ggA_i"};
-    mssm_bbH_signals = {"bbH", "bbA"};
+    if(sub_analysis == "sm-like-light")
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggh_t", "ggh_b", "ggh_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggh"};
+      }
+      mssm_bbH_signals_smlike = {"bbh"};
+      mssm_ggH_signals_scalar = {"ggH_t", "ggH_b", "ggH_i"};
+      mssm_bbH_signals_scalar = {"bbH"};
+      mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbA"};
+    }
+    else if(sub_analysis == "sm-like-heavy")
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggH_t", "ggH_b", "ggH_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggH"};
+      }
+      mssm_bbH_signals_smlike = {"bbH"};
+      mssm_ggH_signals_scalar = {"ggh_t", "ggh_b", "ggh_i"};
+      mssm_bbH_signals_scalar = {"bbh"};
+      mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbA"};
+    }
+    else if(sub_analysis == "cpv") // caution! 'scalar' and 'pseudoscalar' are used here for lists only! physics-wise ill-defined!
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggH1_t", "ggH1_b", "ggH1_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggH1"};
+      }
+      mssm_bbH_signals_smlike = {"bbH1"};
+      mssm_ggH_signals_scalar = {"ggH2_t", "ggH2_b", "ggH2_i"};
+      mssm_bbH_signals_scalar = {"bbH2"};
+      mssm_ggH_signals_pseudoscalar = {"ggH3_t", "ggH3_b", "ggH3_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbH3"};
+    }
   }
-  else if(analysis == "mssm_vs_sm_CPV")
-  {
-    mssm_ggH_signals = {"ggH1_t", "ggH1_b", "ggH1_i", "ggH2_t", "ggH2_b", "ggH2_i", "ggH3_t", "ggH3_b", "ggH3_i"};
-    mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
-  }
+
+  mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+  mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+  mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+  mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+
+  std::cout << "Used BSM signals: ";
+  for(auto proc : mssm_signals){
+    std::cout << proc << " ";
+  }
+  std::cout << std::endl;
+
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
@@ -283,7 +343,7 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-  else if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm_heavy"){
+  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
@@ -316,12 +376,18 @@ int main(int argc, char **argv) {
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
-  mA.setConstant(true);
+  // mA is used as model parameter in case of sub_analysis "sm-like-light"
+  if(sub_analysis == "sm-like-light")
+  {
+    mA.setConstant(true);
+  }
 
-  // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1
+  // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1 (sub_analysis "cpv")
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
+
+  // mHp is used instead of mA as parameter in case of sub_analysis "sm-like-heavy" or "cpv"
   RooRealVar mHp("mHp", "mHp", 125., 90., 4000.);
   mHp.setConstant(true);
 
@@ -331,8 +397,7 @@ int main(int argc, char **argv) {
 
   // Define categories
   map<string, Categories> cats;
-  // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm_classic" || analysis == "mssm_vs_sm_CPV" || analysis == "mssm_vs_sm_classic"){
+  if(categorization == "classic"){
     cats["et"] = {
         { 32, "et_Nbtag0_MTLt40"},
         { 33, "et_Nbtag0_MT40To70"},
@@ -359,7 +424,7 @@ int main(int argc, char **argv) {
         { 37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
-  else if(analysis == "sm"){
+  else if(categorization == "sm-ml-only"){
     cats["et"] = {
       { 1, "et_xxh"}, // SM Signal Category
 
@@ -398,7 +463,7 @@ int main(int argc, char **argv) {
       {20, "em_emb"}
     };
   }
-  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm"){
+  else if(categorization == "with-sm-ml"){
     cats["et"] = {
         { 1, "et_xxh"}, // SM Signal Category
 
@@ -476,10 +541,11 @@ int main(int argc, char **argv) {
 
   for (auto chn : chns) {
   // build category maps used for the different analyses
-    Categories sm_and_btag_cats = cats[chn]; // contain 1-31
-    Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
-    Categories mssm_cats = cats[chn]; // contain 32-37
-    Categories sm_signal_cat = cats[chn]; // contain 1, 32-37
+    Categories sm_and_btag_cats = cats[chn]; // contain 1, 2, 13-21, 35-37
+    Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
+    Categories mssm_cats = cats[chn]; // contain 2, 32-37
+    Categories sm_signal_cat = cats[chn]; // contain 1
+
     for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
@@ -494,37 +560,34 @@ int main(int argc, char **argv) {
         sm_signal_cat.erase(catit);
         --catit;
       }
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_signal_cat.erase(catit);
+        --catit;
+      }
     }
+
     for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_cats.erase(catit);
         --catit;
       }
-    }
-    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
-    {
       if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_cats.erase(catit);
         --catit;
       }
     }
+
     for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_btag_cats.erase(catit);
         --catit;
       }
-    }
-    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-    {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         mssm_btag_cats.erase(catit);
         --catit;
       }
-    }
-    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-    {
       if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_btag_cats.erase(catit);
         --catit;
@@ -538,84 +601,114 @@ int main(int argc, char **argv) {
         --catit;
       }
     }
-    // std::cout << "[INFO] Using the following categories:" << std::endl;
-    // std::cout << "   sm_and_btag_cats:" << std::endl;
-    // for (const auto i: sm_and_btag_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
-    // std::cout << "    mssm_cats:" << std::endl;
-    // for (const auto i: mssm_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
-    // std::cout << "    mssm_btag_cats:" << std::endl;
-    // for (const auto i: mssm_btag_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
+
+    std::cout << "[INFO] Using the following categories:" << std::endl;
+    std::cout << "   sm_and_btag_cats:" << std::endl;
+    for (const auto i: sm_and_btag_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    mssm_cats:" << std::endl;
+    for (const auto i: mssm_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    mssm_btag_cats:" << std::endl;
+    for (const auto i: mssm_btag_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    sm_signal_cat:" << std::endl;
+    for (const auto i: sm_signal_cat)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
-    // currently possible analysis:
-    // 1. sm
-    // 2. mssm
-    // 3. mssm_classic
-    // 3. mssm_vs_sm_h125
-    // 4. mssm_vs_sm
-
 
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
-    else if(analysis == "mssm"){
+    else if(analysis == "bsm-model-indep"){
       // filter masses above treshold:
-      std::vector<std::string> masses_SM_bbH;
-      std::vector<std::string> masses_SM_ggH;
-      int bbH_threshold = SM_thresholds_bbH[era][chn];
-      int ggH_threshold = SM_thresholds_ggH[era][chn];
+      // std::vector<std::string> masses_SM_bbH;
+      // std::vector<std::string> masses_SM_ggH;
+      // int bbH_threshold = SM_thresholds_bbH[era][chn];
+      // int ggH_threshold = SM_thresholds_ggH[era][chn];
       // if(sm){
       //     MH.setRange(90., std::max(bbH_threshold,ggH_threshold));
       // }
-      std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
-      std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
+      // std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
+      // std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
       // std::cout << "[INFO] Using masses for SM: ";
       //   // printVector(masses_SM_bbH);
       //   // printVector(masses_SM_ggH);
       // cb.AddProcesses(masses_SM_bbH, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       // cb.AddProcesses(masses_SM_ggH, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
+
+      // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
     }
-    else if(analysis == "mssm_classic"){
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_classic"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_h125"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_CPV"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, cats[chn], true);
+    else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
+      // Adding at first the additional Higgs boson signals
+      Categories additional_higgses_cats;
+      if(categorization == "classic") // classic categories cover full mass range for additional Higgs signals
+      {
+         additional_higgses_cats = cats[chn];
+      }
+      else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
+      {
+         if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
+         {
+         additional_higgses_cats = mssm_cats;
+         }
+         else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
+         {
+         additional_higgses_cats = sm_and_btag_cats;
+         }
+      }
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_additional, additional_higgses_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_additional, additional_higgses_cats, true);
+
+      if(analysis == "bsm-model-dep-full")
+      {
+        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+
+        // Defining categories for qqphi & ggphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
+        // Defining categories for bbphi: exclude mssm_nobtag_categories and SM categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut and bad population in SM cats
+        Categories qq_gg_phi_cats, bbphi_cats;
+        if(categorization == "classic")
+        {
+          qq_gg_phi_cats = cats[chn];
+          bbphi_cats = cats[chn];
+        }
+        else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
+        {
+          qq_gg_phi_cats = sm_and_btag_cats;
+          bbphi_cats = mssm_btag_cats;
+        }
+
+        // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
+        if(sub_analysis == "sm-like-light")
+        {
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, qq_gg_phi_cats, true);
+        }
+        else if(sub_analysis == "sm-like-heavy")
+        {
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH"}, qq_gg_phi_cats, true);
+        }
+        else if(sub_analysis == "cpv")
+        {
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, qq_gg_phi_cats, true);
+        }
+
+        VString empty_masses = {""};
+        VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
+        cb.AddProcesses(ggH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_smlike, qq_gg_phi_cats, true);
+        VString bbH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYbbH_masses[era];
+        cb.AddProcesses(bbH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_smlike, bbphi_cats, true);
+      }
     }
   }
 
