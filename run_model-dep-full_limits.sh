@@ -137,7 +137,7 @@ if [[ $MODE == "initial" ]]; then
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
             --sm \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
@@ -148,7 +148,7 @@ if [[ $MODE == "initial" ]]; then
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
