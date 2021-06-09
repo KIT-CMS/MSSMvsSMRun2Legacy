@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
-  VString mssm_signals;
+  VString mssm_signals, qqh_bsm_signals;
   if (sm == true){
   	sm_signals = {"WH125", "ZH125", "ttH125"};
   }
@@ -222,6 +222,7 @@ int main(int argc, char **argv) {
       mssm_bbH_signals_scalar = {"bbH"};
       mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
       mssm_bbH_signals_pseudoscalar = {"bbA"};
+      qqh_bsm_signals = {"qqh"};
     }
     else if(sub_analysis == "sm-like-heavy")
     {
@@ -238,6 +239,7 @@ int main(int argc, char **argv) {
       mssm_bbH_signals_scalar = {"bbh"};
       mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
       mssm_bbH_signals_pseudoscalar = {"bbA"};
+      qqh_bsm_signals = {"qqH"};
     }
     else if(sub_analysis == "cpv") // caution! 'scalar' and 'pseudoscalar' are used here for lists only! physics-wise ill-defined!
     {
@@ -254,6 +256,7 @@ int main(int argc, char **argv) {
       mssm_bbH_signals_scalar = {"bbH2"};
       mssm_ggH_signals_pseudoscalar = {"ggH3_t", "ggH3_b", "ggH3_i"};
       mssm_bbH_signals_pseudoscalar = {"bbH3"};
+      qqh_bsm_signals = {"qqH1"};
     }
   }
 
@@ -690,18 +693,7 @@ int main(int argc, char **argv) {
         }
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
-        if(sub_analysis == "sm-like-light")
-        {
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, qq_gg_phi_cats, true);
-        }
-        else if(sub_analysis == "sm-like-heavy")
-        {
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH"}, qq_gg_phi_cats, true);
-        }
-        else if(sub_analysis == "cpv")
-        {
-          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, qq_gg_phi_cats, true);
-        }
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_phi_cats, true);
 
         VString empty_masses = {""};
         VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
