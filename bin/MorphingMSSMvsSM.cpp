@@ -258,13 +258,13 @@ int main(int argc, char **argv) {
       mssm_bbH_signals_pseudoscalar = {"bbH3"};
       qqh_bsm_signals = {"qqH1"};
     }
+    mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+    mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+    mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+    mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+    mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   }
 
-  mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
-  mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
-  mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
-  mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
-  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
   std::cout << "Used BSM signals: ";
   for(auto proc : mssm_signals){
