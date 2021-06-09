@@ -9,7 +9,10 @@ fi
 
 
 defaultdir=analysis/$TAG
-analysis="mssm"
+analysis="bsm-model-indep"
+sub_analysis="hSM-in-bg"
+categorization="with-sm-ml"
+sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -25,20 +28,26 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
         --variable nnscore \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --sm \
-        --parallel 8 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+        --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
         --variable mt_tot_puppi \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
-        --parallel 8 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
