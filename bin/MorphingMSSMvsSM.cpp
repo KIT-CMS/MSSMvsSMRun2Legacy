@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYbbH_masses;
 
   //bool do_morph=false;
-  bool do_morph=true;
+  bool do_morph=true; // TODO use an option for that
   if(do_morph) {
 
     // new DESY datacards should have all masses now?
@@ -579,11 +579,11 @@ int main(int argc, char **argv) {
 
     for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
     {
-      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         mssm_btag_cats.erase(catit);
         --catit;
       }
-      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_btag_cats.erase(catit);
         --catit;
       }
@@ -733,13 +733,44 @@ int main(int argc, char **argv) {
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
-      cb.cp().channel({chn}).process(ch::JoinStr({mssm_ggH_signals_additional,mssm_bbH_signals_additional})).ExtractShapes(
-        input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
+        cb.cp().channel({chn}).process(mssm_ggH_signals_additional).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+      }
+      else if(sub_analysis == "cpv"){
+        cb.cp().channel({chn}).process({"ggH2_t"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_t_$MASS", "$BIN/ggH_t_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH2_b"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_b_$MASS", "$BIN/ggH_b_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH2_i"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_i_$MASS", "$BIN/ggH_i_$MASS_$SYSTEMATIC");
+
+        cb.cp().channel({chn}).process({"ggH3_t"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_t_$MASS", "$BIN/ggA_t_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH3_b"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_b_$MASS", "$BIN/ggA_b_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH3_i"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_i_$MASS", "$BIN/ggA_i_$MASS_$SYSTEMATIC");
+      }
+      cb.cp().channel({chn}).process(mssm_bbH_signals_additional).ExtractShapes(
+        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
 
       if(analysis == "bsm-model-dep-full"){
         if(sm_like_hists == "bsm"){
-          cb.cp().channel({chn}).process(ch::JoinStr({mssm_ggH_signals_smlike,mssm_bbH_signals_smlike})).ExtractShapes(
-            input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
+            cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
+              input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          }
+          else if(sub_analysis == "cpv"){
+            cb.cp().channel({chn}).process({"ggH1_t"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_t_$MASS", "$BIN/ggh_t_$MASS_$SYSTEMATIC");
+            cb.cp().channel({chn}).process({"ggH1_b"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_b_$MASS", "$BIN/ggh_b_$MASS_$SYSTEMATIC");
+            cb.cp().channel({chn}).process({"ggH1_i"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_i_$MASS", "$BIN/ggh_i_$MASS_$SYSTEMATIC");
+          }
+          cb.cp().channel({chn}).process(mssm_bbH_signals_smlike).ExtractShapes(
+            input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
         }
         else if(sm_like_hists == "sm125"){
           cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
