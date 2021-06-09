@@ -803,7 +803,7 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -816,7 +816,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
     {
       if (s->type() == "shape") {
@@ -842,7 +842,19 @@ int main(int argc, char **argv) {
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
   // This is needed otherwise we get complaints about functions that evaluate as NaN
   cb.ForEachSyst([&](ch::Systematic *syst) {
-  if (((syst->type().find("shape") != std::string::npos) && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.) && (syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" )) || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos) && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 && (syst->process() == "bbH" || (syst->process() == "bbA")))){
+  if (((syst->type().find("shape") != std::string::npos) &&
+       (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.) &&
+
+       (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" ||
+        syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" ||
+        syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i")) ||
+
+      ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos ||
+        syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos) &&
+
+       syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 &&
+
+       (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || (syst->process() == "bbA")))){
           std::cout << "Setting empty up and down templates to the nominal template \n";
           std::cout << ch::Systematic::PrintHeader << *syst << "\n";
           cb.cp().ForEachProc([&](ch::Process *proc){
@@ -1104,7 +1116,7 @@ int main(int argc, char **argv) {
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1114,7 +1126,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
