@@ -379,7 +379,7 @@ int main(int argc, char **argv) {
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
-  // mA is used as model parameter in case of sub_analysis "sm-like-light"
+  // mA is used as model parameter in case of sub_analysis "sm-like-light", for "sm-like-heavy" and "cpv" it is mHp
   if(sub_analysis == "sm-like-light")
   {
     mA.setConstant(true);
@@ -389,10 +389,6 @@ int main(int argc, char **argv) {
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
-
-  // mHp is used instead of mA as parameter in case of sub_analysis "sm-like-heavy" or "cpv"
-  RooRealVar mHp("mHp", "mHp", 125., 90., 4000.);
-  mHp.setConstant(true);
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -1178,8 +1174,8 @@ int main(int argc, char **argv) {
           total_procs_shape = total_procs_shape + background_shape + signal_shape;
         }
       }
-      // Desired Asimov model: BG + Higgs. Since H->tautau treated all as background, so it is sufficient to consider the bg shape
-      else if(analysis == "mssm" || analysis == "mssm_classic"){
+      // Desired Asimov model: BG( + Higgs). Since H->tautau treated all as background( if required), so it is sufficient to consider the bg shape
+      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -1192,7 +1188,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
-      else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
+      else if(analysis == "bsm-model-dep-full"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
@@ -1240,7 +1236,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
     cb.SetAutoMCStats(cb, 0.);
   }
-  // Setup morphed mssm signals for model-independent case
+  // Setup morphed mssm signals for bsm analyses
   RooWorkspace ws("htt", "htt");
 
   std::map<std::string, RooAbsReal *> mass_var = {
@@ -1261,8 +1257,14 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
+  // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
+  if(sm_like_hists == "smh125")
+  {
+    if(sub_analysis == "sm-like-light"){ mass_var.erase("bbh"); process_norm_map.erase("bbh");}
+    else if(sub_analysis == "sm-like-heavy"){ mass_var.erase("bbH"); process_norm_map.erase("bbH");}
+  }
 
-  if(analysis == "mssm" || analysis == "mssm_classic")
+  if(analysis == "bsm-model-indep")
   {
     mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
@@ -1311,29 +1313,36 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
   }
 
-  if(analysis == "mssm_vs_sm_CPV")
+  if(sub_analysis == "cpv")
+  {
+    mass_var = {
+      {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
+      {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
+      {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
+      {"bbH1", &mH1},
+      {"bbH2", &mH2},
+      {"bbH3", &mH3}
+    };
+
+    process_norm_map = {
+      {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
+      {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
+      {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
+      {"bbH1", "norm"},
+      {"bbH2", "norm"},
+      {"bbH3", "norm"}
+    };
+
+    // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
+    if(sm_like_hists == "smh125")
     {
-      mass_var = {
-        {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
-        {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
-        {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
-        {"bbH1", &mH1},
-        {"bbH2", &mH2},
-        {"bbH3", &mH3}
-      };
-      
-      process_norm_map = {
-        {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
-        {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
-        {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
-        {"bbH1", "norm"},
-        {"bbH2", "norm"},
-        {"bbH3", "norm"}
-      };
+      mass_var.erase("bbH1");
+      process_norm_map.erase("bbH1");
     }
+  }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph&&(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"))
+  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -1343,7 +1352,7 @@ int main(int argc, char **argv) {
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
 
-    if(analysis == "mssm" || analysis == "mssm_classic"){
+    if(analysis == "bsm-model-indep"){
       // Adding 'norm' terms into workspace according to desired signals
       for (auto bin : cb.cp().bin_set())
       {
@@ -1367,35 +1376,33 @@ int main(int argc, char **argv) {
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-  if(!do_morph) {
-    if(analysis == "mssm" || analysis == "mssm_classic"){
+  else if(!do_morph && analysis == "bsm-model-indep"){
 
-     //double Tfrac = ws.function("ggh_t_frac")->getVal();
-     //double Bfrac = ws.function("ggh_b_frac")->getVal();
-     //double Ifrac = ws.function("ggh_i_frac")->getVal();
-     double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
-     //if (Ifrac<0.) {
-     //  Ifrac=fabs(Ifrac);
-     //  // set a constant rate parameter = -1 for the interference 
-     //  cb.cp()
-     //   .process({"ggh_i"})
-     //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
-     //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
-     //}
-     std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
+   //double Tfrac = ws.function("ggh_t_frac")->getVal();
+   //double Bfrac = ws.function("ggh_b_frac")->getVal();
+   //double Ifrac = ws.function("ggh_i_frac")->getVal();
+   double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
+   //if (Ifrac<0.) {
+   //  Ifrac=fabs(Ifrac);
+   //  // set a constant rate parameter = -1 for the interference 
+   //  cb.cp()
+   //   .process({"ggh_i"})
+   //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
+   //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
+   //}
+   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
 
-     cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Tfrac);
-      });
+   cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Tfrac);
+    });
 
-     cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Bfrac);
-      });
+   cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Bfrac);
+    });
 
-     cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Ifrac);
-      });
-    }
+   cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Ifrac);
+    });
   }
 
 
