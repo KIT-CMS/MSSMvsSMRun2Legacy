@@ -51,7 +51,6 @@ elif [[ $MODEL == "mHH125" ]]; then
 elif [[ $MODEL == "mh1125_CPV" ]]; then
     wsoutput="ws_mh1125_cpv.root"
     modelfile="13,Run2017,mh1125_CPV_13.root"
-    analysis="mssm_vs_sm_CPV"
     scenario_label="M_{h_1}^{125} (CPV) scenario (h,H,A#rightarrow#tau#tau)"
     sub_analysis="cpv"
 ### Negative mu scenarios #####
