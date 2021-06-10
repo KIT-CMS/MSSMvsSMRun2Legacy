@@ -65,7 +65,7 @@ elif [[ $MODE == "ws" ]]; then
     --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
     --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
     -i ${datacarddir}/combined/cmb/ \
-    -m 110 --parallel 4 | tee -a ${defaultdir}/logs/workspace_independent.txt
+    -m 125.0 --parallel 4 | tee -a ${defaultdir}/logs/workspace_independent.txt
 
     ############
     # job setup creation
