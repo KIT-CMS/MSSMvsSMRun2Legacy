@@ -79,11 +79,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh", "qqH"}});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh", "qqH"}}); // TODO: adapt for all possible scenarios, perhaps rename qqH from Danny into qqPhi?
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
-  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"};
-  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH_500", "bbH_1400"};
+  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"}; // TODO: adapt for all possible scenarios
+  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh"}; // TODO: adapt for all possible scenarios
   std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
@@ -540,6 +540,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: for Hdamp scales t, b, and i components are decorrelated
   // ##########################################################################
 
+   // TODO adapt for all possible scenarios
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
        .process({"ggh_i","ggH_i","ggA_i"})
@@ -1856,6 +1857,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: Check VH QCD scale uncertainty
   // - FIXME: References?
   // ##########################################################################
+  //
+  // TODO: adapt for all scenarios & discuss how to treat ggh and qqh in that case
 
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
@@ -1932,6 +1935,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
   if (sm)
   {
+    // TODO ggh and qqh treatment (BSM predictions)
     // Gluon-fusion WG1 uncertainty scheme
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
