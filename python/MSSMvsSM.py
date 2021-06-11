@@ -44,32 +44,48 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         }
         self.binning =  {
             "mh125": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
+            },
+            "mh125EFT": {
+                "tanb" : np.arange(1.0, 10.25, 0.25),
+                "mA" :   np.arange(70.0, 3001.0, 1.0),
             },
             "mh125_lc": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
+            },
+            "mh125EFT_lc": {
+                "tanb" : np.arange(1.0, 10.25, 0.25),
+                "mA" :   np.arange(70.0, 3001.0, 1.0),
             },
             "mh125_ls": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
             },
             "mh125_align": {
                 "tanb" : np.arange(1.0, 20.25, 0.25),
-                "mA" :   np.arange(120.0, 1005.0, 5.0),
+                "mA" :   np.arange(120.0, 1001.0, 1.0),
             },
             "mh125_muneg_1": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
             },
             "mh125_muneg_2": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
             },
             "mh125_muneg_3": {
-                "tanb" : np.arange(1.0, 61.0, 1.0),
-                "mA" :   np.arange(70.0, 2605.0, 5.0),
+                "tanb" : np.arange(0.5, 60.1, 0.1),
+                "mA" :   np.arange(70.0, 2601.0, 1.0),
+            },
+            "mHH125": {
+                "tanb" : np.arange(5.0, 6.0, 0.005),
+                "mHp" :   np.arange(150.0, 200.2, 0.2),
+            },
+            "mh1125_CPV": {
+                "tanb" : np.arange(1.0, 20.25, 0.25),
+                "mHp" :   np.arange(130.0, 1501.0, 1.0),
             },
         }
         self.PROC_SETS = []
