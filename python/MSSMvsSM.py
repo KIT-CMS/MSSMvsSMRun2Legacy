@@ -30,12 +30,18 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.minTemplateMass = None
         self.maxTemplateMass = None
         self.quantity_map = {
-            "mass"          : {"name" : "m{HIGGS}", "access" : "{HIGGS}"},
-            "br"            : {"name" : "br_{HIGGS}tautau", "access": "{HIGGS}->tautau", "access2" : "br_{HIGGS}_tautau"},
-            "xsec"          : {"name" : "xs_{PROD}{HIGGS}", "access" : "{PROD}->{HIGGS}", "access2" : "xs_{PROD}_{HIGGS}"},
-            "yukawa_top"    : {"name" : "Yt_MSSM_{HIGGS}", "access" : "rescale_gt_{HIGGS}"},
-            "yukawa_bottom" : {"name" : "Yb_MSSM_{HIGGS}", "access" : "rescale_gb_{HIGGS}"},
-            "yukawa_deltab" : {"name" : "Ydeltab_MSSM", "access" : "rescale_deltab"},
+            "mass"             : {"method" :     "mass", "name" : "m{HIGGS}",                 "access" : "{HIGGS}"},
+            "width"            : {"method" :    "width", "name" : "w{HIGGS}",                 "access" : "{HIGGS}"},
+            "width_SM"         : {"method" :    "width", "name" : "w{HIGGS}_SM",              "access" : "{HIGGS}_SM"},
+            "br"               : {"method" :       "br", "name" : "br_{HIGGS}tautau",         "access" : "{HIGGS}->tautau"},
+            "br_SM"            : {"method" :       "br", "name" : "br_{HIGGS}tautau_SM",      "access" : "{HIGGS}->tautau_SM"},
+            "xsec"             : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}",         "access" : "{PROD}->{HIGGS}"},
+            "xsec_SM"          : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}_SM",      "access" : "{PROD}->{HIGGS}_SM"},
+            "interference"     : {"method" :     "xsec", "name" : "int_{PROD}{HIGGS}_tautau", "access" : "int_{PROD}_tautau_{HIGGS}"},
+            "yukawa_top"       : {"method" : "coupling", "name" : "Yt_MSSM_{HIGGS}",          "access" : "gt_{HIGGS}"},
+            "yukawa_bottom"    : {"method" : "coupling", "name" : "Yb_MSSM_{HIGGS}",          "access" : "gb_{HIGGS}"},
+            "yukawa_deltab"    : {"method" : "coupling", "name" : "Ydeltab_MSSM",             "access" : "deltab"},
+            "yukawa_im_deltab" : {"method" : "coupling", "name" : "Yimdeltab_MSSM",           "access" : "im_deltab"},
         }
         self.uncertainty_map = {
             "ggscale" : "::scale{VAR}",
@@ -149,6 +155,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         # Translator mssm_xs_tools -> TH1D -> RooDataHist
         name  = self.quantity_map[quantity]['name']
         accesskey = self.quantity_map[quantity]['access']
+        method = self.quantity_map[quantity]['method']
         if production and higgs:
             name = name.format(HIGGS=higgs, PROD=production)
             accesskey = accesskey.format(HIGGS=higgs, PROD=production)
@@ -166,7 +173,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
-                value = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
+                value = getattr(self.mssm_inputs, method)(accesskey, x, y)
                 if quantity == 'mass' and self.minTemplateMass:
                     if value < self.minTemplateMass:
                         print "[WARNING]: Found a value for {MH} below lower mass limit: {VALUE} < {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
@@ -411,11 +418,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         for X in ['h', 'H']:
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
 
-        self.doHistFuncFromModelFile(None, "yukawa_deltab", pars)
-
         for X in ['h', 'H', 'A']:
-            self.doHistFuncFromModelFile(X, "yukawa_top", pars)
-            self.doHistFuncFromModelFile(X, "yukawa_bottom", pars)
+            self.doHistFuncFromXsecTools(X, "yukawa_top", pars)
+            self.doHistFuncFromXsecTools(X, "yukawa_bottom", pars)
 
             self.doHistFuncFromXsecTools(X, "br", pars) # syntax: Higgs-Boson, xsec attribute, parameters, production mode
 
