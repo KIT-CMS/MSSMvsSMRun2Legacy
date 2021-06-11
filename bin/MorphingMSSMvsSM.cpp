@@ -191,10 +191,10 @@ int main(int argc, char **argv) {
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
   VString mssm_signals, qqh_bsm_signals;
   if (sm == true){
-  	sm_signals = {"WH125", "ZH125", "ttH125"};
+    sm_signals = {"WH125", "ZH125", "ttH125"}; // TODO: remove ttH, treat also WH & ZH as BSM signal in model-dep case
   }
-  else{
-  	sm_signals = {};
+  else {
+    sm_signals = {};
   }
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
