@@ -506,7 +506,7 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_xxh"}, // SM Signal Category
 
-        { 2, "em_DZetaLtm35"}, // TODO check how we will hande the control region and overlap with SM
+        { 2, "em_DZetaLtm35"},
 
         {13, "em_tt"},
         {14, "em_ss"},
@@ -516,7 +516,7 @@ int main(int argc, char **argv) {
 
         {32, "em_Nbtag0_DZetaGt30_MHGt250"},
         {33, "em_Nbtag0_DZetam10To30_MHGt250"},
-        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
+        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"},
 
         {35, "em_NbtagGt1_DZetaGt30"},
         {36, "em_NbtagGt1_DZetam10To30"},
