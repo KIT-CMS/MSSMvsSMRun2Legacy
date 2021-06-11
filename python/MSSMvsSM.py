@@ -201,7 +201,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
     def doHistFuncForQQH(self, varlist):
         # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
-        name  = "qqh_MSSM"
+        name  = "qqphi_MSSM"
         accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
         accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
         print "Computing 'qqh' scaling function from model file..."
@@ -230,23 +230,12 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
-        print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
-        canv = ROOT.TCanvas()
-        canv.cd()
-        hist.SetContour(2000)
-        hist.GetXaxis().SetTitle('m_{A}')
-        hist.GetYaxis().SetTitle('tan#beta')
-        hist.Draw("colz")
-        canv.SetLogx()
-        canv.Update()
-        canv.SaveAs("qqh_MSSM_%s.pdf"%self.scenario)
-        canv.SaveAs("qqh_MSSM_%s.png"%self.scenario)
 
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncForGGH(self, varlist):
         # Computing scaling function for ggh contribution (little Higgs) in context of MSSM
-        name  = "ggh_MSSM"
+        name  = "ggphi_MSSM"
         accesskey_xs = self.quantity_map['xsec']['access2'].format(HIGGS='h',PROD='gg')
         accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
         print "Computing 'ggh' scaling function from model file..."
@@ -271,17 +260,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 value =  xs_ggh / xs_ggh_SM_125 * br_htautau / br_htautau_SM_125 # xs * BR / (xs * BR of SM 125)
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
-        print "\trescale values range from",hist.GetMinimum(),"to",hist.GetMaximum()
-        canv = ROOT.TCanvas()
-        canv.cd()
-        hist.SetContour(2000)
-        hist.GetXaxis().SetTitle('m_{A}')
-        hist.GetYaxis().SetTitle('tan#beta')
-        hist.Draw("colz")
-        canv.SetLogx()
-        canv.Update()
-        canv.SaveAs("ggh_MSSM_%s.pdf"%self.scenario)
-        canv.SaveAs("ggh_MSSM_%s.png"%self.scenario)
 
         return self.doHistFunc(name, hist, varlist)
 
@@ -380,9 +358,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif proc == 'qqh':
-                terms = [self.sigNorms[True], 'r', 'qqh_MSSM']
+                terms = [self.sigNorms[True], 'r', 'qqphi_MSSM']
             elif proc == 'ggh':
-                terms = [self.sigNorms[True], 'r', 'ggh_MSSM']
+                terms = [self.sigNorms[True], 'r', 'ggphi_MSSM']
             else:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
