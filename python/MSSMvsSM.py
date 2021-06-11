@@ -1,6 +1,5 @@
 from HiggsAnalysis.CombinedLimit.PhysicsModel import *
 from CombineHarvester.MSSMvsSMRun2Legacy.mssm_xs_tools import mssm_xs_tools
-import CombineHarvester.CombineTools.plotting as plot
 
 import os
 import ROOT
@@ -16,9 +15,6 @@ from array import array
 class MSSMvsSMHiggsModel(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
-        ROOT.gROOT.SetBatch(ROOT.kTRUE)
-        plot.ModTDRStyle(l=0.13, b=0.10, r=0.19)
-        ROOT.gStyle.SetNdivisions(510, "Z")
         self.filePrefix = ''
         self.modelFile = ''
         self.filename = ''
@@ -98,6 +94,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.SYST_DICT = defaultdict(list)
         self.NUISANCES = set()
         self.scaleforh = 1.0
+        self.bsmscalar = ""
+        self.smlike = "h"
+        self.massparameter = "mA"
+        self.replace_with_sm125 = True
 
     def setPhysicsOptions(self,physOptions):
         for po in physOptions:
@@ -113,12 +113,33 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 self.energy = cfgSplit[0]
                 self.era = cfgSplit[1]
                 self.modelFile = cfgSplit[2]
-                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'').replace('_fixed','').replace('_original','').replace('_intermediate','')
+                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'')
                 print "Importing scenario '%s' for sqrt(s) = '%s TeV' and '%s' data-taking period from '%s'"%(self.scenario, self.energy, self.era, self.modelFile)
+
+                if self.scenario == "mHH125":
+                    self.smlike = "H"
+                    self.bsmscalar = "h"
+                    self.massparameter = "mHp"
+                elif self.scenario != "mh1125_CPV":
+                    self.smlike = "h"
+                    self.bsmscalar = "H"
+                    self.massparameter = "mA"
+                else:
+                    self.smlike = "H1"
+                    self.bsmscalar = ""
+                    self.massparameter = "mHp"
+                print "Chosen model-specific settings:"
+                print "SM-like Higgs boson:",self.smlike
+                print "BSM scalar Higgs boson:",self.bsmscalar
+                print "Mass parameter in the plane:",self.massparameter
 
             if po.startswith('MSSM-NLO-Workspace='):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
                 print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
+
+            if po.startswith('replace-with-SM125='):
+                self.replace_with_sm125 = bool(int(po.replace('replace-with-SM125=', ''))) # use either 1 or 0 for the choice
+                print "Replacing with SM 125?",self.replace_with_sm125
 
             if po.startswith('sm-predictions='):
                 sm_pred_path = po.replace('sm-predictions=','')
@@ -200,11 +221,17 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncForQQH(self, varlist):
-        # Computing scaling function for qqh contribution (little Higgs) in context of MSSM
-        name  = "qqphi_MSSM"
-        accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
-        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
-        print "Computing 'qqh' scaling function from model file..."
+        # Computing scaling function for qqh contribution (SM-like Higgs) in context of MSSM
+        # Assuming qqphi is already scaled to an appropriate SM 125.4 cross-section
+        name  = "sf_qqphi_MSSM"
+
+        accesskey = None
+        if self.scenario != "mh1125_CPV":
+            self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
+        accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smllike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smllike)
+
+        print "Computing 'qqphi' scaling function from xsec tools"
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -212,33 +239,46 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_parname = varlist[1].GetName()
         y_binning = self.binning[self.scenario][y_parname]
 
-        F = ROOT.TFile.Open(self.filename, "read")
-        g_Htt_hist = F.Get(accesskey)
-        br_htautau_hist = F.Get(accesskey_br)
-        br_htautau_SM_125 = self.sm_predictions["br_SMH125_tautau"]
-
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
+
                 beta = np.arctan(y)
-                g_Htt = g_Htt_hist.Interpolate(x,y)
-                br_htautau = br_htautau_hist.Interpolate(x,y)
-                sin_alpha = g_Htt * np.sin(beta)
-                if abs(sin_alpha) > 1:
-                    sin_alpha  = np.sign(sin_alpha)
-                alpha = np.arcsin(sin_alpha)
-                value = np.sin(beta-alpha)**2 * br_htautau / br_htautau_SM_125 # (g_HVV)**2 * br_htautau / br_htautau_SM_125
+
+                g_Htt = 1.0 # No Yukawa scale factors for H1 in mh1125_CPV scenario
+                value = 1.0 # Initial value
+
+                br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
+                br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
+
+                if accesskey:
+                    g_Htt = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])(accesskey, x, y)
+                    sin_alpha = g_Htt * np.sin(beta)
+                    if abs(sin_alpha) > 1:
+                        sin_alpha  = np.sign(sin_alpha)
+                    alpha = np.arcsin(sin_alpha)
+                    if self.smlike == 'h':
+                        value = np.sin(beta-alpha)**2
+                    elif self.smlike == 'H':
+                        value = np.cos(beta-alpha)**2
+
+                value *= br_htautau / br_htautau_SM # (g_HVV)**2 * br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
 
     def doHistFuncForGGH(self, varlist):
-        # Computing scaling function for ggh contribution (little Higgs) in context of MSSM
-        name  = "ggphi_MSSM"
-        accesskey_xs = self.quantity_map['xsec']['access2'].format(HIGGS='h',PROD='gg')
-        accesskey_br = self.quantity_map['br']['access2'].format(HIGGS='h')
-        print "Computing 'ggh' scaling function from model file..."
+        # Computing scaling function for ggphi contribution (SM-like Higgs) in context of MSSM
+        # Assuming ggphi is already scaled to an appropriate SM 125.4 cross-section
+        name  = "sf_ggphi_MSSM"
+
+        accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='gg')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='gg')
+        accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
+
+        print "Computing 'ggphi' scaling function from xsec tools"
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -246,33 +286,58 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         y_parname = varlist[1].GetName()
         y_binning = self.binning[self.scenario][y_parname]
 
-        F = ROOT.TFile.Open(self.filename, "read")
-        xs_ggh_hist = F.Get(accesskey_xs)
-        br_htautau_hist = F.Get(accesskey_br)
-        br_htautau_SM_125 = self.sm_predictions["br_SMH125_tautau"]
-        xs_ggh_SM_125 = self.sm_predictions["xs_gg_SMH125"]
-
         hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
-                xs_ggh = xs_ggh_hist.Interpolate(x,y)
-                br_htautau = br_htautau_hist.Interpolate(x,y)
-                value =  xs_ggh / xs_ggh_SM_125 * br_htautau / br_htautau_SM_125 # xs * BR / (xs * BR of SM 125)
+
+                xs_ggh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_xs, x, y)
+                xs_ggh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_xs_SM, x, y)
+
+                br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
+                br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
+
+                value =  xs_ggh / xs_ggh_SM * br_htautau / br_htautau_SM # xs(mh) * BR(mh) / (xs_SM(mh) * BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
 
-    def doHistFuncFromModelFile(self, higgs, quantity, varlist):
-        name  = self.quantity_map[quantity]['name']
-        accesskey = self.quantity_map[quantity]['access']
-        if higgs:
-            name = name.format(HIGGS=higgs)
-            accesskey = accesskey.format(HIGGS=higgs)
-        F = ROOT.TFile.Open(self.filename, "read")
-        print "Doing histFunc '%s' with '%s' key for quantity '%s' from model file..." %(name, accesskey, quantity)
-        hist = F.Get(accesskey)
-        hist.SetName(name)
+    def doHistFuncForBBH(self, varlist):
+        # Computing scaling function for bbphi contribution (SM-like Higgs) in context of MSSM
+        # Assuming ggphi is **NOT** scaled to an appropriate SM 125.4 cross-section & BR, but to 1 pb
+        name  = "sf_bbphi_MSSM"
+
+        accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='bb')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='bb')
+        accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
+
+        xs_bbh_SM125 = self.sm_predictions["xs_bb_SMH125"]
+        br_htautau_SM125 = self.sm_predictions["br_SMH125_tautau"]
+
+        print "Computing 'bbphi' scaling function from xsec tools"
+
+        x_parname = varlist[0].GetName()
+        x_binning = self.binning[self.scenario][x_parname]
+
+        y_parname = varlist[1].GetName()
+        y_binning = self.binning[self.scenario][y_parname]
+
+        hist = ROOT.TH2D(name, name, len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
+        for i_x, x in enumerate(x_binning):
+            for i_y, y in enumerate(y_binning):
+
+                xs_bbh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_xs, x, y)
+                xs_bbh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_xs_SM, x, y)
+
+                br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
+                br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
+
+                # xs(mh) * (xs_SM(125.4)/xs_SM(mh)) * BR(mh) * (BR_SM(125.4)/BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
+                value =  xs_bbh * (xs_bbh_SM125 / xs_bbh_SM) * br_htautau * (br_htautau_SM125 / br_htautau_SM)
+                value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
+                hist.SetBinContent(i_x+1, i_y+1, value)
+
         return self.doHistFunc(name, hist, varlist)
 
     def doAsymPowSystematic(self, higgs, quantity, varlist, production, uncertainty):
@@ -280,6 +345,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = self.quantity_map[quantity]['name'].format(HIGGS=higgs, PROD=production)
         accesskey = self.quantity_map[quantity]['access'].format(HIGGS=higgs, PROD=production)
         uncertaintykey = self.uncertainty_map[production+uncertainty]
+        method = self.quantity_map[quantity]['method']
 
         # create AsymPow rate scaler given two TH2 inputs corresponding to kappa_hi and kappa_lo
         param = name + "_MSSM_" + uncertainty
@@ -297,9 +363,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         hist_lo = ROOT.TH2D(systname+"_lo", systname+"_lo", len(x_binning)-1, x_binning, len(y_binning)-1, y_binning)
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
-                nominal  = getattr(self.mssm_inputs, quantity)(accesskey, x, y)
-                value_hi = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='up'), x, y)
-                value_lo = getattr(self.mssm_inputs, quantity)(accesskey+uncertaintykey.format(VAR='down'), x, y)
+                nominal  = getattr(self.mssm_inputs, method)(accesskey, x, y)
+                value_hi = getattr(self.mssm_inputs, method)(accesskey+uncertaintykey.format(VAR='up'), x, y)
+                value_lo = getattr(self.mssm_inputs, method)(accesskey+uncertaintykey.format(VAR='down'), x, y)
                 if nominal == 0:
                     hist_hi.SetBinContent(i_x+1, i_y+1, 1.0)
                     hist_lo.SetBinContent(i_x+1, i_y+1, 1.0)
@@ -348,20 +414,26 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.doSet('POI', 'r')
 
         # We don't intend on actually floating these in any fits...
-        self.modelBuilder.out.var('mA').setConstant(True)
+        self.modelBuilder.out.var(self.massparameter).setConstant(True) # either mA or mHp
         self.modelBuilder.out.var('tanb').setConstant(True)
 
+        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))"
+        if self.replace_with_sm125:
+            bsm_proc_match = "(gg(A|{BSMSCALAR}|H3|H2)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
+
         for proc in self.PROC_SETS:
-            if re.match("(gg(A|H|h)_(t|i|b)|bb(A|H|h))", proc):
+            if re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
-            elif proc == 'qqh':
-                terms = [self.sigNorms[True], 'r', 'qqphi_MSSM']
-            elif proc == 'ggh':
-                terms = [self.sigNorms[True], 'r', 'ggphi_MSSM']
-            else:
+            elif re.match('qq{SMLIKE}'.format(SMLIKE=self.smlike), proc): # always done
+                terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
+            elif re.match('gg{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+                terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
+            elif re.match('bb{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+                terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
+            elif "125" in proc:
                 terms = [self.sigNorms[False]]
             # Now scan terms and add theory uncerts
             extra = []
@@ -381,22 +453,33 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             return 1
 
     def buildModel(self):
-        mA = ROOT.RooRealVar('mA', 'm_{A} [GeV]', 120.)
-        tanb = ROOT.RooRealVar('tanb', 'tan#beta', 20.)
-        pars = [mA, tanb]
+        mass = ROOT.RooRealVar(self.massparameter, 'm_{A} [GeV]' if self.massparameter == 'mA' else 'm_{H^{+}} [GeV]', 160.) # the other case would be 'mHp'
+        tanb = ROOT.RooRealVar('tanb', 'tan#beta', 5.5)
+        pars = [mass, tanb]
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
+        # qqphi added always in this setup
         self.doHistFuncForQQH(pars)
-        self.PROC_SETS.append('qqh')
+        self.PROC_SETS.append('qq'+self.smlike)
 
-        self.doHistFuncForGGH(pars)
-        self.PROC_SETS.append('ggh')
+        # adding ggphi & bbphi as 125 templates only if requested
+        if self.replace_with_sm125:
 
-        for X in ['h', 'H']:
+            self.doHistFuncForGGH(pars)
+            self.PROC_SETS.append('gg'+self.smlike)
+
+            self.doHistFuncForBBH(pars)
+            self.PROC_SETS.append('bb'+self.smlike)
+
+        procs = ['H1', 'H2', 'H3'] if self.scenario == "mh1125_CPV" else ['h', 'H', 'A']
+
+        for X in procs:
+            if self.massparameter.replace('m','') == X: # don't create histogram for 'A' in cases, where its mass is a model-parameter
+                continue
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
 
-        for X in ['h', 'H', 'A']:
+        for X in procs:
             self.doHistFuncFromXsecTools(X, "yukawa_top", pars)
             self.doHistFuncFromXsecTools(X, "yukawa_bottom", pars)
 
@@ -404,7 +487,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-            self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
+
+            if self.scenario != "mh1125_CPV":
+                self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
+            else:
+                pass # TODO: catch CPV case here
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
@@ -413,8 +500,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             # bbH total uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "bb", "total")
 
-            self.SYST_DICT['xs_gg%s' %X].append('systeff_xs_gg%s_MSSM_scale' %X)
-            self.SYST_DICT['xs_gg%s' %X].append('systeff_xs_gg%s_MSSM_pdfas' %X)
             for loopcontrib in ['t','b','i']:
                 self.SYST_DICT['xs_gg%s_%s' % (X, loopcontrib)].append('systeff_xs_gg%s_MSSM_scale' %X)
                 self.SYST_DICT['xs_gg%s_%s' % (X, loopcontrib)].append('systeff_xs_gg%s_MSSM_pdfas' %X)
@@ -425,8 +510,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.PROC_SETS.append('bb%s'%X)
             self.PROC_SETS.extend(['gg%s_t'%X, 'gg%s_b'%X, 'gg%s_i'%X])
 
+        # Add BSM systematic also in case SM125 templates are used for ggphi and bbphi
+        if self.replace_with_sm125:
+             self.SYST_DICT["sf_ggphi_MSSM"].append('systeff_xs_gg%s_MSSM_scale' %self.smlike)
+             self.SYST_DICT["sf_ggphi_MSSM"].append('systeff_xs_gg%s_MSSM_pdfas' %self.smlike)
+             self.SYST_DICT["sf_bbphi_MSSM"].append('systeff_xs_bb%s_MSSM_total' %self.smlike)
+
         # And the SM terms
-        self.PROC_SETS.extend(['ggH125', 'qqH125', 'ZH125', 'WH125', 'ttH125'])
+        self.PROC_SETS.extend(['ggH125', 'qqH125', 'ZH125', 'WH125', 'bbH125'])
 
 
 MSSMvsSM = MSSMvsSMHiggsModel()
