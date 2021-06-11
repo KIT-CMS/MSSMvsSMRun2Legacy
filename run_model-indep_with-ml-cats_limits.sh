@@ -129,8 +129,8 @@ elif [[ $MODE == "collect" ]]; then
         --use-dirs \
         -o ${datacarddir}/combined/cmb/mssm_${p}H_cmb.json
 
-        plotMSSMLimits.py --cms-sub "Own Work" \
-        --title-right "137 fb^{-1} (13 TeV)" \
+        plotMSSMLimits.py --cms-sub "Preliminary" \
+        --title-right "138 fb^{-1} (13 TeV)" \
         --process "${p}#phi" \
         --y-axis-min 0.0001 \
         --y-axis-max 1000.0 \

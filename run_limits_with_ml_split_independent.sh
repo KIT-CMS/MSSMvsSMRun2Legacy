@@ -10,7 +10,7 @@ if [[ $TAG == "auto" ]]; then
 fi
 
 if [[ $ERA == "2016" ]]; then
-    LUMI="35.9 fb^{-1} (2016, 13 TeV)"
+    LUMI="36.3 fb^{-1} (2016, 13 TeV)"
 elif [[ $ERA == "2017" ]]; then
     LUMI="41.5 fb^{-1} (2017, 13 TeV)"
 elif [[ $ERA == "2018" ]]; then
@@ -151,7 +151,7 @@ elif [[ $MODE == "collect" ]]; then
 elif [[ $MODE == "plot" ]]; then
     for p in gg bb
     do
-        plotMSSMLimits.py --cms-sub "Own Work" \
+        plotMSSMLimits.py --cms-sub "Preliminary" \
             --title-right="${CHANNEL} - ${LUMI}" \
             --process "${p}#phi" \
             --y-axis-min 0.0001 \

@@ -293,15 +293,15 @@ elif [[ $MODE == "collect" ]]; then
     # limit plot
     ############
     if [[ $ANALYSISTYPE == "classic" ]]; then
-        title="Classic categorisation 137 fb^{-1} (13 TeV)"
+        title="Classic categorisation 138 fb^{-1} (13 TeV)"
     else
-        title="ML categorisation 137 fb^{-1} (13 TeV)"
+        title="ML categorisation 138 fb^{-1} (13 TeV)"
     fi
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="${scenario_label}" \
     --output ${TAG}_${MODEL} \
     --title-right="${title}" \
-    --cms-sub="Own Work" \
+    --cms-sub="Preliminary" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
     --y-range 2.0,60.0 \
     --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \

@@ -13,7 +13,7 @@ if [[ $TAG == "auto" ]]; then
 fi
 echo $TAG
 if [[ $ERA == "2016" ]]; then
-    LUMI="35.9 fb^{-1} (2016, 13 TeV)"
+    LUMI="36.3 fb^{-1} (2016, 13 TeV)"
 elif [[ $ERA == "2017" ]]; then
     LUMI="41.5 fb^{-1} (2017, 13 TeV)"
 elif [[ $ERA == "2018" ]]; then
@@ -264,7 +264,7 @@ elif [[ $MODE == "collect" ]]; then
     --scenario-label="${scenario_label}" \
     --output ${TAG}_${ERA}_${CHANNEL} \
     --title-right="${CHANNEL} - ${LUMI}" \
-    --cms-sub="Own Work" \
+    --cms-sub="Preliminary" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
     --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \
     --y-range 2.0,60.0 \
