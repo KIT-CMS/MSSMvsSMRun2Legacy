@@ -79,7 +79,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh"}});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh", "qqH"}});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
   std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"};
@@ -1523,71 +1523,34 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // met uncertainty templates are included from taking 100% variation in the correction
   // these are scaled here to take the correct 1-sigma ranges
 
-  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections
+  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections, enlarged to cover differences observed between corrections for et and mt channels 
   cb.cp()
       .process({"EMB"})
       .channel({"et", "mt", "tt"})
       .bin_id(mssm_categories)
-      .AddSyst(cb, "scale_embed_met_$CHANNEL_$ERA", "shape", SystMap<>::init(0.1)); 
+      .AddSyst(cb, "scale_embed_met_$CHANNEL_$ERA", "shape", SystMap<>::init(0.25)); 
 
   // the other component of the uncertainty is systematic and correlated between channels (but decorrelated by era) 
 
   cb.cp()
       .process({"EMB"})
       .bin_id(mssm_categories)
-      .channel({"tt"})
+      .channel({"tt","mt","et"})
       .era({"2016"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.22));
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.36));
   cb.cp()
       .process({"EMB"})
       .bin_id(mssm_categories)
-      .channel({"tt"})
+      .channel({"tt","mt","et"})
       .era({"2017"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.25));
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.64));
   cb.cp()
       .process({"EMB"})
       .bin_id(mssm_categories)
-      .channel({"tt"})
+      .channel({"tt","mt","et"})
       .era({"2018"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.2));
+      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.14));
 
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"mt"})
-      .era({"2016"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(1.0));
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"mt"})
-      .era({"2017"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.67));
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"mt"})
-      .era({"2018"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.85));
-
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"et"})
-      .era({"2016"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.84));
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"et"})
-      .era({"2017"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.63));
-  cb.cp()
-      .process({"EMB"})
-      .bin_id(mssm_categories)
-      .channel({"et"})
-      .era({"2018"})
-      .AddSyst(cb, "scale_embed_met_$ERA", "shape", SystMap<>::init(0.73));
 
   // ##########################################################################
   // Uncertainty: Background normalizations
@@ -1897,16 +1860,23 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals)
+      .process(signals).process({"qqH"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals)
+      .process(signals).process({"qqH"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals)
+      .process(signals).process({"qqH"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
+
+  // 95 GeV samples BR uncertainties 
+  cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({"qqH"}, false)
+      .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0172));
+
   // Uncertainty on branching ratio for HWW at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -1942,6 +1912,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
      .channel({"et", "mt", "tt", "em"})
      .process(JoinStr({signals_qqH,signals_qqHToWW, {"qqh"}}))
+     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
+  // 95 GeV sample (use same as 125 GeV for now but update later)
+  cb.cp()
+     .channel({"et", "mt", "tt", "em"})
+     .process({"qqH"})
      .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -2044,6 +2019,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"et", "mt", "tt", "em"})
      .process({signals_qqHToWW})
      .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
+
+   // this is the 95 GeV sample
+   cb.cp()
+     .channel({"et", "mt", "tt", "em"})
+     .process({"qqH"})
+     .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.004));
   // ##########################################################################
   // Uncertainty: Embedded events
   // References:

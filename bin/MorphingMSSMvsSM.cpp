@@ -233,31 +233,28 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
 
-  // old signal masses
-  //SUSYggH_masses[2016] = {"110","120","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"};
-  //SUSYggH_masses[2017] = {"110","120","130","140","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","350","400","450","600","700","800","900","1200","1400","1500","1600","1800","2000","2300","2600","2900","3200"}; // Available at KIT
-  //SUSYggH_masses[2018] = {"110","120","130","140","160","180","200","250","300","400","450","600","700","800","1200","1400","1500","1600","1800","2000","2600","2900","3200"}; // Available at ICL
-  //SUSYbbH_masses[2016] = {"110","120","130","140","160","180","200","250","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  //SUSYbbH_masses[2017] = {"110","120","125","130","140","160","180","200","250","300","350","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  //SUSYbbH_masses[2018] = {"110","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
-  
-  // new signal masses
-  //SUSYggH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  //SUSYggH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  //SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  //SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; // Missing 300,700,1000
-  //SUSYbbH_masses[2017] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  //SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+  //bool do_morph=false;
+  bool do_morph=true;
+  if(do_morph) {
 
-  // DESY datacards
-  SUSYggH_masses[2016] = {"80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  SUSYggH_masses[2017] = {"80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-  SUSYggH_masses[2018] = {"80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; 
-  SUSYbbH_masses[2016] = {"80","100","120","125","130","140","160","180","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"}; // Missing 300,700,1000
-  SUSYbbH_masses[2017] = {"80","100","120","125","130","140","160","180","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","2000","2300","2600","3200","3500"};
-  SUSYbbH_masses[2018] = {"80","100","120","125","130","140","160","180","250","300","350","400","450","500","600","700","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3500"};
- 
+    // new DESY datacards should have all masses now?
+    SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+    SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+    SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};  // Missing 300,700,1000
+    SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+    SUSYggH_masses[2016] = SUSYggH_masses[2018];
+    SUSYggH_masses[2017] = SUSYggH_masses[2018];
+
+  } else {
+    // dont use mass morphing - need to specify a mass here
+    string mass_str = "700";
+    SUSYggH_masses[2016] = {mass_str};
+    SUSYggH_masses[2017] = {mass_str};
+    SUSYggH_masses[2018] = {mass_str};
+    SUSYbbH_masses[2016] = {mass_str};
+    SUSYbbH_masses[2017] = {mass_str};
+    SUSYbbH_masses[2018] = {mass_str};
+  }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
   update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
@@ -1201,6 +1198,7 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
+
   if(analysis == "mssm" || analysis == "mssm_classic")
   {
     mass_var = {
@@ -1213,22 +1211,40 @@ int main(int argc, char **argv) {
       {"bbh", "norm"}
     };
 
+
+   
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
     std::cout << "[INFO] --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
-    w_sm->var("mh")->SetName("MH");
-    RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
-    RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
-    RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
-    t_frac->SetName("ggh_t_frac");
-    b_frac->SetName("ggh_b_frac");
-    i_frac->SetName("ggh_i_frac");
-    ws.import(MH);
-    ws.import(*t_frac, RooFit::RecycleConflictNodes());
-    ws.import(*b_frac, RooFit::RecycleConflictNodes());
-    ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    if(do_morph) {
+      //w_sm->var("Yb_MSSM_h")->setVal(0.); // un-comment to remove bottom and top-bottom contirbutions (top only)
+      //w_sm->var("Yt_MSSM_h")->setVal(0.); // un-comment to remove top and top-bottom contirbutions (bottom only)
+      w_sm->var("mh")->SetName("MH");
+      RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+      RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+      RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+      t_frac->SetName("ggh_t_frac");
+      b_frac->SetName("ggh_b_frac");
+      i_frac->SetName("ggh_i_frac");
+      ws.import(MH);
+      ws.import(*t_frac, RooFit::RecycleConflictNodes());
+      ws.import(*b_frac, RooFit::RecycleConflictNodes());
+      ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    }
+    else{
+      w_sm->var("mh")->setVal(std::stof(SUSYggH_masses[2018][0]));
+      RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+      RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+      RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+      t_frac->SetName("ggh_t_frac");
+      b_frac->SetName("ggh_b_frac");
+      i_frac->SetName("ggh_i_frac");
+      ws.import(*t_frac, RooFit::RecycleConflictNodes());
+      ws.import(*b_frac, RooFit::RecycleConflictNodes());
+      ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    }
     fractions_sm.Close();
   }
 
@@ -1254,7 +1270,7 @@ int main(int argc, char **argv) {
     }
 
   dout("[INFO] Prepare demo.");
-  if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV")
+  if(do_morph&&(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -1288,6 +1304,37 @@ int main(int argc, char **argv) {
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
+  if(!do_morph) {
+    if(analysis == "mssm" || analysis == "mssm_classic"){
+
+     //double Tfrac = ws.function("ggh_t_frac")->getVal();
+     //double Bfrac = ws.function("ggh_b_frac")->getVal();
+     //double Ifrac = ws.function("ggh_i_frac")->getVal();
+     double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
+     //if (Ifrac<0.) {
+     //  Ifrac=fabs(Ifrac);
+     //  // set a constant rate parameter = -1 for the interference 
+     //  cb.cp()
+     //   .process({"ggh_i"})
+     //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
+     //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
+     //}
+     std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
+
+     cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
+       proc->set_rate(proc->rate()*Tfrac);
+      });
+
+     cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
+       proc->set_rate(proc->rate()*Bfrac);
+      });
+
+     cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
+       proc->set_rate(proc->rate()*Ifrac);
+      });
+    }
+  }
+
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
     // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
