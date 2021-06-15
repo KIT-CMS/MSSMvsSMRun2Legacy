@@ -90,7 +90,9 @@ int main(int argc, char **argv) {
   string chan = "mt";
   string category = "mt_nobtag_lowmsv_0jet_tightmt";
   string variable = "m_sv_puppi";
+  string non_morphed_mass = "700";
 
+  bool do_morph = true;
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
@@ -116,6 +118,8 @@ int main(int argc, char **argv) {
       ("channel", po::value<string>(&chan)->default_value(chan), "single channel to process")
       ("category", po::value<string>(&category)->default_value(category))
       ("variable", po::value<string>(&variable)->default_value(variable))
+      ("non-morphed-mass", po::value<string>(&non_morphed_mass)->default_value(non_morphed_mass))
+      ("do-morph", po::value<bool>(&do_morph)->default_value(do_morph))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(manual_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
@@ -296,8 +300,6 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
 
-  //bool do_morph=false;
-  bool do_morph=true; // TODO use an option for that
   if(do_morph) {
 
     // new DESY datacards should have all masses now?
@@ -310,13 +312,12 @@ int main(int argc, char **argv) {
 
   } else {
     // dont use mass morphing - need to specify a mass here
-    string mass_str = "700";
-    SUSYggH_masses[2016] = {mass_str};
-    SUSYggH_masses[2017] = {mass_str};
-    SUSYggH_masses[2018] = {mass_str};
-    SUSYbbH_masses[2016] = {mass_str};
-    SUSYbbH_masses[2017] = {mass_str};
-    SUSYbbH_masses[2018] = {mass_str};
+    SUSYggH_masses[2016] = {non_morphed_mass};
+    SUSYggH_masses[2017] = {non_morphed_mass};
+    SUSYggH_masses[2018] = {non_morphed_mass};
+    SUSYbbH_masses[2016] = {non_morphed_mass};
+    SUSYbbH_masses[2017] = {non_morphed_mass};
+    SUSYbbH_masses[2018] = {non_morphed_mass};
   }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -1329,8 +1330,8 @@ int main(int argc, char **argv) {
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
     }
-    else{
-      w_sm->var("mh")->setVal(std::stof(SUSYggH_masses[2018][0]));
+    else {
+      w_sm->var("mh")->setVal(std::stof(non_morphed_mass));
       RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
       RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
       RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
@@ -1409,6 +1410,7 @@ int main(int argc, char **argv) {
   }
   else if(!do_morph && analysis == "bsm-model-indep"){
 
+   // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
    //double Tfrac = ws.function("ggh_t_frac")->getVal();
    //double Bfrac = ws.function("ggh_b_frac")->getVal();
    //double Ifrac = ws.function("ggh_i_frac")->getVal();
