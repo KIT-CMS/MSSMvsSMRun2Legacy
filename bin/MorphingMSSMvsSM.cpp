@@ -687,30 +687,27 @@ int main(int argc, char **argv) {
         // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
 
-        // Defining categories for qqphi & ggphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
-        // Defining categories for bbphi: exclude mssm_nobtag_categories and SM categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut and bad population in SM cats
-        Categories qq_gg_phi_cats, bbphi_cats;
+        // Defining categories for qqphi, ggphi, and bbphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
+        Categories qq_gg_bb_phi_cats;
         if(categorization == "classic")
         {
-          qq_gg_phi_cats = cats[chn];
-          bbphi_cats = cats[chn];
+          qq_gg_bb_phi_cats = cats[chn];
         }
         else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
         {
-          qq_gg_phi_cats = sm_and_btag_cats;
-          bbphi_cats = mssm_btag_cats;
+          qq_gg_bb_phi_cats = sm_and_btag_cats;
         }
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_phi_cats, true);
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_phi_cats, true);
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_bb_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_bb_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_bb_phi_cats, true);
 
         VString empty_masses = {""};
         VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
-        cb.AddProcesses(ggH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_smlike, qq_gg_phi_cats, true);
+        cb.AddProcesses(ggH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_smlike, qq_gg_bb_phi_cats, true);
         VString bbH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYbbH_masses[era];
-        cb.AddProcesses(bbH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_smlike, bbphi_cats, true);
+        cb.AddProcesses(bbH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_smlike, qq_gg_bb_phi_cats, true);
       }
     }
   }
