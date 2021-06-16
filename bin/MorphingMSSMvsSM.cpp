@@ -193,14 +193,14 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
-  VString mssm_signals, qqh_bsm_signals;
+  VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
   if (sm == true){
-    sm_signals = {"WH125", "ZH125", "ttH125"}; // TODO: remove ttH, treat also WH & ZH as BSM signal in model-dep case
+    sm_signals = {"WH125", "ZH125"};
   }
   else {
     sm_signals = {};
   }
-  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
+  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -227,6 +227,10 @@ int main(int argc, char **argv) {
       mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
       mssm_bbH_signals_pseudoscalar = {"bbA"};
       qqh_bsm_signals = {"qqh"};
+      if (sm == true){
+        wh_bsm_signals = {"Wh"};
+        zh_bsm_signals = {"Zh"};
+      }
     }
     else if(sub_analysis == "sm-like-heavy")
     {
@@ -244,6 +248,10 @@ int main(int argc, char **argv) {
       mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
       mssm_bbH_signals_pseudoscalar = {"bbA"};
       qqh_bsm_signals = {"qqH"};
+      if (sm == true){
+        wh_bsm_signals = {"WH"};
+        zh_bsm_signals = {"ZH"};
+      }
     }
     else if(sub_analysis == "cpv") // caution! 'scalar' and 'pseudoscalar' are used here for lists only! physics-wise ill-defined!
     {
@@ -261,6 +269,10 @@ int main(int argc, char **argv) {
       mssm_ggH_signals_pseudoscalar = {"ggH3_t", "ggH3_b", "ggH3_i"};
       mssm_bbH_signals_pseudoscalar = {"bbH3"};
       qqh_bsm_signals = {"qqH1"};
+      if (sm == true){
+        wh_bsm_signals = {"WH1"};
+        zh_bsm_signals = {"ZH1"};
+      }
     }
     mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
     mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
@@ -691,6 +703,8 @@ int main(int argc, char **argv) {
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_phi_cats, true);
 
         VString empty_masses = {""};
         VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
@@ -781,6 +795,10 @@ int main(int argc, char **argv) {
         }
         cb.cp().channel({chn}).process(qqh_bsm_signals).ExtractShapes(
           input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process(wh_bsm_signals).ExtractShapes(
+          input_file_base, "$BIN/WH125$MASS", "$BIN/WH125$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process(zh_bsm_signals).ExtractShapes(
+          input_file_base, "$BIN/ZH125$MASS", "$BIN/ZH125$MASS_$SYSTEMATIC");
       }
     }
   }
