@@ -447,6 +447,12 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
             elif "125" in proc:
                 terms = [self.sigNorms[False]]
+
+            if self.scenario == "mh1125_CPV" and X in ['H2', 'H3']:
+                for xx in ['bb', 'gg']:
+                    if xx in proc:
+                        terms.append('expr::interference_{PROD}_{HIGGS}(\"1.0 + @0\", int_{PROD}_tautau_{HIGGS})'.format(PROD=xx, HIGGS=X))
+
             # Now scan terms and add theory uncerts
             extra = []
             for term in terms:
@@ -499,6 +505,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
+
+            if self.scenario == "mh1125_CPV":
+                self.doHistFuncFromXsecTools(X, "interference", pars, production="gg")
+                self.doHistFuncFromXsecTools(X, "interference", pars, production="bb")
 
             self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
 
