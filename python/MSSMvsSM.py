@@ -98,6 +98,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.smlike = "h"
         self.massparameter = "mA"
         self.replace_with_sm125 = True
+        self.cpv_template_pairs = {"H1" : "h", "H2" : "H", "H3" : "A"}
 
     def setPhysicsOptions(self,physOptions):
         for po in physOptions:
@@ -382,10 +383,21 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         return self.modelBuilder.out.function(systname)
 
     def add_ggH_at_NLO(self, name, X):
+
+        template_X = X
+
+        if self.scenario == "mh1125_CPV":
+            fractions_sm = ROOT.TFile.Open(self.ggHatNLO, 'read')
+            w_sm = fractions_sm.Get("w")
+            mPhi = w_sm.var("m{HIGGS}".format(HIGGS=self.cpv_template_pairs[X]))
+            mPhi.SetName("m{HIGGS}".format(HIGGS=X))
+
+            template_X = self.cpv_template_pairs[X]
+
         importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}_{LC}_MSSM_frac" #import t,b,i fraction of xsec at NLO
         for loopcontrib in ['t','b','i']:
-            getattr(self.modelBuilder.out, 'import')(importstring.format(X=X, LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
-            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=X, LC=""), "gg%s_%s_MSSM_frac" % (X,loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
+            getattr(self.modelBuilder.out, 'import')(importstring.format(X=template_X, LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=X, LC=""), "gg%s_%s_MSSM_frac" % (template_X,loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
 
     def preProcessNuisances(self,nuisances):
         doParams = set()
@@ -488,10 +500,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
 
-            if self.scenario != "mh1125_CPV":
-                self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
-            else:
-                pass # TODO: catch CPV case here
+            self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
 
             # ggH scale uncertainty
             self.doAsymPowSystematic(X, "xsec", pars, "gg", "scale")
