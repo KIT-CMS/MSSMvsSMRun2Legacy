@@ -195,10 +195,10 @@ int main(int argc, char **argv) {
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
   VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
   if (sm == true){
-    sm_signals = {"WH125", "ZH125"};
+    sm_signals = {"WH125", "ZH125", "bbH125"};
   }
   else {
-    sm_signals = {};
+    sm_signals = {"bbH125"};
   }
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
@@ -731,8 +731,10 @@ int main(int argc, char **argv) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
     dout("[INFO] Extracting shapes from ", input_file_base);
-    cb.cp().channel({chn}).backgrounds().ExtractShapes(
+    cb.cp().channel({chn}).backgrounds().process({"bbH125"}, false).ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+    cb.cp().channel({chn}).backgrounds().process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
+      input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
     if(analysis == "sm"){
       cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
@@ -796,6 +798,12 @@ int main(int argc, char **argv) {
           input_file_base, "$BIN/WH125$MASS", "$BIN/WH125$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process(zh_bsm_signals).ExtractShapes(
           input_file_base, "$BIN/ZH125$MASS", "$BIN/ZH125$MASS_$SYSTEMATIC");
+
+        // Adding SM125 signal templates for SM hypothesis
+        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals, main_sm_signals})).process({"bbH125"}, false).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
+          input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // "bbH125" needs special treatment because of template name spelling
       }
     }
   }
