@@ -429,9 +429,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var(self.massparameter).setConstant(True) # either mA or mHp
         self.modelBuilder.out.var('tanb').setConstant(True)
 
-        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))"
+        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))^"
         if self.replace_with_sm125:
-            bsm_proc_match = "(gg(A|{BSMSCALAR}|H3|H2)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
+            bsm_proc_match = "(gg(A|{BSMSCALAR}|H3|H2)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))^".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
 
         for proc in self.PROC_SETS:
             if re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
@@ -439,11 +439,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
-            elif re.match('qq{SMLIKE}'.format(SMLIKE=self.smlike), proc): # always done
+            elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})^'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
-            elif re.match('gg{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('gg{SMLIKE}^'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
                 terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
-            elif re.match('bb{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('bb{SMLIKE}^'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
             elif "125" in proc:
                 terms = [self.sigNorms[False]]
@@ -477,9 +477,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
-        # qqphi added always in this setup
+        # qqphi, Zphi and Wphi  added always in this setup
         self.doHistFuncForQQH(pars)
-        self.PROC_SETS.append('qq'+self.smlike)
+        self.PROC_SETS.extend(['qq'+self.smlike, 'Z'+self.smlike, 'W'+self.smlike)
 
         # adding ggphi & bbphi as 125 templates only if requested
         if self.replace_with_sm125:
