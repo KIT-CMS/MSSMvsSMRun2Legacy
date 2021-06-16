@@ -228,7 +228,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         accesskey = None
         if self.scenario != "mh1125_CPV":
-            self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
+            accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smllike)
         accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smllike)
 
