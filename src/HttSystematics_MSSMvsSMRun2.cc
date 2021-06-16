@@ -572,12 +572,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t"}})
+       .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t"})
        .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b"}})
+       .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b"})
        .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
@@ -1900,15 +1900,15 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, "bbH125"})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, "bbH125"})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, "bbH125"})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
 
   // 95 GeV samples BR uncertainties 
