@@ -6,7 +6,7 @@ MODE=$2
 CHANNEL=$3
 ERA=$4
 if [[ $TAG == "auto" ]]; then
-    TAG="${CHANNEL}_${ERA}_h125"
+    TAG="${CHANNEL}_${ERA}_ind"
 fi
 
 if [[ $ERA == "2016" ]]; then
@@ -18,7 +18,10 @@ elif [[ $ERA == "2018" ]]; then
 fi
 
 defaultdir=analysis/$TAG
-analysis="mssm"
+analysis="bsm-model-indep"
+sub_analysis="hSM-in-bg"
+categorization="with-sm-ml"
+sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -34,20 +37,26 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --eras $ERA \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
+        --eras 2016,2017,2018 \
         --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
         --variable nnscore \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v0.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --sm \
-        --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --eras $ERA \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
+        --eras 2016,2017,2018 \
         --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
         --variable mt_tot_puppi \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v0.root \
-        --parallel 6 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
@@ -88,7 +97,7 @@ elif [[ $MODE == "ws" ]]; then
     # job setup creation
     ############
     cd ${defaultdir}/limits_ind/condor
-    combineTool.py -m "110,120,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200" \
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
@@ -106,7 +115,7 @@ elif [[ $MODE == "ws" ]]; then
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh_${ERA}_${CHANNEL}.txt
 
 
-    combineTool.py -m "110,120,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200" \
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \

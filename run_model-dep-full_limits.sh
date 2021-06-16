@@ -9,6 +9,7 @@ ANALYSISTYPE=$4
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-full"
     sm_like_hists="sm125"
+    replace_with_sm125=1
     categorization="classic"
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_classic"
@@ -16,9 +17,10 @@ if [[ $ANALYSISTYPE == "classic" ]]; then
 else
     analysis="bsm-model-dep-full"
     sm_like_hists="sm125"
+    replace_with_sm125=1
     categorization="with-sm-ml"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_h125_fixed"
+        TAG="cmb_with_ml"
     fi
 fi
 # Szenarios from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGMSSMNeutral?redirectedfrom=LHCPhysics.LHCHXSWGMSSMNeutral#Baseline_scenarios
@@ -164,20 +166,12 @@ elif [[ $MODE == "ws" ]]; then
     combineTool.py -M T2W -o ${wsoutput} \
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+    --PO replace-with-SM125=${replace_with_sm125} \
     --PO modelFile=${modelfile} \
     --PO minTemplateMass=60 \
     --PO maxTemplateMass=3500 \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
-
-    # combineTool.py -M T2W -o ${wsoutput} \
-    #     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
-    #     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
-    #     --PO modelFile=${modelfile} \
-    #     --PO minTemplateMass=60 \
-    #     --PO maxTemplateMass=3500 \
-    #     --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-    #     -i ${datacarddir}/201?/*/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
 
     ############
     # job setup creation
@@ -295,7 +289,7 @@ elif [[ $MODE == "collect" ]]; then
     if [[ $ANALYSISTYPE == "classic" ]]; then
         title="Classic categorisation 138 fb^{-1} (13 TeV)"
     else
-        title="ML categorisation 138 fb^{-1} (13 TeV)"
+        title="138 fb^{-1} (13 TeV)"
     fi
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="${scenario_label}" \

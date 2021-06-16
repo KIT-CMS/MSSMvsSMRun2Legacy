@@ -7,14 +7,20 @@ ERA=$3
 ANALYSISTYPE=$4
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
-    analysis="mssm_vs_sm_classic"
+    analysis="bsm-model-dep-full"
+    sm_like_hists="sm125"
+    replace_with_sm125=1
+    categorization="classic"
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_${ERA}_classic"
     fi
 else
-    analysis="mssm_vs_sm_h125"
+    analysis="bsm-model-dep-full"
+    sm_like_hists="sm125"
+    replace_with_sm125=1
+    categorization="with-sm-ml"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_${ERA}_h125"
+        TAG="cmb_${ERA}_with_ml"
     fi
 fi
 
@@ -43,39 +49,37 @@ if [[ $MODE == "initial" ]]; then
     if [[ $ANALYSISTYPE == "classic" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
-            --eras $ERA \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt\
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --eras 2016,2017,2018 \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-
-        morph_parallel.py --output ${defaultdir}/datacards \
-            --analysis ${analysis} \
-            --eras $ERA \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt\
-            --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
     else
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
-            --eras $ERA \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --eras 2016,2017,2018 \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
             --sm \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
-            --eras $ERA \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --eras 2016,2017,2018 \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-
-        morph_parallel.py --output ${defaultdir}/datacards \
-            --analysis ${analysis} \
-            --eras $ERA \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt\
-            --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
     fi
 
     ############
@@ -90,13 +94,14 @@ elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
-    combineTool.py -M T2W -o ws_mh125.root \
+    combineTool.py -M T2W -o ${wsoutput} \
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+    --PO replace-with-SM125=${replace_with_sm125} \
     --PO modelFile=13,Run2017,mh125_13.root \
-    --PO minTemplateMass=110.0 \
-    --PO maxTemplateMass=3200.0 \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3_mssm_mode.root \
+    --PO minTemplateMass=60 \
+    --PO maxTemplateMass=3500 \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
     -i ${datacarddir}/$ERA/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace.txt
     ############
     # job setup creation
@@ -158,7 +163,7 @@ elif [[ $MODE == "collect" ]]; then
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)" \
     --output ${TAG}_${ERA}_cmb \
-    --title-right="cmb - ${LUMI}" \
+    --title-right="${LUMI}" \
     --cms-sub="Preliminary" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
     --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13.root \

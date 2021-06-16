@@ -7,9 +7,12 @@ CHANNEL=$3
 ERA=$4
 MODEL=$5
 
-analysis="mssm_vs_sm_h125"
+analysis="bsm-model-dep-full"
+sm_like_hists="sm125"
+replace_with_sm125=1
+categorization="with-sm-ml"
 if [[ $TAG == "auto" ]]; then
-    TAG="${ERA}_${CHANNEL}_ml_debug_em"
+    TAG="${ERA}_${CHANNEL}_with_ml"
 fi
 echo $TAG
 if [[ $ERA == "2016" ]]; then
@@ -24,80 +27,69 @@ fi
 if [[ $MODEL == "mh125" ]]; then
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125_lc" ]]; then
     wsoutput="ws_mh125_lc.root"
     modelfile="13,Run2017,mh125_lc_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125_ls" ]]; then
     wsoutput="ws_mh125_ls.root"
     modelfile="13,Run2017,mh125_ls_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125}(#tilde{#tau}) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125_align" ]]; then
     wsoutput="ws_mh125_align.root"
     modelfile="13,Run2017,mh125_align_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "HH125" ]]; then
+    sub_analysis="sm-like-light"
+elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
-    min_mass=150
-    max_mass=200
     scenario_label="M_{H}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "hm1125_cpv" ]]; then
-    #TODO this still need more modifications in the code
-    wsoutput="ws_hm1125_cpv.root"
-    modelfile="13,Run2017,hm1125_CPV_13.root"
-    analysis="mssm_vs_sm_CPV"
-    min_mass=130
-    max_mass=1500
+    sub_analysis="sm-like-heavy"
+elif [[ $MODEL == "mh1125_CPV" ]]; then
+    wsoutput="ws_mh1125_cpv.root"
+    modelfile="13,Run2017,mh1125_CPV_13.root"
     scenario_label="M_{h_1}^{125} (CPV) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="cpv"
 ### Negative mu scenarios #####
 elif [[ $MODEL == "mh125_muneg_1" ]]; then
     wsoutput="mh125_muneg_1.root"
     modelfile="13,Run2017,mh125_muneg_1_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125} (#mu = -1 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
     modelfile="13,Run2017,mh125_muneg_2_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125} (#mu = -2 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
     modelfile="13,Run2017,mh125_muneg_3_13.root"
-    min_mass=110
-    max_mass=3200
     scenario_label="M_{h}^{125} (#mu = -3 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 ### EFT scenarios #####
 elif [[ $MODEL == "mh125EFT" ]]; then
     wsoutput="mh125EFT.root"
     modelfile="13,Run2017,mh125EFT_13.root"
-    min_mass=110
-    max_mass=3200
+    y_min=1
+    y_max=10
     scenario_label="M_{h,#text{EFT}}^{125} scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 elif [[ $MODEL == "mh125EFT_lc" ]]; then
     wsoutput="mh125EFT_lc.root"
     modelfile="13,Run2017,mh125EFT_lc_13.root"
-    min_mass=110
-    max_mass=3200
+    y_min=1
+    y_max=10
     scenario_label="M_{h,#text{EFT}}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
 else
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=110
-    max_mass=3200
+    sub_analysis="sm-like-light"
 fi
-
 defaultdir=analysis/$TAG
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 defaultdir=$(readlink -f analysis/$TAG)
@@ -113,20 +105,28 @@ if [[ $MODE == "initial" ]]; then
     ############
     # morphing
     ############
-    # morph_parallel.py --output ${defaultdir}/datacards \
-    #     --analysis ${analysis} \
-    #     --eras $ERA \
-    #     --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
-    #     --variable nnscore \
-    #     --sm \
-    #     --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+    morph_parallel.py --output ${defaultdir}/datacards \
+        --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --eras 2016,2017,2018 \
+        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
+        --variable nnscore \
+        --sm \
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --eras $ERA \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --eras 2016,2017,2018 \
         --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
         --variable mt_tot_puppi \
-        --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
@@ -145,14 +145,15 @@ elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
-    combineTool.py -M T2W -o ${wsoutput}  \
+    combineTool.py -M T2W -o ${wsoutput} \
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+    --PO replace-with-SM125=${replace_with_sm125} \
     --PO modelFile=${modelfile} \
-    --PO minTemplateMass=${min_mass} \
-    --PO maxTemplateMass=${max_mass} \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-    -i ${datacarddir}/$ERA/$CHANNEL/ 2>&1 | tee -a ${defaultdir}/logs/workspace.txt
+    --PO minTemplateMass=60 \
+    --PO maxTemplateMass=3500 \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+    -i ${datacarddir}/${ERA}/${CHANNEL}/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
 
     ############
     # job setup creation
