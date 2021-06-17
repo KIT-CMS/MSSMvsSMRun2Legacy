@@ -676,7 +676,7 @@ int main(int argc, char **argv) {
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
-         additional_higgses_cats = sm_and_btag_cats;
+             additional_higgses_cats = sm_and_btag_cats;
          }
       }
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_additional, additional_higgses_cats, true);
