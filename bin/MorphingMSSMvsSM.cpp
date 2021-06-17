@@ -700,6 +700,8 @@ int main(int argc, char **argv) {
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_bb_phi_cats, true);
+        // wh_bsm_signals and zh_bsm_signals only filled if `sm == true` and empty for morphing of mssm categories.
+        // Thus they are effectively only included in the sm categories.
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_bb_phi_cats, true);
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_bb_phi_cats, true);
 
