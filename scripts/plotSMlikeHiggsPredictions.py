@@ -71,6 +71,11 @@ quantity_settings = {
         "contours" : sf_contours,
         "name" : "SF(gg#rightarrow{PHI}#rightarrow#tau#tau)".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
     },
+    "sf_bb_{PHI}" : {
+        "range" : sf_range,
+        "contours" : sf_contours,
+        "name" : "SF(bb#rightarrow{PHI}#rightarrow#tau#tau)".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+    },
     "sf_qq_{PHI}" : {
         "range" : sf_range,
         "contours" : sf_contours,
@@ -86,6 +91,11 @@ quantity_settings = {
         "contours" : sf_contours,
         "name" : "mass-corrected SF(qq#rightarrow{PHI}#rightarrow#tau#tau)".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
     },
+    "sf_bb_{PHI}_mass-corr" : {
+        "range" : sf_range,
+        "contours" : sf_contours,
+        "name" : "mass-corrected SF(bb#rightarrow{PHI}#rightarrow#tau#tau)".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+    },
     "r_sf_gg_{PHI}" : {
         "range" : sf_range,
         "contours" : r_sf_contours,
@@ -96,9 +106,14 @@ quantity_settings = {
         "contours" : r_sf_contours,
         "name" : "SF ratio for qq#rightarrow{PHI}#rightarrow#tau#tau".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
     },
+    "r_sf_bb_{PHI}" : {
+        "range" : sf_range,
+        "contours" : r_sf_contours,
+        "name" : "SF ratio for bb#rightarrow{PHI}#rightarrow#tau#tau".format(PHI="h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+    },
 }
 
-quantities = ['br_{PHI}_tautau', 'width_{PHI}', 'xs_gg_{PHI}']
+quantities = ['br_{PHI}_tautau', 'width_{PHI}', 'xs_gg_{PHI}', 'xs_bb_{PHI}']
 quantities_for_plotting = []
 
 quantity_range = [0.7, 1.3]
@@ -126,6 +141,18 @@ quantity_settings['xs_gg_{PHI}_mass-only'] = {
     "range" : quantity_range,
     "contours" : quantity_contours,
     "name" : "Mass effects on #sigma(gg#rightarrow{PHI})".replace("{PHI}","h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+}
+
+quantity_settings['xs_bb_{PHI}_non-mass'] = {
+    "range" : quantity_range,
+    "contours" : quantity_contours,
+    "name" : "BSM contributions to #sigma(bb#rightarrow{PHI})".replace("{PHI}","h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
+}
+
+quantity_settings['xs_bb_{PHI}_mass-only'] = {
+    "range" : quantity_range,
+    "contours" : quantity_contours,
+    "name" : "Mass effects on #sigma(bb#rightarrow{PHI})".replace("{PHI}","h_{1}" if args.bsm_sm_like == "H1" else args.bsm_sm_like),
 }
 
 quantity_settings['width_{PHI}_non-mass'] = {
@@ -227,6 +254,11 @@ bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau"].Clone(sfname.format
 bsm_predictions[sfname].Multiply(bsm_predictions["xs_gg_{PHI}"])
 bsm_predictions[sfname].Scale(1. / (sm_predictions["br_{PHI}_tautau".format(PHI="SMH125")] * sm_predictions["xs_gg_{PHI}".format(PHI="SMH125")]) )
 
+sfname = "sf_bb_{PHI}"
+bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau"].Clone(sfname.format(PHI=args.bsm_sm_like))
+bsm_predictions[sfname].Multiply(bsm_predictions["xs_bb_{PHI}"])
+bsm_predictions[sfname].Scale(1. / (sm_predictions["br_{PHI}_tautau".format(PHI="SMH125")] * sm_predictions["xs_bb_{PHI}".format(PHI="SMH125")]) )
+
 sfname = "sf_qq_{PHI}"
 bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau"].Clone(sfname.format(PHI=args.bsm_sm_like))
 if args.bsm_sm_like in ['h', 'H']:
@@ -238,6 +270,10 @@ sfname = "sf_gg_{PHI}_mass-corr"
 bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau_non-mass"].Clone(sfname.format(PHI=args.bsm_sm_like))
 bsm_predictions[sfname].Multiply(bsm_predictions["xs_gg_{PHI}_non-mass"])
 
+sfname = "sf_bb_{PHI}_mass-corr"
+bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau_non-mass"].Clone(sfname.format(PHI=args.bsm_sm_like))
+bsm_predictions[sfname].Multiply(bsm_predictions["xs_bb_{PHI}_non-mass"])
+
 sfname = "sf_qq_{PHI}_mass-corr"
 bsm_predictions[sfname] = bsm_predictions["br_{PHI}_tautau_non-mass"].Clone(sfname.format(PHI=args.bsm_sm_like))
 if args.bsm_sm_like in ['h', 'H']:
@@ -247,6 +283,10 @@ if args.bsm_sm_like in ['h', 'H']:
 sfname = "r_sf_gg_{PHI}"
 bsm_predictions[sfname] = bsm_predictions["sf_gg_{PHI}"].Clone(sfname.format(PHI=args.bsm_sm_like))
 bsm_predictions[sfname].Divide(bsm_predictions["sf_gg_{PHI}_mass-corr"])
+
+sfname = "r_sf_bb_{PHI}"
+bsm_predictions[sfname] = bsm_predictions["sf_bb_{PHI}"].Clone(sfname.format(PHI=args.bsm_sm_like))
+bsm_predictions[sfname].Divide(bsm_predictions["sf_bb_{PHI}_mass-corr"])
 
 sfname = "r_sf_qq_{PHI}"
 bsm_predictions[sfname] = bsm_predictions["sf_qq_{PHI}"].Clone(sfname.format(PHI=args.bsm_sm_like))
