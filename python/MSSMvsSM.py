@@ -479,7 +479,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         # qqphi, Zphi and Wphi  added always in this setup
         self.doHistFuncForQQH(pars)
-        self.PROC_SETS.extend(['qq'+self.smlike, 'Z'+self.smlike, 'W'+self.smlike)
+        self.PROC_SETS.extend(['qq'+self.smlike, 'Z'+self.smlike, 'W'+self.smlike])
 
         # adding ggphi & bbphi as 125 templates only if requested
         if self.replace_with_sm125:
