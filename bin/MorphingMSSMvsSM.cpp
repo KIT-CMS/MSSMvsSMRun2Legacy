@@ -1315,7 +1315,7 @@ int main(int argc, char **argv) {
   };
 
   // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
-  if(sm_like_hists == "smh125")
+  if(sm_like_hists == "sm125")
   {
     if(sub_analysis == "sm-like-light"){ mass_var.erase("bbh"); process_norm_map.erase("bbh");}
     else if(sub_analysis == "sm-like-heavy"){ mass_var.erase("bbH"); process_norm_map.erase("bbH");}
