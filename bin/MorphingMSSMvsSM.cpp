@@ -672,7 +672,7 @@ int main(int argc, char **argv) {
       {
          if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
          {
-         additional_higgses_cats = mssm_cats;
+             additional_higgses_cats = mssm_cats;
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
