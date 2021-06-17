@@ -34,7 +34,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       "ggH",
       "ggh",
       "ggH1",
-      "ggPhi",
+      "ggX",
       // STXS stage 1.1
       "ggH_FWDH_htt",
       "ggH_PTH_200_300_htt",
@@ -61,7 +61,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       "qqH",
       "qqh",
       "qqH1",
-      "qqPhi",
+      "qqX",
       // STXS stage 1
       "qqH_FWDH_htt",
       "qqH_0J_htt",
@@ -1900,21 +1900,21 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqPhi", "ggPhi"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
 
   // 95 GeV samples BR uncertainties 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"qqPhi", "ggPhi"})
+      .process({"qqX", "ggX"})
       .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0172));
 
   // Uncertainty on branching ratio for HWW at 125 GeV
@@ -1960,17 +1960,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // this is the 95 GeV sample
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"qqPhi"})
+    .process({"qqX"})
     .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.004));
 
   // PDF for 125 GeV Higgs
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process(JoinStr({signals_ggH,signals_ggHToWW})).process({"ggPhi"}, false)
+    .process(JoinStr({signals_ggH,signals_ggHToWW})).process({"ggX"}, false)
     .AddSyst(cb, "pdf_Higgs_gg", "lnN", SystMap<>::init(1.032));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process(JoinStr({signals_qqH,signals_qqHToWW})).process({"qqPhi"}, false)
+    .process(JoinStr({signals_qqH,signals_qqHToWW})).process({"qqX"}, false)
     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -1990,7 +1990,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // 95 GeV sample (use same as 125 GeV for now but update later)
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"qqPhi"})
+    .process({"qqX"})
     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
 
   if (sm)
@@ -1998,80 +1998,80 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     // Gluon-fusion WG1 uncertainty scheme for 125 GeV Higgs
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mig01", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mig12", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mu", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_PT120", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_PT60", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Res", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_VBF2j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_VBF3j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals_ggH).process({"ggPhi"}, false)
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_qmtop", "shape", SystMap<>::init(1.00));
     // VBF WG1 uncertainty scheme for 125 GeV Higgs
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_TOT", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_PTH200", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj60", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj120", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj350", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj700", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj1000", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj1500", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_25", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(signals_qqH).process({"qqPhi"}, false)
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_JET01", "shape", SystMap<>::init(1.00));
   }
   // ##########################################################################
