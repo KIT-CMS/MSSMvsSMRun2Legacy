@@ -124,7 +124,7 @@ if [[ $MODE == "initial" ]]; then
         --sm-like-hists ${sm_like_hists} \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
         --variable mt_tot_puppi \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
