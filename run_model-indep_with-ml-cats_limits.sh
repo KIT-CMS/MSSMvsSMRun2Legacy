@@ -119,7 +119,7 @@ elif [[ $MODE == "submit" ]]; then
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits_ind/condor
     cd ${defaultdir}/limits_ind/condor
-    python run_limits_locally.py --cores 10 --njobs 27 --taskname condor_bbH_full_cmb.sh
+    python run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
     python run_limits_locally.py --cores 10 --njobs 27 --taskname condor_ggH_full_cmb.sh
 
 elif [[ $MODE == "collect" ]]; then
