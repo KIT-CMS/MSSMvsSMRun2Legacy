@@ -41,7 +41,7 @@ if [[ $MODE == "initial" ]]; then
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
         --variable nnscore \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --sm \
