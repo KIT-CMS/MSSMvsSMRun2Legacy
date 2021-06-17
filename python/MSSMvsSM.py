@@ -305,7 +305,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
     def doHistFuncForBBH(self, varlist):
         # Computing scaling function for bbphi contribution (SM-like Higgs) in context of MSSM
-        # Assuming ggphi is **NOT** scaled to an appropriate SM 125.4 cross-section & BR, but to 1 pb
+        # Assuming bbphi is **NOT** scaled to an appropriate SM 125.4 cross-section & BR, but to 1 pb
         name  = "sf_bbphi_MSSM"
 
         accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='bb')
