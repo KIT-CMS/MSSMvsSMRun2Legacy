@@ -929,7 +929,7 @@ int main(int argc, char **argv) {
   boost::property_tree::ptree sm_preds;
   read_json(sm_predictions, sm_preds);
   cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
-    proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_htautau"));
+    proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_tautau"));
     });
 
   // Delete processes (other than mssm signals) with 0 yield
