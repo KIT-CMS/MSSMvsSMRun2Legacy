@@ -949,19 +949,20 @@ int main(int argc, char **argv) {
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
   // This is needed otherwise we get complaints about functions that evaluate as NaN
   cb.ForEachSyst([&](ch::Systematic *syst) {
-  if (((syst->type().find("shape") != std::string::npos) &&
-       (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.) &&
+  if (((syst->type().find("shape") != std::string::npos)
+       && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.)
 
-       (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" ||
-        syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" ||
-        syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i")) ||
+       && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA"
+           || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i"
+           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i"))
 
-      ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos ||
-        syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos) &&
+      || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos
+           || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos)
 
-       syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 &&
+          && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0
 
-       (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || (syst->process() == "bbA")))){
+          && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || (syst->process() == "bbA")))){
+
           std::cout << "Setting empty up and down templates to the nominal template \n";
           std::cout << ch::Systematic::PrintHeader << *syst << "\n";
           cb.cp().ForEachProc([&](ch::Process *proc){
