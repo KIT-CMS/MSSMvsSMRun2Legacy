@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 #include <math.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace std;
 using boost::starts_with;
@@ -87,6 +89,7 @@ int main(int argc, char **argv) {
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root";
+  string sm_predictions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json";
   string chan = "mt";
   string category = "mt_nobtag_lowmsv_0jet_tightmt";
   string variable = "m_sv_puppi";
@@ -123,6 +126,7 @@ int main(int argc, char **argv) {
   config.add_options()
       ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path), "inputs, expected to contain a subdirectory <era>/<channel>")
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
+      ("sm_predictions", po::value<string>(&sm_predictions)->default_value(sm_predictions))
       ("channel", po::value<string>(&chan)->default_value(chan), "single channel to process")
       ("category", po::value<string>(&category)->default_value(category))
       ("variable", po::value<string>(&variable)->default_value(variable))
@@ -863,6 +867,13 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  // Rescale bbH125 to the right cross-section * BR (from 1pb to the value for 125.4 GeV)
+  boost::property_tree::ptree sm_preds;
+  read_json(sm_predictions, sm_preds);
+  cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
+    proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_htautau"));
+    });
 
   // Delete processes (other than mssm signals) with 0 yield
   std::cout << "[INFO] Filtering processes with null yield: \n";
