@@ -106,10 +106,18 @@ int main(int argc, char **argv) {
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
   string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
+  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"};
   string sub_analysis = "hSM-in-bg"; // analysis = "bsm-model-indep": "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
+  std::vector<string> sub_analysis_choices_model_dep = {"sm-like-light", "sm-like-heavy", "cpv"};
+  std::vector<string> sub_analysis_choices_model_indep = {"hSM-in-bg", "no-hSM-in-bg"};
   string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
+  std::vector<string> sm_like_hists_choices = {"sm125", "bsm"};
   string categorization = "classic"; // "with-sm-ml", "sm-ml-only", "classic"
+  std::vector<string> categorization_choices = {"with-sm-ml", "sm-ml-only", "classic"};
+
   int era = 2016; // 2016, 2017 or 2018
+  std::vector<int> era_choices = {2016, 2017, 2018};
+
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -149,6 +157,67 @@ int main(int argc, char **argv) {
   {
       cout << config << "\n";
       return 0;
+  }
+
+  // Sanity check for options with choices
+  // analysis option
+  if(std::find(analysis_choices.begin(), analysis_choices.end(), analysis) == analysis_choices.end()){
+    std::cout << "ERROR: wrong choice of 'analysis' option. Please choose from:\n\t";
+    for(auto choice : analysis_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
+  }
+  // sub_analysis option
+  if(analysis == "bsm-model-indep"){
+    if(std::find(sub_analysis_choices_model_indep.begin(), sub_analysis_choices_model_indep.end(), sub_analysis) == sub_analysis_choices_model_indep.end()){
+      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-independent analysis, please choose from:\n\t";
+      for(auto choice : sub_analysis_choices_model_indep){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional"){
+    if(std::find(sub_analysis_choices_model_dep.begin(), sub_analysis_choices_model_dep.end(), sub_analysis) == sub_analysis_choices_model_dep.end()){
+      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-dependent analysis, please choose from:\n\t";
+      for(auto choice : sub_analysis_choices_model_dep){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  // sm_like_hists option
+  if(analysis == "bsm-model-dep-full"){
+    if(std::find(sm_like_hists_choices.begin(), sm_like_hists_choices.end(), sm_like_hists) == sm_like_hists_choices.end()){
+      std::cout << "ERROR: wrong choice of 'sm_like_hists' option. Please choose from:\n\t";
+      for(auto choice : sm_like_hists_choices){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  // categorization option
+  if(std::find(categorization_choices.begin(), categorization_choices.end(), categorization) == categorization_choices.end()){
+    std::cout << "ERROR: wrong choice of 'categorization' option. Please choose from:\n\t";
+    for(auto choice : categorization_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
+  }
+  // era option
+  if(std::find(era_choices.begin(), era_choices.end(), era) == era_choices.end()){
+    std::cout << "ERROR: wrong choice of 'era' option. Please choose from:\n\t";
+    for(auto choice : era_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
   }
 
   // Define the location of the "auxiliaries" directory where we can
