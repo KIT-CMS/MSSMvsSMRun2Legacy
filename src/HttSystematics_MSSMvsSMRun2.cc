@@ -774,38 +774,37 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
 
   // Tau ID: et and mt with 1 real tau
-      
   for (auto tauIDbin : tauIDptbins){ //first part correlated between channels for IDvsJets
     cb.cp()
         .channel({"et", "mt"})
-        .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp() //second part uncorrelated between channels for IDvsLep
       .channel({"et", "mt"})
-      .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: tt with 2 real taus
   for (auto tauIDbin : tauIDdmbins){
     cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   if (!sm){
       cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_highpT_100-500_$ERA", "shape", SystMap<>::init(1.0));
       cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_highpT_500-inf_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, signals_HWW, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.014));
 
   // Component for EMB only
