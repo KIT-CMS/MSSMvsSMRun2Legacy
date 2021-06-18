@@ -928,6 +928,8 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Rescaling bbH125 process to correct cross-section * BR\n";
   boost::property_tree::ptree sm_preds;
   read_json(sm_predictions, sm_preds);
+  std::cout << "\tCross section: " << float(sm_preds.get<float>("xs_bb_SMH125")) << std::endl;
+  std::cout << "\tBranching fraction: " << float(sm_preds.get<float>("br_SMH125_tautau")) << std::endl;
   cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
     proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_tautau"));
     });
