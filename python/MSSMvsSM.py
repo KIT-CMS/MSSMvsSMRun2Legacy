@@ -46,8 +46,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         }
         self.binning =  {
             "mh125": {
-                "tanb" : np.arange(0.5, 60.1, 0.1),
-                "mA" :   np.arange(70.0, 2601.0, 1.0),
+                "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
             },
             "mh125EFT": {
                 "tanb" : np.arange(1.0, 10.25, 0.25),
@@ -229,8 +229,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         accesskey = None
         if self.scenario != "mh1125_CPV":
             accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
-        accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smllike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smllike)
+        accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
         print "Computing 'qqphi' scaling function from xsec tools"
 
@@ -429,21 +429,22 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var(self.massparameter).setConstant(True) # either mA or mHp
         self.modelBuilder.out.var('tanb').setConstant(True)
 
-        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))^"
+        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))"
         if self.replace_with_sm125:
-            bsm_proc_match = "(gg(A|{BSMSCALAR}|H3|H2)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))^".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
+            bsm_proc_match = "(gg(A|{BSMSCALAR}|H3|H2)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
 
         for proc in self.PROC_SETS:
-            if re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
+            terms = []
+            if re.match(bsm_proc_match, proc) and proc != "bbH125": # not SM-like BSMSCALAR: either h or H; avoid collision with bbH125
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
-            elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})^'.format(SMLIKE=self.smlike), proc): # always done
+            elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
-            elif re.match('gg{SMLIKE}^'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('gg{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
                 terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
-            elif re.match('bb{SMLIKE}^'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('bb{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
             elif "125" in proc:
                 terms = [self.sigNorms[False]]
@@ -487,8 +488,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.doHistFuncForGGH(pars)
             self.PROC_SETS.append('gg'+self.smlike)
 
-            self.doHistFuncForBBH(pars)
-            self.PROC_SETS.append('bb'+self.smlike)
+            self.doHistFuncForBBH(pars) # no need to add since added later
 
         procs = ['H1', 'H2', 'H3'] if self.scenario == "mh1125_CPV" else ['h', 'H', 'A']
 
