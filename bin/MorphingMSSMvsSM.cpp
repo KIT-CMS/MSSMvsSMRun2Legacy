@@ -708,21 +708,6 @@ int main(int argc, char **argv) {
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
     }
     else if(analysis == "bsm-model-indep"){
-      // filter masses above treshold:
-      // std::vector<std::string> masses_SM_bbH;
-      // std::vector<std::string> masses_SM_ggH;
-      // int bbH_threshold = SM_thresholds_bbH[era][chn];
-      // int ggH_threshold = SM_thresholds_ggH[era][chn];
-      // if(sm){
-      //     MH.setRange(90., std::max(bbH_threshold,ggH_threshold));
-      // }
-      // std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
-      // std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
-      // std::cout << "[INFO] Using masses for SM: ";
-      //   // printVector(masses_SM_bbH);
-      //   // printVector(masses_SM_ggH);
-      // cb.AddProcesses(masses_SM_bbH, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
-      // cb.AddProcesses(masses_SM_ggH, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
 
       // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
