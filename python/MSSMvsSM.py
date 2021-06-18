@@ -121,14 +121,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     self.smlike = "H"
                     self.bsmscalar = "h"
                     self.massparameter = "mHp"
-                elif self.scenario != "mh1125_CPV":
-                    self.smlike = "h"
-                    self.bsmscalar = "H"
-                    self.massparameter = "mA"
-                else:
+                elif self.scenario == "mh1125_CPV":
                     self.smlike = "H1"
                     self.bsmscalar = ""
                     self.massparameter = "mHp"
+                else:
+                    self.smlike = "h"
+                    self.bsmscalar = "H"
+                    self.massparameter = "mA"
                 print "Chosen model-specific settings:"
                 print "SM-like Higgs boson:",self.smlike
                 print "BSM scalar Higgs boson:",self.bsmscalar
