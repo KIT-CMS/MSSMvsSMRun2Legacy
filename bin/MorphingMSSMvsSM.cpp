@@ -706,14 +706,19 @@ int main(int argc, char **argv) {
     std::cout  << std::endl;
 
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
+    // Adding background processes. This also contains SMH125 templates if configured in that way.
+    // For sm analysis: bbH125, and in sm categories WH125 and ZH125
+    // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
 
     if(analysis == "sm"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
     }
     else if(analysis == "bsm-model-indep"){
 
       // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
+      // Comprising BSM signal h
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
@@ -737,12 +742,16 @@ int main(int argc, char **argv) {
              additional_higgses_cats = sm_and_btag_cats;
          }
       }
+      // sm-like-light sub_analysis: H and A
+      // sm-like-heavy sub_analysis: h and A
+      // cpv sub_analysis: H2 and H3
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_additional, additional_higgses_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_additional, additional_higgses_cats, true);
 
-      if(analysis == "bsm-model-dep-full")
+      if(analysis == "bsm-model-dep-full") // In that case of analysis we compare full neutral BSM Higgs spectrum (h, H, A or H1, H2, H3) with SM hypothesis
       {
         // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
 
         // Defining categories for qqphi, ggphi, and bbphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
@@ -757,12 +766,23 @@ int main(int argc, char **argv) {
         }
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
         cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_bb_phi_cats, true);
-        // wh_bsm_signals and zh_bsm_signals only filled if `sm == true` and empty for morphing of mssm categories.
-        // Thus they are effectively only included in the sm categories.
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_bb_phi_cats, true);
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_bb_phi_cats, true);
+        // Wphi and Zphi are only added if an sm category is considered, since otherwise no templates are available for WH and ZH
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
+        if(sm){
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_bb_phi_cats, true);
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_bb_phi_cats, true);
+        }
 
+        // Adding the SM-like processes bbphi and ggphi
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
         VString empty_masses = {""};
         VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
         cb.AddProcesses(ggH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_smlike, qq_gg_bb_phi_cats, true);
@@ -791,26 +811,42 @@ int main(int argc, char **argv) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
     dout("[INFO] Extracting shapes from ", input_file_base);
+
+    // Adding background templates to processes. This also involves (if configured) SMH125 processes.
+    // sm analysis: bbH125, and in sm categories also WH125 and ZH125
+    // bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}, false).ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
       input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
     if(analysis == "sm"){
-      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
+      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes( // these are ggH125 and qqH125
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
+    // Adding templates for configured SUSY signals
+    // Comprising BSM signal h in model-independent case
     else if(analysis == "bsm-model-indep"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
         input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
+    // Adding templates for configured SUSY signals of model-dependent analyses
+    // sm-like-light sub_analysis: H and A
+    // sm-like-heavy sub_analysis: h and A
+    // cpv sub_analysis: H2 and H3
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
+      // In case of ggPhi, it depends on the sub_analysis, how to include the templates
+      // It is simpler, when the templates correspond to H, h, or A as it is in for
+      // sub_analysis sm-like-light and sm-like-heavy
       if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
         cb.cp().channel({chn}).process(mssm_ggH_signals_additional).ExtractShapes(
           input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       }
+      // In case of sub_analysis cpv, the templates have to be included explicitly
+      // for ggPhi due to different naming of the process
       else if(sub_analysis == "cpv"){
         cb.cp().channel({chn}).process({"ggH2_t"}).ExtractShapes(
           input_file_base, "$BIN/ggH_t_$MASS", "$BIN/ggH_t_$MASS_$SYSTEMATIC");
@@ -826,15 +862,28 @@ int main(int argc, char **argv) {
         cb.cp().channel({chn}).process({"ggH3_i"}).ExtractShapes(
           input_file_base, "$BIN/ggA_i_$MASS", "$BIN/ggA_i_$MASS_$SYSTEMATIC");
       }
+      // Inclusion of additional bbPhi is simple for the preconfigured process names
+      // in mssm_bbH_signals_additional, reflecting the corresponding sub_analysis
       cb.cp().channel({chn}).process(mssm_bbH_signals_additional).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
 
+      // In case full neutral Higgs modelling needs to be used (h, H, A or H1, H2, H3),
+      // need to include additionally the SM-like Higgs boson. Configured process names:
+      // sm-like-light sub_analysis: h
+      // sm-like-heavy sub_analysis: H
+      // cpv sub_analysis: H1
+      // The way it is done for ggPhi and bbPhi depends in addition on whether sm125 or
+      // bsm templates should be used for the SM-like signal.
       if(analysis == "bsm-model-dep-full"){
+        // Here, the SUSY samples are taken for ggPhi and bbPhi
         if(sm_like_hists == "bsm"){
+          // It stays simple for ggPhi, in case of sub_analysis sm-like-light or sm-like-heavy
           if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
             cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
               input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
           }
+          // Require explicit assignment for cpv sub_analysis for ggPhi due to different
+          // template vs. process naming
           else if(sub_analysis == "cpv"){
             cb.cp().channel({chn}).process({"ggH1_t"}).ExtractShapes(
               input_file_base, "$BIN/ggh_t_$MASS", "$BIN/ggh_t_$MASS_$SYSTEMATIC");
@@ -843,23 +892,30 @@ int main(int argc, char **argv) {
             cb.cp().channel({chn}).process({"ggH1_i"}).ExtractShapes(
               input_file_base, "$BIN/ggh_i_$MASS", "$BIN/ggh_i_$MASS_$SYSTEMATIC");
           }
+          // It stays simple for bbPhi, since using always the sample template
           cb.cp().channel({chn}).process(mssm_bbH_signals_smlike).ExtractShapes(
             input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
         }
+        // Here, the SM125 templates are used for ggPhi and bbPhi
         else if(sm_like_hists == "sm125"){
           cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
             input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
           cb.cp().channel({chn}).process(mssm_bbH_signals_smlike).ExtractShapes(
-            input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC");
+            input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // Technically, still using SUSY sample but always the 125 GeV template
         }
+        // Include qqPhi (and WPhi and ZPhi, if needed) always as 125 templates for
+        // analysis bsm-model-dep-full
         cb.cp().channel({chn}).process(qqh_bsm_signals).ExtractShapes(
           input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process(wh_bsm_signals).ExtractShapes(
-          input_file_base, "$BIN/WH125$MASS", "$BIN/WH125$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process(zh_bsm_signals).ExtractShapes(
-          input_file_base, "$BIN/ZH125$MASS", "$BIN/ZH125$MASS_$SYSTEMATIC");
+        if(sm){
+          cb.cp().channel({chn}).process(wh_bsm_signals).ExtractShapes(
+            input_file_base, "$BIN/WH125$MASS", "$BIN/WH125$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process(zh_bsm_signals).ExtractShapes(
+            input_file_base, "$BIN/ZH125$MASS", "$BIN/ZH125$MASS_$SYSTEMATIC");
+        }
 
-        // Adding SM125 signal templates for SM hypothesis
+        // Adding SM125 signal templates for SM hypothesis of analysis bsm-model-dep-full
+        // These comprise ggH125, qqH125, bbH125, and in SM categories WH125 and ZH125
         cb.cp().channel({chn}).process(ch::JoinStr({sm_signals, main_sm_signals})).process({"bbH125"}, false).ExtractShapes(
           input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
@@ -869,6 +925,7 @@ int main(int argc, char **argv) {
   }
 
   // Rescale bbH125 to the right cross-section * BR (from 1pb to the value for 125.4 GeV)
+  std::cout << "[INFO] Rescaling bbH125 process to correct cross-section * BR\n";
   boost::property_tree::ptree sm_preds;
   read_json(sm_predictions, sm_preds);
   cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
