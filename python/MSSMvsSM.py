@@ -435,10 +435,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         for proc in self.PROC_SETS:
             terms = []
+            X = proc.split('_')[0].replace('gg','').replace('bb','')
             if "H125" in proc: # cover SM H125 processes first
                 terms = [self.sigNorms[False]]
             elif re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
-                X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
@@ -452,7 +452,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if self.scenario == "mh1125_CPV" and X in ['H2', 'H3']:
                 for xx in ['bb', 'gg']:
                     if xx in proc:
-                        terms.append('expr::interference_{PROD}_{HIGGS}(\"1.0 + @0\", int_{PROD}_tautau_{HIGGS})'.format(PROD=xx, HIGGS=X))
+                        terms.append('expr::interference_{PROD}_{HIGGS}(\"1.0 + @0\", int_{PROD}{HIGGS}_tautau)'.format(PROD=xx, HIGGS=X))
 
             # Now scan terms and add theory uncerts
             extra = []
@@ -498,17 +498,17 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.doHistFuncFromXsecTools(X, "mass", pars) # syntax: Higgs-Boson, mass attribute, parameters
 
         for X in procs:
-            self.doHistFuncFromXsecTools(X, "yukawa_top", pars)
-            self.doHistFuncFromXsecTools(X, "yukawa_bottom", pars)
+            if self.scenario == "mh1125_CPV":
+                self.doHistFuncFromXsecTools(X, "interference", pars, production="gg")
+                self.doHistFuncFromXsecTools(X, "interference", pars, production="bb")
+            else:
+                self.doHistFuncFromXsecTools(X, "yukawa_top", pars)
+                self.doHistFuncFromXsecTools(X, "yukawa_bottom", pars)
 
             self.doHistFuncFromXsecTools(X, "br", pars) # syntax: Higgs-Boson, xsec attribute, parameters, production mode
 
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="gg") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
             self.doHistFuncFromXsecTools(X, "xsec", pars, production="bb") # syntax: Higgs-Boson, xsec attribute, parameters, production mode
-
-            if self.scenario == "mh1125_CPV":
-                self.doHistFuncFromXsecTools(X, "interference", pars, production="gg")
-                self.doHistFuncFromXsecTools(X, "interference", pars, production="bb")
 
             self.add_ggH_at_NLO('xs_gg{X}{LC}', X)
 
