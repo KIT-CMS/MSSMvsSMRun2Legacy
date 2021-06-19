@@ -71,7 +71,7 @@ elif [[ $MODEL == "mHH125" ]]; then
     scenario_label="M_{H}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-heavy"
     sm_like_mass="m_H"
-    x_title='m_{{H}^{#plus}} [GeV]'
+    x_title='m_{H^{#plus}} [GeV]'
     mass_histogram_title="m_{H}"
     y_min=5.0
     y_max=6.0
