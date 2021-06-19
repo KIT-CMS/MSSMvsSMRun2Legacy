@@ -435,19 +435,19 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         for proc in self.PROC_SETS:
             terms = []
-            if re.match(bsm_proc_match, proc) and proc != "bbH125": # not SM-like BSMSCALAR: either h or H; avoid collision with bbH125
+            if "H125" in proc: # cover SM H125 processes first
+                terms = [self.sigNorms[False]]
+            elif re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
                 X = proc.split('_')[0].replace('gg','').replace('bb','')
                 terms = ['xs_%s' %proc, 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
-            elif re.match('gg{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('gg{SMLIKE}'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
-            elif re.match('bb{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the first 'if' case
+            elif re.match('bb{SMLIKE}'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the second 'if' case
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
-            elif "125" in proc:
-                terms = [self.sigNorms[False]]
 
             if self.scenario == "mh1125_CPV" and X in ['H2', 'H3']:
                 for xx in ['bb', 'gg']:
