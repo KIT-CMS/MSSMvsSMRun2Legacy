@@ -476,7 +476,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         tanb = ROOT.RooRealVar('tanb', 'tan#beta', 5.5)
         pars = [mass, tanb]
 
-        self.mssm_inputs = mssm_xs_tools(self.filename, True, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
+        self.mssm_inputs = mssm_xs_tools(self.filename, False, 1) # syntax: model filename, Flag for interpolation ('True' or 'False'), verbosity level
 
         # qqphi, Zphi and Wphi  added always in this setup
         self.doHistFuncForQQH(pars)
