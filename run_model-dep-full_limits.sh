@@ -120,7 +120,7 @@ elif [[ $MODEL == "mh125_muneg_3" ]]; then
 elif [[ $MODEL == "mh125EFT" ]]; then
     wsoutput="mh125EFT.root"
     modelfile="13,Run2017,mh125EFT_13.root"
-    scenario_label="M_{h,#text{EFT}}^{125} scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h,EFT}^{125} scenario (h,H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
@@ -130,7 +130,7 @@ elif [[ $MODEL == "mh125EFT" ]]; then
 elif [[ $MODEL == "mh125EFT_lc" ]]; then
     wsoutput="mh125EFT_lc.root"
     modelfile="13,Run2017,mh125EFT_lc_13.root"
-    scenario_label="M_{h,#text{EFT}}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h,EFT}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
