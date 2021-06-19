@@ -1,6 +1,6 @@
 {
   "opts" : "--singlePoint 1.0",
-  "POIs" : ["mA", "tanb"],
+  "POIs" : ["mHp", "tanb"],
   "grids" : [
     ["150:200|1.0", "5:6|0.05", ""]
   ],
