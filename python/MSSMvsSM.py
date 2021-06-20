@@ -51,7 +51,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             },
             "mh125EFT": {
                 "tanb" : np.arange(1.0, 10.25, 0.25),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(92.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
             },
             "mh125_lc": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
@@ -59,7 +59,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             },
             "mh125EFT_lc": {
                 "tanb" : np.arange(1.0, 10.25, 0.25),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(92.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
             },
             "mh125_ls": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
