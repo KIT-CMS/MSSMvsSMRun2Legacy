@@ -242,6 +242,7 @@ elif [[ $MODE == "ws" ]]; then
     --task-name $taskname \
     --dry-run \
     --redefineSignalPOI r \
+    --setParametersRanges r=0,1 \
     --setParameters r=1,x=1 \
     --freezeParameters x -v1 \
     --cminDefaultMinimizerStrategy 0 \
@@ -330,9 +331,10 @@ elif [[ $MODE == "collect" ]]; then
     --job-mode 'condor' \
     --task-name $taskname2 \
     --dry-run \
-    --redefineSignalPOI x \
-    --setParameters r=1 \
-    --freezeParameters r -v1 \
+    --redefineSignalPOI r \
+    --setParametersRanges r=0,1 \
+    --setParameters r=1,x=1 \
+    --freezeParameters x -v1 \
     --cminDefaultMinimizerStrategy 0 \
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs_${MODEL}.txt

@@ -242,6 +242,7 @@ elif [[ $MODE == "ws" ]]; then
     --task-name $taskname \
     --dry-run \
     --redefineSignalPOI x \
+    --setParameterRanges x=0,1 \
     --setParameters r=1 \
     --freezeParameters r -v1 \
     --cminDefaultMinimizerStrategy 0 \
@@ -331,6 +332,7 @@ elif [[ $MODE == "collect" ]]; then
     --task-name $taskname2 \
     --dry-run \
     --redefineSignalPOI x \
+    --setParameterRanges x=0,1 \
     --setParameters r=1 \
     --freezeParameters r -v1 \
     --cminDefaultMinimizerStrategy 0 \
