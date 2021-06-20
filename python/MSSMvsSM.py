@@ -252,6 +252,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
+                if not br_htautau and not br_htautau_SM:
+                    print "[WARNING]: Both BSM and SM BR predictions are 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = 1.
+                    br_htautau = 1.
+                elif not br_htautau_SM:
+                    print "[WARNING]: SM BR prediction is 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = br_htautau
+
                 if accesskey:
                     g_Htt = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])(accesskey, x, y)
                     sin_alpha = g_Htt * np.sin(beta)
@@ -297,6 +305,17 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
+                if not xs_ggh_SM:
+                    print "[WARNING]: SM ggh xs prediction is 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    xs_ggh_SM = xs_ggh
+                if not br_htautau and not br_htautau_SM:
+                    print "[WARNING]: Both BSM and SM BR predictions are 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = 1.
+                    br_htautau = 1.
+                elif not br_htautau_SM:
+                    print "[WARNING]: SM BR prediction is 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = br_htautau
+
                 value =  xs_ggh / xs_ggh_SM * br_htautau / br_htautau_SM # xs(mh) * BR(mh) / (xs_SM(mh) * BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 hist.SetBinContent(i_x+1, i_y+1, value)
@@ -333,6 +352,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
+
+                if not br_htautau and not br_htautau_SM:
+                    print "[WARNING]: Both BSM and SM BR predictions are 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = 1.
+                    br_htautau = 1.
+                elif not br_htautau_SM:
+                    print "[WARNING]: SM BR prediction is 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    br_htautau_SM = br_htautau
 
                 # xs(mh) * (xs_SM(125.4)/xs_SM(mh)) * BR(mh) * (BR_SM(125.4)/BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value =  xs_bbh * (xs_bbh_SM125 / xs_bbh_SM) * br_htautau * (br_htautau_SM125 / br_htautau_SM)
