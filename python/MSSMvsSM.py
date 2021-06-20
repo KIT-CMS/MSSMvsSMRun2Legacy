@@ -411,16 +411,18 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
     def add_ggH_at_NLO(self, name, X):
 
+        fractions_sm = ROOT.TFile.Open(self.ggHatNLO, 'read')
+        w_sm = fractions_sm.Get("w")
+
         template_X = X
         if self.scenario == "mh1125_CPV":
             template_X = self.cpv_template_pairs[X]
+            w_sm.var("m{HIGGS}".format(HIGGS=self.cpv_template_pairs[X])).SetName("m{HIGGS}".format(HIGGS=X))
 
-        importstring = os.path.expandvars(self.ggHatNLO)+":w:gg{X}_{LC}_MSSM_frac" #import t,b,i fraction of xsec at NLO
         for loopcontrib in ['t','b','i']:
-            getattr(self.modelBuilder.out, 'import')(importstring.format(X=template_X, LC=loopcontrib), ROOT.RooFit.RecycleConflictNodes())
+            func = w_sm.function('gg{X}_{LC}_MSSM_frac'.format(X=template_X, LC=loopcontrib))
+            getattr(self.modelBuilder.out, 'import')(func, ROOT.RooFit.RecycleConflictNodes())
             self.modelBuilder.out.factory('prod::%s(%s,%s)' % (name.format(X=X, LC="_"+loopcontrib), name.format(X=X, LC=""), "gg%s_%s_MSSM_frac" % (template_X,loopcontrib))) #multiply t,b,i fractions with xsec at NNLO
-        if self.scenario == "mh1125_CPV":
-            self.modelBuilder.out.var("m{HIGGS}".format(HIGGS=self.cpv_template_pairs[X])).SetName("m{HIGGS}".format(HIGGS=X))
 
 
     def preProcessNuisances(self,nuisances):
