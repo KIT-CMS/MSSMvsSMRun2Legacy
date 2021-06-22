@@ -95,7 +95,7 @@ elif [[ $MODEL == "mh125_muneg_1" ]]; then
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
     y_min=1.0
-    y_max=60.0
+    y_max=56.0
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
     modelfile="13,Run2017,mh125_muneg_2_13.root"
@@ -105,7 +105,7 @@ elif [[ $MODEL == "mh125_muneg_2" ]]; then
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
     y_min=1.0
-    y_max=60.0
+    y_max=30.0
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
     modelfile="13,Run2017,mh125_muneg_3_13.root"
@@ -115,7 +115,7 @@ elif [[ $MODEL == "mh125_muneg_3" ]]; then
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
     y_min=1.0
-    y_max=60.0
+    y_max=20.0
 ### EFT scenarios #####
 elif [[ $MODEL == "mh125EFT" ]]; then
     wsoutput="mh125EFT.root"
