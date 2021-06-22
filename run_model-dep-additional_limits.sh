@@ -7,14 +7,20 @@ MODEL=$3
 ANALYSISTYPE=$4
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
-    analysis="mssm_vs_sm_classic"
+    analysis="bsm-model-dep-additional"
+    sm_like_hists="sm125"
+    replace_with_sm125=1
+    categorization="classic"
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_classic"
     fi
 else
-    analysis="mssm_vs_sm_h125"
+    analysis="bsm-model-dep-additional"
+    sm_like_hists="sm125"
+    replace_with_sm125=1
+    categorization="with-sm-ml"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_h125_fixed"
+        TAG="cmb_with_ml"
     fi
 fi
 # Szenarios from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGMSSMNeutral?redirectedfrom=LHCPhysics.LHCHXSWGMSSMNeutral#Baseline_scenarios
@@ -22,82 +28,125 @@ fi
 if [[ $MODEL == "mh125" ]]; then
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125} scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=60.0
 elif [[ $MODEL == "mh125_lc" ]]; then
     wsoutput="ws_mh125_lc.root"
     modelfile="13,Run2017,mh125_lc_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125}(#tilde{#chi}) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=60.0
 elif [[ $MODEL == "mh125_ls" ]]; then
     wsoutput="ws_mh125_ls.root"
     modelfile="13,Run2017,mh125_ls_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125}(#tilde{#tau}) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125}(#tilde{#tau}) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=60.0
 elif [[ $MODEL == "mh125_align" ]]; then
     wsoutput="ws_mh125_align.root"
     modelfile="13,Run2017,mh125_align_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "HH125" ]]; then
+    scenario_label="M_{h}^{125} alignment scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=20.0
+elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
-    min_mass=150
-    max_mass=200
-    scenario_label="M_{H}^{125} alignment scenario (h,H,A#rightarrow#tau#tau)"
-elif [[ $MODEL == "hm1125_cpv" ]]; then
-    #TODO this still need more modifications in the code
-    wsoutput="ws_hm1125_cpv.root"
-    modelfile="13,Run2017,hm1125_CPV_13.root"
-    analysis="mssm_vs_sm_CPV"
-    min_mass=130
-    max_mass=1500
-    scenario_label="M_{h_1}^{125} (CPV) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{H}^{125} alignment scenario (h,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-heavy"
+    sm_like_mass="m_H"
+    x_title='m_{H^{#plus}} [GeV]'
+    mass_histogram_title="m_{H}"
+    y_min=5.0
+    y_max=6.0
+elif [[ $MODEL == "mh1125_CPV" ]]; then
+    wsoutput="ws_mh1125_cpv.root"
+    modelfile="13,Run2017,mh1125_CPV_13.root"
+    scenario_label="M_{h_{1}}^{125} (CPV) scenario (^{}h_{2},^{}h_{3}#rightarrow#tau#tau)"
+    sub_analysis="cpv"
+    sm_like_mass="m_H1"
+    x_title='m_{H^{#plus}} [GeV]'
+    mass_histogram_title="m_{^{}h_{1}}"
+    y_min=1.0
+    y_max=20.0
 ### Negative mu scenarios #####
 elif [[ $MODEL == "mh125_muneg_1" ]]; then
     wsoutput="mh125_muneg_1.root"
     modelfile="13,Run2017,mh125_muneg_1_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125} (#mu = -1 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125} (#mu = -1 TeV) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=56.0
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
     modelfile="13,Run2017,mh125_muneg_2_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125} (#mu = -2 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125} (#mu = -2 TeV) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=30.0
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
     modelfile="13,Run2017,mh125_muneg_3_13.root"
-    min_mass=110
-    max_mass=3200
-    scenario_label="M_{h}^{125} (#mu = -3 TeV) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125} (#mu = -3 TeV) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=20.0
 ### EFT scenarios #####
 elif [[ $MODEL == "mh125EFT" ]]; then
     wsoutput="mh125EFT.root"
     modelfile="13,Run2017,mh125EFT_13.root"
-    min_mass=110
-    max_mass=3200
-    y_min=1
-    y_max=10
-    scenario_label="M_{h,#text{EFT}}^{125} scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h,EFT}^{125} scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=10.0
 elif [[ $MODEL == "mh125EFT_lc" ]]; then
     wsoutput="mh125EFT_lc.root"
     modelfile="13,Run2017,mh125EFT_lc_13.root"
-    min_mass=110
-    max_mass=3200
-    y_min=1
-    y_max=10
-    scenario_label="M_{h,#text{EFT}}^{125}(#tilde{#chi}) scenario (h,H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h,EFT}^{125}(#tilde{#chi}) scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=10.0
 else
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
-    min_mass=110
-    max_mass=3200
+    scenario_label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=60.0
 fi
 defaultdir="analysis/$TAG"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
@@ -117,39 +166,37 @@ if [[ $MODE == "initial" ]]; then
     if [[ $ANALYSISTYPE == "classic" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
             --eras 2016,2017,2018 \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt\
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-
-        morph_parallel.py --output ${defaultdir}/datacards \
-            --analysis ${analysis} \
-            --eras 2016,2017,2018 \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt\
-            --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_control_log.txt
     else
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
             --eras 2016,2017,2018 \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
             --sm \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
+            --sub-analysis ${sub_analysis} \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
             --eras 2016,2017,2018 \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-
-        morph_parallel.py --output ${defaultdir}/datacards \
-            --analysis ${analysis} \
-            --eras 2016,2017,2018 \
-            --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/control_region_categories.txt \
-            --variable mt_tot_puppi \
-            --parallel 1 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
     fi
 
     ############
@@ -176,20 +223,13 @@ elif [[ $MODE == "ws" ]]; then
     combineTool.py -M T2W -o ${wsoutput} \
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+    --PO replace-with-SM125=${replace_with_sm125} \
     --PO modelFile=${modelfile} \
-    --PO minTemplateMass=${min_mass} \
-    --PO maxTemplateMass=${max_mass} \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+    --PO minTemplateMass=60 \
+    --PO maxTemplateMass=3500 \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+    --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
-
-    # combineTool.py -M T2W -o ${wsoutput} \
-    #     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
-    #     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
-    #     --PO modelFile=${modelfile} \
-    #     --PO minTemplateMass=${min_mass} \
-    #     --PO maxTemplateMass=${max_mass} \
-    #     --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-    #     -i ${datacarddir}/201?/*/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
 
     ############
     # job setup creation
@@ -201,9 +241,10 @@ elif [[ $MODE == "ws" ]]; then
     --job-mode 'condor' \
     --task-name $taskname \
     --dry-run \
-    --redefineSignalPOI x \
-    --setParameters r=1 \
-    --freezeParameters r -v1 \
+    --redefineSignalPOI r \
+    --setParameterRanges r=0,1 \
+    --setParameters r=1,x=1 \
+    --freezeParameters x -v1 \
     --cminDefaultMinimizerStrategy 0 \
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}.txt
@@ -290,9 +331,10 @@ elif [[ $MODE == "collect" ]]; then
     --job-mode 'condor' \
     --task-name $taskname2 \
     --dry-run \
-    --redefineSignalPOI x \
-    --setParameters r=1 \
-    --freezeParameters r -v1 \
+    --redefineSignalPOI r \
+    --setParameterRanges r=0,1 \
+    --setParameters r=1,x=1 \
+    --freezeParameters x -v1 \
     --cminDefaultMinimizerStrategy 0 \
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs_${MODEL}.txt
@@ -305,17 +347,19 @@ elif [[ $MODE == "collect" ]]; then
     # limit plot
     ############
     if [[ $ANALYSISTYPE == "classic" ]]; then
-        title="Classic categorisation 137 fb^{-1} (13 TeV)"
+        title="Classic categorisation 138 fb^{-1} (13 TeV)"
     else
-        title="ML categorisation 137 fb^{-1} (13 TeV)"
+        title="138 fb^{-1} (13 TeV)"
     fi
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="${scenario_label}" \
     --output ${TAG}_${MODEL} \
     --title-right="${title}" \
-    --cms-sub="Own Work" \
+    --cms-sub="Preliminary" \
     --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
-    --y-range 2.0,60.0 \
+    --y-range ${y_min},${y_max} \
+    --mass_histogram ${sm_like_mass} \
+    --mass_histogram_title ${mass_histogram_title} \
     --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \
-    --x-title "m_{A} [GeV]" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
+    --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
 fi

@@ -4,12 +4,15 @@ ulimit -s unlimited
 TAG=$1
 MODE=$2
 if [[ $TAG == "auto" ]]; then
-    TAG="cmb_ind"
+    TAG="cmb_ind_with-sm-ml"
 fi
 
 
 defaultdir=analysis/$TAG
-analysis="mssm"
+analysis="bsm-model-indep"
+sub_analysis="hSM-in-bg"
+categorization="with-sm-ml"
+sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
@@ -25,20 +28,26 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
         --variable nnscore \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --sm \
-        --parallel 8 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category_list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
         --variable mt_tot_puppi \
-        --sm_gg_fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_v3.root \
-        --parallel 8 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
     # combining outputs
@@ -56,13 +65,13 @@ elif [[ $MODE == "ws" ]]; then
     --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
     --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
     -i ${datacarddir}/combined/cmb/ \
-    -m 110 --parallel 4 | tee -a ${defaultdir}/logs/workspace_independent.txt
+    -m 125.0 --parallel 4 | tee -a ${defaultdir}/logs/workspace_independent.txt
 
     ############
     # job setup creation
     ############
     cd ${defaultdir}/limits_ind/condor
-    combineTool.py -m "110,120,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200" \
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
@@ -79,7 +88,7 @@ elif [[ $MODE == "ws" ]]; then
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
 
-    combineTool.py -m "110,120,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200" \
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
@@ -110,8 +119,8 @@ elif [[ $MODE == "submit" ]]; then
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits_ind/condor
     cd ${defaultdir}/limits_ind/condor
-    python run_limits_locally.py --cores 10 --njobs 27 --taskname condor_bbH_full_cmb.sh
-    python run_limits_locally.py --cores 10 --njobs 27 --taskname condor_ggH_full_cmb.sh
+    python run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
+    python run_limits_locally.py --cores 10 --njobs 31 --taskname condor_ggH_full_cmb.sh
 
 elif [[ $MODE == "collect" ]]; then
     for p in gg bb
@@ -120,8 +129,8 @@ elif [[ $MODE == "collect" ]]; then
         --use-dirs \
         -o ${datacarddir}/combined/cmb/mssm_${p}H_cmb.json
 
-        plotMSSMLimits.py --cms-sub "Own Work" \
-        --title-right "137 fb^{-1} (13 TeV)" \
+        plotMSSMLimits.py --cms-sub "Preliminary" \
+        --title-right "138 fb^{-1} (13 TeV)" \
         --process "${p}#phi" \
         --y-axis-min 0.0001 \
         --y-axis-max 1000.0 \

@@ -31,6 +31,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // STXS stage 0
       "ggH_htt125",
       "ggH125",
+      "ggH",
+      "ggh",
+      "ggH1",
+      "ggX",
       // STXS stage 1.1
       "ggH_FWDH_htt",
       "ggH_PTH_200_300_htt",
@@ -54,6 +58,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // STXS stage 0
       "qqH_htt125",
       "qqH125", 
+      "qqH",
+      "qqh",
+      "qqH1",
+      "qqX",
       // STXS stage 1
       "qqH_FWDH_htt",
       "qqH_0J_htt",
@@ -69,7 +77,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       };
   std::vector<std::string> signals_VH = {
       // STXS stage 0
-      "WH125", "ZH125", "ttH125"};
+      "WH125", "Wh", "WH", "WH1", "ZH125", "Zh", "ZH", "ZH1", "ttH125"};
   std::vector<std::string> signals_ggHToWW = {
      // STXS stage 0
      "ggHWW125"};
@@ -79,11 +87,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, {"qqh", "ggh", "qqH"}});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
-  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i", "ggh_t", "ggh_b", "ggh_i", "ggA_t", "ggA_b", "ggA_i"};
-  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH_500", "bbH_1400"};
+  std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i",
+                                               "ggh_t", "ggh_b", "ggh_i",
+                                               "ggA_t", "ggA_b", "ggA_i",
+                                               "ggH2_t", "ggH2_b", "ggH2_i",
+                                               "ggH1_t", "ggH1_b", "ggH1_i",
+                                               "ggH3_t", "ggH3_b", "ggH3_i"};
+  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1", "bbH125"};
   std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
@@ -124,6 +137,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {""}, 0.996) // for SM bbH125
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 0.995)
@@ -155,6 +169,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 0.995)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {""}, 0.995) // for SM bbH125
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 0.994)
@@ -186,6 +201,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {""}, 0.995) // for SM bbH125
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 0.994)
@@ -217,6 +233,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 1.017)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 1.015)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 1.015)
+     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {""}, 1.015) // for SM bbH125
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 1.015)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 1.016)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 1.017)
@@ -248,6 +265,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {""}, 1.016) // for SM bbH125
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 1.015)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 1.016)
@@ -279,6 +297,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {""}, 1.016) // for SM bbH125
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 1.014)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 1.016)
@@ -312,6 +331,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 1.016, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 1.009, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 1.007, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {""}, 1.007, 0.993) // for SM bbH125
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 1.009, 0.994)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 1.012, 0.995)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 1.013, 0.994)
@@ -343,6 +363,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 1.020, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 1.010, 0.992)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 1.008, 0.992)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {""}, 1.008, 0.992) // for SM bbH125
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 1.009, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 1.012, 0.994)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 1.014, 0.993)
@@ -374,6 +395,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 1.021, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 1.011, 0.992)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 1.009, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {""}, 1.009, 0.992) // for SM bbH125
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 1.013, 0.994)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 1.015, 0.993)
@@ -405,6 +427,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 0.926, 1.035)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 0.964, 1.028)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 0.974, 1.026)
+    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {""}, 0.974, 1.026) // for SM bbH125
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 0.969, 1.024)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 0.958, 1.019)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 0.958, 1.021)
@@ -436,6 +459,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 0.920, 1.029)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 0.972, 1.025)
+    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {""}, 0.972, 1.025) // for SM bbH125
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 0.969, 1.023)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 0.962, 1.018)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 0.960, 1.019)
@@ -467,6 +491,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 0.920, 1.027)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 0.972, 1.026)
+    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {""}, 0.972, 1.026) // for SM bbH125
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 0.969, 1.023)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 0.962, 1.017)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 0.961, 1.019)
@@ -542,17 +567,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_i","ggH_i","ggA_i"})
+       .process({"ggh_i","ggH_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"})
        .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_t","ggH_t","ggA_t"})
+       .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t"})
        .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_b","ggH_b","ggA_b"})
+       .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b"})
        .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
@@ -725,7 +750,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // 3% in Tau ID SF with different anti-l fake WP
   cb.cp()
       .channel({"mt", "tt"})
-      .process(JoinStr({signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
 
   std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "highpT_100-500", "highpT_500-inf"};
@@ -749,38 +774,37 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
 
   // Tau ID: et and mt with 1 real tau
-      
   for (auto tauIDbin : tauIDptbins){ //first part correlated between channels for IDvsJets
     cb.cp()
         .channel({"et", "mt"})
-        .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp() //second part uncorrelated between channels for IDvsLep
       .channel({"et", "mt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: tt with 2 real taus
   for (auto tauIDbin : tauIDdmbins){
     cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   if (!sm){
       cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_highpT_100-500_$ERA", "shape", SystMap<>::init(1.0));
       cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_highpT_500-inf_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.014));
 
   // Component for EMB only
@@ -1275,6 +1299,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2018"}, {35}, 1.005, 0.994)
   );
 
+  // TODO: what about SM signals ggH125 and qqH125 (and corresponding BSM flavours of these templates) in these categories?
+
   // Do signal b efficiency and mistag uncertainties. Load from json to solve memory issues
   if (not sm){
     Json::Value js;
@@ -1291,14 +1317,26 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
             double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
             cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_catagories,{m}, bbH_btag_down, bbH_btag_up));
+            // Cover SM bbH125 case
+            if(m == "125"){
+              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_catagories,{""}, bbH_btag_down, bbH_btag_up));
+            }
+
             double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
             double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
             cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, btag_catagories, {m}, ggH_btag_down, ggH_btag_up));
+
             double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
             double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
             cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
+            // Cover SM bbH125 case
+            if(m == "125"){
+              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+              ({c}, {yr}, nobtag_catagories, {""}, bbH_nobtag_down, bbH_nobtag_up));
+            }
+
             double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
             double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
             cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
@@ -1856,25 +1894,26 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: Check VH QCD scale uncertainty
   // - FIXME: References?
   // ##########################################################################
+  //
 
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals).process({"qqH"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals).process({"qqH"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(signals).process({"qqH"}, false)
+      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
 
   // 95 GeV samples BR uncertainties 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"qqH"}, false)
+      .process({"qqX", "ggX"})
       .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0172));
 
   // Uncertainty on branching ratio for HWW at 125 GeV
@@ -1890,141 +1929,150 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"et", "mt", "tt", "em"})
      .process(signals_HWW)
      .AddSyst(cb, "BR_hww_PU_alphas", "lnN", SystMap<>::init(1.0066));
-  // QCD scale (non ggH & qqH signals)
+
+  // QCD scale (no ggH & qqH signals for tautau decay channel) for 125 GeV Higgs
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125", "ZHWW125"})
+      .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.009));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"WH125", "WHWW125"})
+      .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.008));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"ttH125"})
       .AddSyst(cb, "QCDScale_ttH", "lnN", SystMap<>::init(1.08));
-
-  // PDF
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_ggH,signals_ggHToWW, {"ggh"}}))
-      .AddSyst(cb, "pdf_Higgs_gg", "lnN", SystMap<>::init(1.032));
+      .process({"bbH125"})
+      .AddSyst(cb, "QCDScale_bbH", "lnN", SystMap<>::init(1.22));
   cb.cp()
-     .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH,signals_qqHToWW, {"qqh"}}))
-     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
+    .channel({"et", "mt", "tt", "em"})
+    .process({signals_ggHToWW})
+    .AddSyst(cb, "QCDScale_ggH", "lnN", SystMap<>::init(1.039));
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process({signals_qqHToWW})
+    .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
+
+  // this is the 95 GeV sample
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process({"qqX"})
+    .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.004));
+
+  // PDF for 125 GeV Higgs
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process(JoinStr({signals_ggH,signals_ggHToWW})).process({"ggX"}, false)
+    .AddSyst(cb, "pdf_Higgs_gg", "lnN", SystMap<>::init(1.032));
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process(JoinStr({signals_qqH,signals_qqHToWW})).process({"qqX"}, false)
+    .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
+    .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
+    .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
+  cb.cp()
+    .channel({"et", "mt", "tt", "em"})
+    .process({"ttH125"})
+    .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
+
+  // No pdf uncertainty for bbH125 available from LHCHWG file
+
   // 95 GeV sample (use same as 125 GeV for now but update later)
   cb.cp()
-     .channel({"et", "mt", "tt", "em"})
-     .process({"qqH"})
-     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125", "ZHWW125"})
-      .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"WH125", "WHWW125"})
-      .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
-  cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({"ttH125"})
-      .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
+    .channel({"et", "mt", "tt", "em"})
+    .process({"qqX"})
+    .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
+
   if (sm)
   {
-    // Gluon-fusion WG1 uncertainty scheme
+    // Gluon-fusion WG1 uncertainty scheme for 125 GeV Higgs
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mig01", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mig12", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Mu", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_PT120", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_PT60", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_Res", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_VBF2j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_VBF3j", "shape", SystMap<>::init(1.00));
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals_ggH, {"ggh"}}))
+      .process(signals_ggH).process({"ggX"}, false)
       .AddSyst(cb, "THU_ggH_qmtop", "shape", SystMap<>::init(1.00));
-    cb.cp()
-      .channel({"et", "mt", "tt", "em"})
-      .process({signals_ggHToWW})
-      .AddSyst(cb, "QCDScale_ggHWW", "lnN", SystMap<>::init(1.039));
-    // VBF WG1 uncertainty scheme
+    // VBF WG1 uncertainty scheme for 125 GeV Higgs
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_TOT", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_PTH200", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj60", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj120", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj350", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj700", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj1000", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_Mjj1500", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_25", "shape", SystMap<>::init(1.00));
    cb.cp()
      .channel({"et", "mt", "tt", "em"})
-     .process(JoinStr({signals_qqH, {"qqh"}}))
+     .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_JET01", "shape", SystMap<>::init(1.00));
   }
-   cb.cp()
-     .channel({"et", "mt", "tt", "em"})
-     .process({signals_qqHToWW})
-     .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
-
-   // this is the 95 GeV sample
-   cb.cp()
-     .channel({"et", "mt", "tt", "em"})
-     .process({"qqH"})
-     .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.004));
   // ##########################################################################
   // Uncertainty: Embedded events
   // References:

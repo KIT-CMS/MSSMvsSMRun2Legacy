@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 #include <math.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace std;
 using boost::starts_with;
@@ -87,10 +89,13 @@ int main(int argc, char **argv) {
   string output_folder = "output_MSSMvsSM_Run2";
   string base_path = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/shapes/";
   string sm_gg_fractions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root";
+  string sm_predictions = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json";
   string chan = "mt";
   string category = "mt_nobtag_lowmsv_0jet_tightmt";
   string variable = "m_sv_puppi";
+  string non_morphed_mass = "700";
 
+  bool do_morph = true;
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
@@ -103,16 +108,30 @@ int main(int argc, char **argv) {
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
-  string analysis = "sm"; // "sm",  "mssm", "mssm_vs_sm_classic", "mssm_vs_sm_classic_h125", "mssm_vs_sm_heavy", "mssm_vs_sm", "mssm_vs_sm_h125", "mssm_vs_sm_CPV"
+  string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
+  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"};
+  string sub_analysis = "hSM-in-bg"; // analysis = "bsm-model-indep": "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
+  std::vector<string> sub_analysis_choices_model_dep = {"sm-like-light", "sm-like-heavy", "cpv"};
+  std::vector<string> sub_analysis_choices_model_indep = {"hSM-in-bg", "no-hSM-in-bg"};
+  string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
+  std::vector<string> sm_like_hists_choices = {"sm125", "bsm"};
+  string categorization = "classic"; // "with-sm-ml", "sm-ml-only", "classic"
+  std::vector<string> categorization_choices = {"with-sm-ml", "sm-ml-only", "classic"};
+
   int era = 2016; // 2016, 2017 or 2018
+  std::vector<int> era_choices = {2016, 2017, 2018};
+
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
       ("base-path,base_path", po::value<string>(&base_path)->default_value(base_path), "inputs, expected to contain a subdirectory <era>/<channel>")
       ("sm_gg_fractions", po::value<string>(&sm_gg_fractions)->default_value(sm_gg_fractions))
+      ("sm_predictions", po::value<string>(&sm_predictions)->default_value(sm_predictions))
       ("channel", po::value<string>(&chan)->default_value(chan), "single channel to process")
       ("category", po::value<string>(&category)->default_value(category))
       ("variable", po::value<string>(&variable)->default_value(variable))
+      ("non-morphed-mass", po::value<string>(&non_morphed_mass)->default_value(non_morphed_mass))
+      ("do-morph", po::value<bool>(&do_morph)->default_value(do_morph))
       ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
       ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(manual_rebin))
       ("real_data", po::value<bool>(&real_data)->default_value(real_data))
@@ -120,6 +139,9 @@ int main(int argc, char **argv) {
       ("verbose", po::value<bool>(&verbose)->default_value(verbose))
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
+      ("sub-analysis", po::value<string>(&sub_analysis)->default_value(sub_analysis))
+      ("sm-like-hists", po::value<string>(&sm_like_hists)->default_value(sm_like_hists))
+      ("categorization", po::value<string>(&categorization)->default_value(categorization))
       ("era", po::value<int>(&era)->default_value(era))
       ("no-emb,no-emb,no_emb", po::bool_switch(&no_emb), "use MC samples instead of embedding")
       ("debug,d", po::bool_switch(&debug), "debug printout")
@@ -139,6 +161,67 @@ int main(int argc, char **argv) {
   {
       cout << config << "\n";
       return 0;
+  }
+
+  // Sanity check for options with choices
+  // analysis option
+  if(std::find(analysis_choices.begin(), analysis_choices.end(), analysis) == analysis_choices.end()){
+    std::cout << "ERROR: wrong choice of 'analysis' option. Please choose from:\n\t";
+    for(auto choice : analysis_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
+  }
+  // sub_analysis option
+  if(analysis == "bsm-model-indep"){
+    if(std::find(sub_analysis_choices_model_indep.begin(), sub_analysis_choices_model_indep.end(), sub_analysis) == sub_analysis_choices_model_indep.end()){
+      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-independent analysis, please choose from:\n\t";
+      for(auto choice : sub_analysis_choices_model_indep){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional"){
+    if(std::find(sub_analysis_choices_model_dep.begin(), sub_analysis_choices_model_dep.end(), sub_analysis) == sub_analysis_choices_model_dep.end()){
+      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-dependent analysis, please choose from:\n\t";
+      for(auto choice : sub_analysis_choices_model_dep){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  // sm_like_hists option
+  if(analysis == "bsm-model-dep-full"){
+    if(std::find(sm_like_hists_choices.begin(), sm_like_hists_choices.end(), sm_like_hists) == sm_like_hists_choices.end()){
+      std::cout << "ERROR: wrong choice of 'sm_like_hists' option. Please choose from:\n\t";
+      for(auto choice : sm_like_hists_choices){
+        std::cout << choice << " ";
+      }
+      std::cout << std::endl;
+      exit(1);
+    }
+  }
+  // categorization option
+  if(std::find(categorization_choices.begin(), categorization_choices.end(), categorization) == categorization_choices.end()){
+    std::cout << "ERROR: wrong choice of 'categorization' option. Please choose from:\n\t";
+    for(auto choice : categorization_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
+  }
+  // era option
+  if(std::find(era_choices.begin(), era_choices.end(), era) == era_choices.end()){
+    std::cout << "ERROR: wrong choice of 'era' option. Please choose from:\n\t";
+    for(auto choice : era_choices){
+      std::cout << choice << " ";
+    }
+    std::cout << std::endl;
+    exit(1);
   }
 
   // Define the location of the "auxiliaries" directory where we can
@@ -180,35 +263,104 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, mssm_ggH_signals, mssm_bbH_signals, mssm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
+  VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
+  VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
+  VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
   if (sm == true){
-  	sm_signals = {"WH125", "ZH125", "ttH125"};
+    sm_signals = {"WH125", "ZH125", "bbH125"};
   }
-  else{
-  	sm_signals = {};
+  else {
+    sm_signals = {"bbH125"};
   }
-  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt contains VBF+VH
+  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
-  mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
-  mssm_bbH_signals = {"bbA", "bbH", "bbh"};
-  if(analysis == "mssm" || analysis == "mssm_classic")
+  if(analysis == "bsm-model-indep")
   {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
   }
-  else if(analysis == "mssm_vs_sm_heavy")
+  else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")
   {
-    mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i","ggA_t", "ggA_b", "ggA_i"};
-    mssm_bbH_signals = {"bbH", "bbA"};
-  }
-  else if(analysis == "mssm_vs_sm_CPV")
-  {
-    mssm_ggH_signals = {"ggH1_t", "ggH1_b", "ggH1_i", "ggH2_t", "ggH2_b", "ggH2_i", "ggH3_t", "ggH3_b", "ggH3_i"};
-    mssm_bbH_signals = {"bbH1", "bbH2", "bbH3"};
+    if(sub_analysis == "sm-like-light")
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggh_t", "ggh_b", "ggh_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggh"};
+      }
+      mssm_bbH_signals_smlike = {"bbh"};
+      mssm_ggH_signals_scalar = {"ggH_t", "ggH_b", "ggH_i"};
+      mssm_bbH_signals_scalar = {"bbH"};
+      mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbA"};
+      qqh_bsm_signals = {"qqh"};
+      if (sm == true){
+        wh_bsm_signals = {"Wh"};
+        zh_bsm_signals = {"Zh"};
+      }
+    }
+    else if(sub_analysis == "sm-like-heavy")
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggH_t", "ggH_b", "ggH_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggH"};
+      }
+      mssm_bbH_signals_smlike = {"bbH"};
+      mssm_ggH_signals_scalar = {"ggh_t", "ggh_b", "ggh_i"};
+      mssm_bbH_signals_scalar = {"bbh"};
+      mssm_ggH_signals_pseudoscalar = {"ggA_t", "ggA_b", "ggA_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbA"};
+      qqh_bsm_signals = {"qqH"};
+      if (sm == true){
+        wh_bsm_signals = {"WH"};
+        zh_bsm_signals = {"ZH"};
+      }
+    }
+    else if(sub_analysis == "cpv") // caution! 'scalar' and 'pseudoscalar' are used here for lists only! physics-wise ill-defined!
+    {
+      if(sm_like_hists == "bsm")
+      {
+        mssm_ggH_signals_smlike = {"ggH1_t", "ggH1_b", "ggH1_i"};
+      }
+      else if(sm_like_hists == "sm125")
+      {
+        mssm_ggH_signals_smlike = {"ggH1"};
+      }
+      mssm_bbH_signals_smlike = {"bbH1"};
+      mssm_ggH_signals_scalar = {"ggH2_t", "ggH2_b", "ggH2_i"};
+      mssm_bbH_signals_scalar = {"bbH2"};
+      mssm_ggH_signals_pseudoscalar = {"ggH3_t", "ggH3_b", "ggH3_i"};
+      mssm_bbH_signals_pseudoscalar = {"bbH3"};
+      qqh_bsm_signals = {"qqH1"};
+      if (sm == true){
+        wh_bsm_signals = {"WH1"};
+        zh_bsm_signals = {"ZH1"};
+      }
+    }
+    mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+    mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+    mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
+    mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+
+
+  std::cout << "Used BSM signals: ";
+  for(auto proc : mssm_signals){
+    std::cout << proc << " ";
+  }
+  std::cout << std::endl;
+
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
@@ -233,8 +385,6 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
 
-  //bool do_morph=false;
-  bool do_morph=true;
   if(do_morph) {
 
     // new DESY datacards should have all masses now?
@@ -247,13 +397,12 @@ int main(int argc, char **argv) {
 
   } else {
     // dont use mass morphing - need to specify a mass here
-    string mass_str = "700";
-    SUSYggH_masses[2016] = {mass_str};
-    SUSYggH_masses[2017] = {mass_str};
-    SUSYggH_masses[2018] = {mass_str};
-    SUSYbbH_masses[2016] = {mass_str};
-    SUSYbbH_masses[2017] = {mass_str};
-    SUSYbbH_masses[2018] = {mass_str};
+    SUSYggH_masses[2016] = {non_morphed_mass};
+    SUSYggH_masses[2017] = {non_morphed_mass};
+    SUSYggH_masses[2018] = {non_morphed_mass};
+    SUSYbbH_masses[2016] = {non_morphed_mass};
+    SUSYbbH_masses[2017] = {non_morphed_mass};
+    SUSYbbH_masses[2018] = {non_morphed_mass};
   }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -283,11 +432,11 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-  else if(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm_heavy"){
-    bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals});
-    bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals});
-    bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals});
-    bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals,bkgs_HWW});
+  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+    bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
+    bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
+    bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals,sm_signals,bkgs_HWW});
     if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
       bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
     }
@@ -316,14 +465,16 @@ int main(int argc, char **argv) {
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
-  mA.setConstant(true);
+  // mA is used as model parameter in case of sub_analysis "sm-like-light", for "sm-like-heavy" and "cpv" it is mHp
+  if(sub_analysis == "sm-like-light")
+  {
+    mA.setConstant(true);
+  }
 
-  // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1
+  // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1 (sub_analysis "cpv")
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
-  RooRealVar mHp("mHp", "mHp", 125., 90., 4000.);
-  mHp.setConstant(true);
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -331,8 +482,7 @@ int main(int argc, char **argv) {
 
   // Define categories
   map<string, Categories> cats;
-  // STXS stage 0 categories (optimized on ggH and VBF)
-  if(analysis == "mssm_classic" || analysis == "mssm_vs_sm_CPV" || analysis == "mssm_vs_sm_classic"){
+  if(categorization == "classic"){
     cats["et"] = {
         { 32, "et_Nbtag0_MTLt40"},
         { 33, "et_Nbtag0_MT40To70"},
@@ -359,7 +509,7 @@ int main(int argc, char **argv) {
         { 37, "em_NbtagGt1_DZetam35Tom10"},
     };
   }
-  else if(analysis == "sm"){
+  else if(categorization == "sm-ml-only"){
     cats["et"] = {
       { 1, "et_xxh"}, // SM Signal Category
 
@@ -398,7 +548,7 @@ int main(int argc, char **argv) {
       {20, "em_emb"}
     };
   }
-  else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_h125" || analysis == "mssm"){
+  else if(categorization == "with-sm-ml"){
     cats["et"] = {
         { 1, "et_xxh"}, // SM Signal Category
 
@@ -442,7 +592,7 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_xxh"}, // SM Signal Category
 
-        { 2, "em_DZetaLtm35"}, // TODO check how we will hande the control region and overlap with SM
+        { 2, "em_DZetaLtm35"},
 
         {13, "em_tt"},
         {14, "em_ss"},
@@ -452,7 +602,7 @@ int main(int argc, char **argv) {
 
         {32, "em_Nbtag0_DZetaGt30_MHGt250"},
         {33, "em_Nbtag0_DZetam10To30_MHGt250"},
-        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"}, // No bbA
+        {34, "em_Nbtag0_DZetam35Tom10_MHGt250"},
 
         {35, "em_NbtagGt1_DZetaGt30"},
         {36, "em_NbtagGt1_DZetam10To30"},
@@ -476,10 +626,11 @@ int main(int argc, char **argv) {
 
   for (auto chn : chns) {
   // build category maps used for the different analyses
-    Categories sm_and_btag_cats = cats[chn]; // contain 1-31
-    Categories mssm_btag_cats = cats[chn]; // contain 1, 35-37
-    Categories mssm_cats = cats[chn]; // contain 32-37
-    Categories sm_signal_cat = cats[chn]; // contain 1, 32-37
+    Categories sm_and_btag_cats = cats[chn]; // contain 1, 2, 13-21, 35-37
+    Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
+    Categories mssm_cats = cats[chn]; // contain 2, 32-37
+    Categories sm_signal_cat = cats[chn]; // contain 1
+
     for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
@@ -494,37 +645,34 @@ int main(int argc, char **argv) {
         sm_signal_cat.erase(catit);
         --catit;
       }
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_signal_cat.erase(catit);
+        --catit;
+      }
     }
+
     for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_cats.erase(catit);
         --catit;
       }
-    }
-    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
-    {
       if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_cats.erase(catit);
         --catit;
       }
     }
-    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-    {
-      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
-        mssm_btag_cats.erase(catit);
-        --catit;
-      }
-    }
+
     for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         mssm_btag_cats.erase(catit);
         --catit;
       }
-    }
-    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
-    {
+      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+        mssm_btag_cats.erase(catit);
+        --catit;
+      }
       if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_btag_cats.erase(catit);
         --catit;
@@ -538,88 +686,113 @@ int main(int argc, char **argv) {
         --catit;
       }
     }
-    // std::cout << "[INFO] Using the following categories:" << std::endl;
-    // std::cout << "   sm_and_btag_cats:" << std::endl;
-    // for (const auto i: sm_and_btag_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
-    // std::cout << "    mssm_cats:" << std::endl;
-    // for (const auto i: mssm_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
-    // std::cout << "    mssm_btag_cats:" << std::endl;
-    // for (const auto i: mssm_btag_cats)
-    //   std::cout << "      " << i.first << ' ' << i.second << std::endl;
-    // std::cout  << std::endl;
-    cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
-    cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
-    // currently possible analysis:
-    // 1. sm
-    // 2. mssm
-    // 3. mssm_classic
-    // 3. mssm_vs_sm_h125
-    // 4. mssm_vs_sm
 
+    std::cout << "[INFO] Using the following categories:" << std::endl;
+    std::cout << "   sm_and_btag_cats:" << std::endl;
+    for (const auto i: sm_and_btag_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    mssm_cats:" << std::endl;
+    for (const auto i: mssm_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    mssm_btag_cats:" << std::endl;
+    for (const auto i: mssm_btag_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    sm_signal_cat:" << std::endl;
+    for (const auto i: sm_signal_cat)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+
+    cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
+    // Adding background processes. This also contains SMH125 templates if configured in that way.
+    // For sm analysis: bbH125, and in sm categories WH125 and ZH125
+    // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
 
     if(analysis == "sm"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true);
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
     }
-    else if(analysis == "mssm"){
-      // filter masses above treshold:
-      std::vector<std::string> masses_SM_bbH;
-      std::vector<std::string> masses_SM_ggH;
-      int bbH_threshold = SM_thresholds_bbH[era][chn];
-      int ggH_threshold = SM_thresholds_ggH[era][chn];
-      // if(sm){
-      //     MH.setRange(90., std::max(bbH_threshold,ggH_threshold));
-      // }
-      std::copy_if (SUSYbbH_masses[era].begin(), SUSYbbH_masses[era].end(), std::back_inserter(masses_SM_bbH), [bbH_threshold](std::string i){return std::stoi(i)<=bbH_threshold;} );
-      std::copy_if (SUSYggH_masses[era].begin(), SUSYggH_masses[era].end(), std::back_inserter(masses_SM_ggH), [ggH_threshold](std::string i){return std::stoi(i)<=ggH_threshold;} );
-      // std::cout << "[INFO] Using masses for SM: ";
-      //   // printVector(masses_SM_bbH);
-      //   // printVector(masses_SM_ggH);
-      // cb.AddProcesses(masses_SM_bbH, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
-      // cb.AddProcesses(masses_SM_ggH, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
+    else if(analysis == "bsm-model-indep"){
+
+      // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
+      // Comprising BSM signal h
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
     }
-    else if(analysis == "mssm_classic"){
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_classic"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggh_i", "ggh_t", "ggh_b"}, sm_and_btag_cats, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_h125"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"ggh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, {"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}, mssm_cats, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbh"}, mssm_btag_cats, true); // b-tagged mssm categories
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, {"bbH", "bbA"}, mssm_cats, true); // high mass categories only (== all mssm categories)
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqh"}, sm_and_btag_cats, true); // sm categories + b-tagged mssm categories
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-    }
-    else if(analysis == "mssm_vs_sm_CPV"){
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, cats[chn], true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, {"qqH1"}, cats[chn], true);
+    else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
+      // Adding at first the additional Higgs boson signals
+      Categories additional_higgses_cats;
+      if(categorization == "classic") // classic categories cover full mass range for additional Higgs signals
+      {
+         additional_higgses_cats = cats[chn];
+      }
+      else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
+      {
+         if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
+         {
+             additional_higgses_cats = mssm_cats;
+         }
+         else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
+         {
+             additional_higgses_cats = sm_and_btag_cats;
+         }
+      }
+      // sm-like-light sub_analysis: H and A
+      // sm-like-heavy sub_analysis: h and A
+      // cpv sub_analysis: H2 and H3
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_additional, additional_higgses_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_additional, additional_higgses_cats, true);
+
+      if(analysis == "bsm-model-dep-full") // In that case of analysis we compare full neutral BSM Higgs spectrum (h, H, A or H1, H2, H3) with SM hypothesis
+      {
+        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
+
+        // Defining categories for qqphi, ggphi, and bbphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
+        Categories qq_gg_bb_phi_cats;
+        if(categorization == "classic")
+        {
+          qq_gg_bb_phi_cats = cats[chn];
+        }
+        else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
+        {
+          qq_gg_bb_phi_cats = sm_and_btag_cats;
+        }
+
+        // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, qqh_bsm_signals, qq_gg_bb_phi_cats, true);
+        // Wphi and Zphi are only added if an sm category is considered, since otherwise no templates are available for WH and ZH
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
+        if(sm){
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, wh_bsm_signals, qq_gg_bb_phi_cats, true);
+          cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, zh_bsm_signals, qq_gg_bb_phi_cats, true);
+        }
+
+        // Adding the SM-like processes bbphi and ggphi
+        // sm-like-light: phi = h
+        // sm-like-heavy: phi = H
+        // cpv: phi = H1
+        VString empty_masses = {""};
+        VString ggH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYggH_masses[era];
+        cb.AddProcesses(ggH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_smlike, qq_gg_bb_phi_cats, true);
+        VString bbH_SMlike_masses = (sm_like_hists == "sm125") ? empty_masses : SUSYbbH_masses[era];
+        cb.AddProcesses(bbH_SMlike_masses, {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_smlike, qq_gg_bb_phi_cats, true);
+      }
     }
   }
 
-  // Add systematics
+  // Add systematics TODO: update also for all BSM flavours (ggphi, bbphi, qqphi)
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
   ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
   dout("[INFO] Systematics added");
@@ -638,73 +811,128 @@ int main(int argc, char **argv) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
     dout("[INFO] Extracting shapes from ", input_file_base);
-    cb.cp().channel({chn}).backgrounds().ExtractShapes(
+
+    // Adding background templates to processes. This also involves (if configured) SMH125 processes.
+    // sm analysis: bbH125, and in sm categories also WH125 and ZH125
+    // bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    cb.cp().channel({chn}).backgrounds().process({"bbH125"}, false).ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
+    cb.cp().channel({chn}).backgrounds().process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
+      input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
     if(analysis == "sm"){
-      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes(
+      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes( // these are ggH125 and qqH125
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
     }
-
-    else if(analysis == "mssm"){
+    // Adding templates for configured SUSY signals
+    // Comprising BSM signal h in model-independent case
+    else if(analysis == "bsm-model-indep"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-    }
-
-    else if (analysis == "mssm_classic") {
-      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
     }
-
-    else if(analysis == "mssm_vs_sm_h125"){
-       cb.cp().channel({chn}).process({"ggH_i", "ggH_t", "ggH_b", "ggA_i", "ggA_t", "ggA_b"}).ExtractShapes(
+    // Adding templates for configured SUSY signals of model-dependent analyses
+    // sm-like-light sub_analysis: H and A
+    // sm-like-heavy sub_analysis: h and A
+    // cpv sub_analysis: H2 and H3
+    else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
+      // In case of ggPhi, it depends on the sub_analysis, how to include the templates
+      // It is simpler, when the templates correspond to H, h, or A as it is in for
+      // sub_analysis sm-like-light and sm-like-heavy
+      if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
+        cb.cp().channel({chn}).process(mssm_ggH_signals_additional).ExtractShapes(
           input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
-          input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-    }
-
-    else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic"){
-      cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
-          input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-        input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-      cb.cp().channel({chn}).process({"qqh"}).ExtractShapes(
-        input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
-    }
-
-    else if(analysis == "mssm_vs_sm_CPV")
-      {
-        // use the ggH_t,b,i shapes for all H1, H2, H3 and the bbH shape for H1, H2, H3 as a starting point
-        cb.cp().channel({chn}).process({"ggH1_i", "ggH2_i", "ggH3_i"}).ExtractShapes(
-          input_file_base, "$BIN/ggH_i_$MASS", "$BIN/ggH_i_$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"ggH1_t", "ggH2_t", "ggH3_t"}).ExtractShapes(
-          input_file_base, "$BIN/ggH_t_$MASS", "$BIN/ggH_t_$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"ggH1_b", "ggH2_b", "ggH3_b"}).ExtractShapes(
-          input_file_base, "$BIN/ggH_b_$MASS", "$BIN/ggH_b_$MASS_$SYSTEMATIC");
-
-        // Included in ggH1_x ?
-        // cb.cp().channel({chn}).process({"ggh"}).ExtractShapes(
-        //   input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"qqH1"}).ExtractShapes(
-          input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
       }
+      // In case of sub_analysis cpv, the templates have to be included explicitly
+      // for ggPhi due to different naming of the process
+      else if(sub_analysis == "cpv"){
+        cb.cp().channel({chn}).process({"ggH2_t"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_t_$MASS", "$BIN/ggH_t_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH2_b"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_b_$MASS", "$BIN/ggH_b_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH2_i"}).ExtractShapes(
+          input_file_base, "$BIN/ggH_i_$MASS", "$BIN/ggH_i_$MASS_$SYSTEMATIC");
+
+        cb.cp().channel({chn}).process({"ggH3_t"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_t_$MASS", "$BIN/ggA_t_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH3_b"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_b_$MASS", "$BIN/ggA_b_$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"ggH3_i"}).ExtractShapes(
+          input_file_base, "$BIN/ggA_i_$MASS", "$BIN/ggA_i_$MASS_$SYSTEMATIC");
+      }
+      // Inclusion of additional bbPhi is simple for the preconfigured process names
+      // in mssm_bbH_signals_additional, reflecting the corresponding sub_analysis
+      cb.cp().channel({chn}).process(mssm_bbH_signals_additional).ExtractShapes(
+        input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+
+      // In case full neutral Higgs modelling needs to be used (h, H, A or H1, H2, H3),
+      // need to include additionally the SM-like Higgs boson. Configured process names:
+      // sm-like-light sub_analysis: h
+      // sm-like-heavy sub_analysis: H
+      // cpv sub_analysis: H1
+      // The way it is done for ggPhi and bbPhi depends in addition on whether sm125 or
+      // bsm templates should be used for the SM-like signal.
+      if(analysis == "bsm-model-dep-full"){
+        // Here, the SUSY samples are taken for ggPhi and bbPhi
+        if(sm_like_hists == "bsm"){
+          // It stays simple for ggPhi, in case of sub_analysis sm-like-light or sm-like-heavy
+          if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
+            cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
+              input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+          }
+          // Require explicit assignment for cpv sub_analysis for ggPhi due to different
+          // template vs. process naming
+          else if(sub_analysis == "cpv"){
+            cb.cp().channel({chn}).process({"ggH1_t"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_t_$MASS", "$BIN/ggh_t_$MASS_$SYSTEMATIC");
+            cb.cp().channel({chn}).process({"ggH1_b"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_b_$MASS", "$BIN/ggh_b_$MASS_$SYSTEMATIC");
+            cb.cp().channel({chn}).process({"ggH1_i"}).ExtractShapes(
+              input_file_base, "$BIN/ggh_i_$MASS", "$BIN/ggh_i_$MASS_$SYSTEMATIC");
+          }
+          // It stays simple for bbPhi, since using always the sample template
+          cb.cp().channel({chn}).process(mssm_bbH_signals_smlike).ExtractShapes(
+            input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+        }
+        // Here, the SM125 templates are used for ggPhi and bbPhi
+        else if(sm_like_hists == "sm125"){
+          cb.cp().channel({chn}).process(mssm_ggH_signals_smlike).ExtractShapes(
+            input_file_base, "$BIN/ggH125$MASS", "$BIN/ggH125$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process(mssm_bbH_signals_smlike).ExtractShapes(
+            input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // Technically, still using SUSY sample but always the 125 GeV template
+        }
+        // Include qqPhi (and WPhi and ZPhi, if needed) always as 125 templates for
+        // analysis bsm-model-dep-full
+        cb.cp().channel({chn}).process(qqh_bsm_signals).ExtractShapes(
+          input_file_base, "$BIN/qqH125$MASS", "$BIN/qqH125$MASS_$SYSTEMATIC");
+        if(sm){
+          cb.cp().channel({chn}).process(wh_bsm_signals).ExtractShapes(
+            input_file_base, "$BIN/WH125$MASS", "$BIN/WH125$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process(zh_bsm_signals).ExtractShapes(
+            input_file_base, "$BIN/ZH125$MASS", "$BIN/ZH125$MASS_$SYSTEMATIC");
+        }
+
+        // Adding SM125 signal templates for SM hypothesis of analysis bsm-model-dep-full
+        // These comprise ggH125, qqH125, bbH125, and in SM categories WH125 and ZH125
+        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals, main_sm_signals})).process({"bbH125"}, false).ExtractShapes(
+          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+        cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
+          input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // "bbH125" needs special treatment because of template name spelling
+      }
+    }
   }
+
+  // Rescale bbH125 to the right cross-section * BR (from 1pb to the value for 125.4 GeV)
+  std::cout << "[INFO] Rescaling bbH125 process to correct cross-section * BR\n";
+  boost::property_tree::ptree sm_preds;
+  read_json(sm_predictions, sm_preds);
+  std::cout << "\tCross section: " << float(sm_preds.get<float>("xs_bb_SMH125")) << std::endl;
+  std::cout << "\tBranching fraction: " << float(sm_preds.get<float>("br_SMH125_tautau")) << std::endl;
+  cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
+    proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_tautau"));
+    });
 
   // Delete processes (other than mssm signals) with 0 yield
   std::cout << "[INFO] Filtering processes with null yield: \n";
@@ -752,7 +980,7 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -765,7 +993,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
     {
       if (s->type() == "shape") {
@@ -791,7 +1019,20 @@ int main(int argc, char **argv) {
   // Look for cases where a systematic changes the sign of the yield. These cases are due to statistical fluctuations so set the systematic shift to the nominal template
   // This is needed otherwise we get complaints about functions that evaluate as NaN
   cb.ForEachSyst([&](ch::Systematic *syst) {
-  if (((syst->type().find("shape") != std::string::npos) && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.) && (syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" )) || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos) && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0 && (syst->process() == "bbH" || (syst->process() == "bbA")))){
+  if (((syst->type().find("shape") != std::string::npos)
+       && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.)
+
+       && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA"
+           || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i"
+           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i"))
+
+      || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos
+           || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos)
+
+          && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0
+
+          && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || (syst->process() == "bbA")))){
+
           std::cout << "Setting empty up and down templates to the nominal template \n";
           std::cout << ch::Systematic::PrintHeader << *syst << "\n";
           cb.cp().ForEachProc([&](ch::Process *proc){
@@ -1053,7 +1294,7 @@ int main(int argc, char **argv) {
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1063,7 +1304,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i"}, false).ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -1115,8 +1356,8 @@ int main(int argc, char **argv) {
           total_procs_shape = total_procs_shape + background_shape + signal_shape;
         }
       }
-      // Desired Asimov model: BG + Higgs. Since H->tautau treated all as background, so it is sufficient to consider the bg shape
-      else if(analysis == "mssm" || analysis == "mssm_classic"){
+      // Desired Asimov model: BG( + Higgs). Since H->tautau treated all as background( if required), so it is sufficient to consider the bg shape
+      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -1129,7 +1370,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
-      else if(analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"){
+      else if(analysis == "bsm-model-dep-full"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
@@ -1177,7 +1418,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Adding bin-by-bin uncertainties.\n";
     cb.SetAutoMCStats(cb, 0.);
   }
-  // Setup morphed mssm signals for model-independent case
+  // Setup morphed mssm signals for bsm analyses
   RooWorkspace ws("htt", "htt");
 
   std::map<std::string, RooAbsReal *> mass_var = {
@@ -1198,8 +1439,14 @@ int main(int argc, char **argv) {
     {"bbA", "norm"}
   };
 
+  // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
+  if(sm_like_hists == "sm125")
+  {
+    if(sub_analysis == "sm-like-light"){ mass_var.erase("bbh"); process_norm_map.erase("bbh");}
+    else if(sub_analysis == "sm-like-heavy"){ mass_var.erase("bbH"); process_norm_map.erase("bbH");}
+  }
 
-  if(analysis == "mssm" || analysis == "mssm_classic")
+  if(analysis == "bsm-model-indep")
   {
     mass_var = {
       {"ggh_t", &MH}, {"ggh_b", &MH}, {"ggh_i", &MH},
@@ -1233,8 +1480,8 @@ int main(int argc, char **argv) {
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
     }
-    else{
-      w_sm->var("mh")->setVal(std::stof(SUSYggH_masses[2018][0]));
+    else {
+      w_sm->var("mh")->setVal(std::stof(non_morphed_mass));
       RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
       RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
       RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
@@ -1248,29 +1495,36 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
   }
 
-  if(analysis == "mssm_vs_sm_CPV")
+  if(sub_analysis == "cpv")
+  {
+    mass_var = {
+      {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
+      {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
+      {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
+      {"bbH1", &mH1},
+      {"bbH2", &mH2},
+      {"bbH3", &mH3}
+    };
+
+    process_norm_map = {
+      {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
+      {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
+      {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
+      {"bbH1", "norm"},
+      {"bbH2", "norm"},
+      {"bbH3", "norm"}
+    };
+
+    // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
+    if(sm_like_hists == "sm125")
     {
-      mass_var = {
-        {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
-        {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
-        {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
-        {"bbH1", &mH1},
-        {"bbH2", &mH2},
-        {"bbH3", &mH3}
-      };
-      
-      process_norm_map = {
-        {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
-        {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
-        {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
-        {"bbH1", "norm"},
-        {"bbH2", "norm"},
-        {"bbH3", "norm"}
-      };
+      mass_var.erase("bbH1");
+      process_norm_map.erase("bbH1");
     }
+  }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph&&(analysis == "mssm" || analysis == "mssm_classic" || analysis == "mssm_vs_sm" || analysis == "mssm_vs_sm_classic" || analysis == "mssm_vs_sm_h125" || analysis == "mssm_vs_sm_CPV"))
+  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -1280,7 +1534,7 @@ int main(int argc, char **argv) {
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
 
-    if(analysis == "mssm" || analysis == "mssm_classic"){
+    if(analysis == "bsm-model-indep"){
       // Adding 'norm' terms into workspace according to desired signals
       for (auto bin : cb.cp().bin_set())
       {
@@ -1304,35 +1558,34 @@ int main(int argc, char **argv) {
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-  if(!do_morph) {
-    if(analysis == "mssm" || analysis == "mssm_classic"){
+  else if(!do_morph && analysis == "bsm-model-indep"){
 
-     //double Tfrac = ws.function("ggh_t_frac")->getVal();
-     //double Bfrac = ws.function("ggh_b_frac")->getVal();
-     //double Ifrac = ws.function("ggh_i_frac")->getVal();
-     double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
-     //if (Ifrac<0.) {
-     //  Ifrac=fabs(Ifrac);
-     //  // set a constant rate parameter = -1 for the interference 
-     //  cb.cp()
-     //   .process({"ggh_i"})
-     //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
-     //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
-     //}
-     std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
+   // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
+   //double Tfrac = ws.function("ggh_t_frac")->getVal();
+   //double Bfrac = ws.function("ggh_b_frac")->getVal();
+   //double Ifrac = ws.function("ggh_i_frac")->getVal();
+   double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
+   //if (Ifrac<0.) {
+   //  Ifrac=fabs(Ifrac);
+   //  // set a constant rate parameter = -1 for the interference 
+   //  cb.cp()
+   //   .process({"ggh_i"})
+   //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
+   //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
+   //}
+   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
 
-     cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Tfrac);
-      });
+   cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Tfrac);
+    });
 
-     cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Bfrac);
-      });
+   cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Bfrac);
+    });
 
-     cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*Ifrac);
-      });
-    }
+   cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Ifrac);
+    });
   }
 
 
