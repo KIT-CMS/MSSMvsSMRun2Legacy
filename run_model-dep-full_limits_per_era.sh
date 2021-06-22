@@ -94,7 +94,7 @@ elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
-    combineTool.py -M T2W -o ${wsoutput} \
+    combineTool.py -M T2W -o ws_mh125.root \
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
     --PO replace-with-SM125=${replace_with_sm125} \
