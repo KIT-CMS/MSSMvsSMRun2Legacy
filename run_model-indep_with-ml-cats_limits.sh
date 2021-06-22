@@ -4,7 +4,7 @@ ulimit -s unlimited
 TAG=$1
 MODE=$2
 if [[ $TAG == "auto" ]]; then
-    TAG="cmb_ind"
+    TAG="cmb_ind_with-sm-ml"
 fi
 
 
