@@ -792,7 +792,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Add systematics TODO: update also for all BSM flavours (ggphi, bbphi, qqphi)
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
   ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
   dout("[INFO] Systematics added");
