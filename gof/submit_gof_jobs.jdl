@@ -1,0 +1,19 @@
+universe = docker
+docker_image = mschnepf/slc7-condocker
+executable = gof/run_gof.sh
+
+Requirements = ( (Target.ProvidesCPU == True) && (TARGET.ProvidesEKPResources == True ) )
++RequestWalltime = 6000
++ExperimentalJob = True
+RequestMemory = 4096
+request_disk = 204800
+RequestCpus = 1
+accounting_group = cms.higgs
+
+output = gof/log/$(cluster).$(Process).out
+error = gof/log/$(cluster).$(Process).err
+log = gof/log/$(cluster).$(Process).log
+
+arguments = $(a1) $(a2) $(a3)
+
+queue a1,a2,a3 from gof/arguments.txt
