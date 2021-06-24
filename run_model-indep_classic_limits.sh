@@ -42,6 +42,14 @@ if [[ $MODE == "initial" ]]; then
     ############
     mkdir -p ${datacarddir}/combined/cmb/
     rsync -av --progress ${datacarddir}/201?/htt_*/* ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    for ERA in 2016 2017 2018; do
+        for CH in et mt tt em; do
+            mkdir -p ${datacarddir}/${ERA}/${CH}/
+            rsync -av --progress ${datacarddir}/${ERA}/htt_${CH}*/* ${datacarddir}/${ERA}/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+        done
+        mkdir -p ${datacarddir}/${ERA}/cmb/
+        rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    done
 
 elif [[ $MODE == "ws" ]]; then
     ############
@@ -92,6 +100,16 @@ elif [[ $MODE == "ws" ]]; then
     --cminDefaultMinimizerStrategy 0 \
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_ggh.txt
+
+elif [[ $MODE == "ws-gof" ]]; then
+    ############
+    # workspace creation for GoF tests
+    ############
+
+    combineTool.py -M T2W -o "ws.root" \
+    -i ${datacarddir}/*/{et,mt,tt,em,cmb}/ \
+    --channel-masks \
+    -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_independent.txt
 
 elif [[ $MODE == "submit" ]]; then
     ############
