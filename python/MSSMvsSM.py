@@ -252,7 +252,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
-                if br_htautau == 0 and not br_htautau_SM == 0:
+                if br_htautau == 0 and br_htautau_SM == 0:
                     print "[WARNING]: Both BSM and SM BR predictions are 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = 1.
                     br_htautau = 1.
