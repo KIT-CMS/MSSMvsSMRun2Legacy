@@ -23,6 +23,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.ggHatNLO = ''
         self.mssm_inputs = None
         self.sm_predictions = None
+        self.debug_output = None
         self.minTemplateMass = None
         self.maxTemplateMass = None
         self.quantity_map = {
@@ -134,6 +135,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 print "BSM scalar Higgs boson:",self.bsmscalar
                 print "Mass parameter in the plane:",self.massparameter
 
+            if po.startswith('debug-output='):
+                debug_name = po.replace('debug-output=', '')
+                self.debug_output = ROOT.TFile.Open(debug_name, "recreate")
+                print "Using %s as debug output file"%debug_name
+
             if po.startswith('MSSM-NLO-Workspace='):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
                 print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
@@ -168,6 +174,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.buildModel()
 
     def doHistFunc(self, name, hist, varlist):
+        if self.debug_output:
+            self.debug_output.cd()
+            hist.Write()
         dh = ROOT.RooDataHist('dh_%s'%name, 'dh_%s'%name, ROOT.RooArgList(*varlist), ROOT.RooFit.Import(hist))
         hfunc = ROOT.RooHistFunc(name, name, ROOT.RooArgSet(*varlist), dh)
         self.modelBuilder.out._import(hfunc, ROOT.RooFit.RecycleConflictNodes())
@@ -563,6 +572,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
         # And the SM terms
         self.PROC_SETS.extend(['ggH125', 'qqH125', 'ZH125', 'WH125', 'bbH125'])
+        if self.debug_output:
+            self.debug_output.Close()
 
 
 MSSMvsSM = MSSMvsSMHiggsModel()
