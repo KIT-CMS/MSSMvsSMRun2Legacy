@@ -1296,6 +1296,14 @@ int main(int argc, char **argv) {
     }
   }
 
+  // rename MC subtraction uncertainty in the em channel to decorrelate between years and ttbar fraction.
+  for (std::string y: {"2016", "2017", "2018"}) {
+      cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "CMS_htt_qcd_iso", "CMS_htt_qcd_iso_"+y);
+
+      cb.cp().bin_id({32,33,34}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
+      cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+  }
+
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";

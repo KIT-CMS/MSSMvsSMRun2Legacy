@@ -1913,6 +1913,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
        .process({"QCD"})
        .AddSyst(cb, "subtrMC", "shape", SystMap<>::init(1.00));
   }
+  cb.cp()
+      .channel({"em"})
+      .process({"W"})
+      .AddSyst(cb, "CMS_htt_fake_em_$ERA", "lnN", SystMap<>::init(1.15));
+
 
   // ##########################################################################
   // Uncertainty: Drell-Yan LO->NLO reweighting
