@@ -947,9 +947,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 0.998, 0.998)
   ({"em"}, {"2017"}, {34}, 1.001, 0.999)
   ({"em"}, {"2018"}, {34}, 1.001, 0.999)
-  // ({"em"}, {"2016"}, {2}, 1.001, 1.001)
-  // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
-  // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
+  ({"em"}, {"2016"}, {2}, 0.99998, 1.059)
+  ({"em"}, {"2017"}, {2}, 0.988, 1.009)
+  ({"em"}, {"2018"}, {2}, 0.994, 1.009)
+  // ({"em"}, {"2016"}, {2}, 1.001, 1.001) // ttbar CR without b-tag requirement
+  // ({"em"}, {"2017"}, {2}, 1.0, 1.0) // ttbar CR without b-tag requirement
+  // ({"em"}, {"2018"}, {2}, 1.0, 1.0) // ttbar CR without b-tag requirement
   );
   
   cb.cp().process({"ZL"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
@@ -971,6 +974,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.001, 1.001)
   ({"em"}, {"2017"}, {34}, 1.002, 1.0)
   ({"em"}, {"2018"}, {34}, 1.0, 0.999)
+  ({"em"}, {"2016"}, {2}, 0.9996, 1.020)
+  ({"em"}, {"2017"}, {2}, 0.963, 1.024)
+  ({"em"}, {"2018"}, {2}, 0.985, 1.031)
   // ({"em"}, {"2016"}, {2}, 1.002, 1.002)
   // ({"em"}, {"2017"}, {2}, 0.999, 0.999)
   // ({"em"}, {"2018"}, {2}, 1.001, 1.001)
@@ -1025,7 +1031,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.052, 0.947)
   ({"em"}, {"2017"}, {34}, 1.108, 0.892)
   ({"em"}, {"2018"}, {34}, 1.068, 0.931)
-  // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
+  ({"em"}, {"2016"}, {2}, 0.990, 1.010)
+  ({"em"}, {"2018"}, {2}, 0.991, 1.010)
+  ({"em"}, {"2017"}, {2}, 0.983, 1.018)
+  // ({"em"}, {"2016"}, {2}, 1.0, 1.0) // CR without b-tag req.
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
   ({"et"}, {"2016"}, {35}, 0.964, 0.984)
@@ -1079,6 +1088,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.004, 0.995)
   ({"em"}, {"2017"}, {34}, 1.009, 0.991)
   ({"em"}, {"2018"}, {34}, 1.005, 0.994)
+  ({"em"}, {"2016"}, {2}, 0.986, 1.015)
+  ({"em"}, {"2018"}, {2}, 0.986, 1.016)
+  ({"em"}, {"2017"}, {2}, 0.975, 1.025)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1133,6 +1145,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.0, 1.0)
   ({"em"}, {"2017"}, {34}, 1.001, 1.0)
   ({"em"}, {"2018"}, {34}, 1.001, 1.0)
+  ({"em"}, {"2016"}, {2}, 0.995, 1.004)
+  ({"em"}, {"2017"}, {2}, 0.986, 1.000)
+  ({"em"}, {"2018"}, {2}, 0.992, 1.011)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1187,6 +1202,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.003, 1.001)
   ({"em"}, {"2017"}, {34}, 1.002, 1.0)
   ({"em"}, {"2018"}, {34}, 1.0, 0.999)
+  ({"em"}, {"2016"}, {2}, 0.988, 1.0)
+  ({"em"}, {"2017"}, {2}, 1.000, 1.000)
+  ({"em"}, {"2018"}, {2}, 1.000, 1.005)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1241,6 +1259,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.013, 0.994)
   ({"em"}, {"2017"}, {34}, 1.004, 0.997)
   ({"em"}, {"2018"}, {34}, 1.004, 0.998)
+  ({"em"}, {"2016"}, {2}, 0.908, 1.032)
+  ({"em"}, {"2018"}, {2}, 0.913, 1.065)
+  ({"em"}, {"2017"}, {2}, 0.935, 1.075)
   // ({"em"}, {"2016"}, {2}, 1.001, 1.001)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1265,6 +1286,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.005, 1.0)
   ({"em"}, {"2017"}, {34}, 1.003, 0.998)
   ({"em"}, {"2018"}, {34}, 1.005, 0.994)
+  ({"em"}, {"2016"}, {2}, 0.963, 1.117)
+  ({"em"}, {"2018"}, {2}, 0.896, 1.064)
+  ({"em"}, {"2017"}, {2}, 0.978, 1.020)
   // ({"em"}, {"2016"}, {2}, 1.002, 1.002)
   // ({"em"}, {"2017"}, {2}, 0.999, 0.999)
   // ({"em"}, {"2018"}, {2}, 1.001, 1.001)
@@ -1319,6 +1343,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.004, 0.995)
   ({"em"}, {"2017"}, {34}, 1.007, 0.992)
   ({"em"}, {"2018"}, {34}, 1.01, 0.989)
+  ({"em"}, {"2016"}, {2}, 0.999, 1.001)
+  ({"em"}, {"2018"}, {2}, 0.999, 1.002)
+  ({"em"}, {"2017"}, {2}, 0.999, 1.001)
   //({"em"}, {"2016"}, {2}, 1.0, 1.0)
   //({"em"}, {"2017"}, {2}, 1.0, 1.0)
   //({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1373,6 +1400,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.002, 0.997)
   ({"em"}, {"2017"}, {34}, 1.004, 0.995)
   ({"em"}, {"2018"}, {34}, 1.006, 0.994)
+  ({"em"}, {"2016"}, {2}, 0.994, 1.007)
+  ({"em"}, {"2018"}, {2}, 0.987, 1.013)
+  ({"em"}, {"2017"}, {2}, 0.991, 1.010)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1427,6 +1457,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.003, 0.997)
   ({"em"}, {"2017"}, {34}, 1.005, 0.996)
   ({"em"}, {"2018"}, {34}, 1.008, 0.994)
+  ({"em"}, {"2016"}, {2}, 0.921, 1.109)
+  ({"em"}, {"2017"}, {2}, 0.886, 1.078)
+  ({"em"}, {"2018"}, {2}, 0.924, 1.132)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1481,6 +1514,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.007, 0.997)
   ({"em"}, {"2017"}, {34}, 1.008, 0.994)
   ({"em"}, {"2018"}, {34}, 1.01, 0.99)
+  ({"em"}, {"2016"}, {2}, 0.925, 1.100)
+  ({"em"}, {"2017"}, {2}, 0.910, 1.141)
+  ({"em"}, {"2018"}, {2}, 0.829, 1.116)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
@@ -1556,21 +1592,26 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
             cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_catagories, {m}, ggH_nobtag_down, ggH_nobtag_up));
+
+
+            // ttbar control region uncertainties
+            double bbH_ttbar_cr_up = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
+            double bbH_ttbar_cr_down = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+            // Cover SM bbH125 case
+            if(m == "125"){
+              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+            }
+
+            double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
+            double ggH_ttbar_cr_down = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
+            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, {2}, {m}, ggH_ttbar_cr_down, ggH_ttbar_cr_up));
             }
         }
         }
     }
   }
-  cb.cp()
-      .channel({"em"})
-      .process(mc_processes)
-      .bin_id({2})
-      .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process(mc_processes)
-      .bin_id({2})
-      .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Electron energy scale
