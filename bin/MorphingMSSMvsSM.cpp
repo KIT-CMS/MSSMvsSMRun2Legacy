@@ -1098,13 +1098,11 @@ int main(int argc, char **argv) {
 
 
     binning_map["em"][1] = {};
-    binning_map["em"][2][0] = {0., 50., 50.};
-    binning_map["em"][2][1] = {50., 200., 10.};
-    binning_map["em"][2][2] = {200., 350., 25.};
-    binning_map["em"][2][3] = {350., 500., 50.};
-    binning_map["em"][2][4] = {500., 900., 100.};
-    binning_map["em"][2][5] = {900., 1100., 200.};
-    binning_map["em"][2][6] = {1100., 5000., 3900.};
+    binning_map["em"][2][0] = {50., 200., 10.};
+    binning_map["em"][2][1] = {200., 350., 25.};
+    binning_map["em"][2][2] = {350., 500., 50.};
+    binning_map["em"][2][3] = {500., 900., 100.};
+    binning_map["em"][2][4] = {900., 1100., 200.};
     binning_map["em"][13] = {};
     binning_map["em"][14] = {};
     binning_map["em"][16] = {};
