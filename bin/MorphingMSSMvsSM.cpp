@@ -933,6 +933,85 @@ int main(int argc, char **argv) {
     proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_tautau"));
     });
 
+
+  // Manual rebinning for histograms
+  if(manual_rebin)
+  {
+    std::map<std::string, std::map<unsigned int, std::map<unsigned int, std::vector<double> > > >binning_map;
+    binning_map["em"] = {};
+    binning_map["et"] = {};
+    binning_map["mt"] = {};
+    binning_map["tt"] = {};
+
+
+    binning_map["em"][1] = {};
+    binning_map["em"][2][0] = {100., 200., 10.};
+    binning_map["em"][2][1] = {200., 350., 25.};
+    binning_map["em"][2][2] = {350., 500., 50.};
+    binning_map["em"][2][3] = {500., 900., 100.};
+    binning_map["em"][2][4] = {900., 1100., 200.};
+    binning_map["em"][13] = {};
+    binning_map["em"][14] = {};
+    binning_map["em"][16] = {};
+    binning_map["em"][20] = {};
+    binning_map["em"][19] = {};
+
+    binning_map["em"][32] = {};
+    binning_map["em"][33] = {};
+    binning_map["em"][34] = {};
+    binning_map["em"][35] = {};
+    binning_map["em"][36] = {};
+    binning_map["em"][37] = {};
+
+    binning_map["et"][1] = {};
+    binning_map["et"][13] = {};
+    binning_map["et"][15] = {};
+    binning_map["et"][16] = {};
+    binning_map["et"][20] = {};
+    binning_map["et"][21] = {};
+
+    binning_map["et"][32] = {};
+    binning_map["et"][33] = {};
+    binning_map["et"][35] = {};
+    binning_map["et"][36] = {};
+
+
+    binning_map["mt"][1] = {};
+    binning_map["mt"][13] = {};
+    binning_map["mt"][15] = {};
+    binning_map["mt"][16] = {};
+    binning_map["mt"][20] = {};
+    binning_map["mt"][21] = {};
+
+    binning_map["mt"][32] = {};
+    binning_map["mt"][33] = {};
+    binning_map["mt"][35] = {};
+    binning_map["mt"][36] = {};
+
+
+    binning_map["tt"][1] = {};
+    binning_map["tt"][10] = {};
+    binning_map["tt"][16] = {};
+    binning_map["tt"][20] = {};
+    binning_map["tt"][21] = {};
+
+    binning_map["tt"][32] = {};
+    binning_map["tt"][35] = {};
+
+    for(auto chn : chns)
+    {
+      for(auto b : cb.cp().channel({chn}).bin_id_set())
+      {
+        std::vector<double> binning = binning_from_map(binning_map[chn][b]);
+        if(binning.size() > 0)
+        {
+            std::cout << "[INFO] Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
+            cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
+        }
+      }
+    }
+  }
+
   // Delete processes (other than mssm signals) with 0 yield
   std::cout << "[INFO] Filtering processes with null yield: \n";
   cb.FilterProcs([&](ch::Process *p) {
@@ -1086,84 +1165,6 @@ int main(int argc, char **argv) {
       }
     }
   });
-
-  // Manual rebinning for histograms
-  if(manual_rebin)
-  {
-    std::map<std::string, std::map<unsigned int, std::map<unsigned int, std::vector<double> > > >binning_map;
-    binning_map["em"] = {};
-    binning_map["et"] = {};
-    binning_map["mt"] = {};
-    binning_map["tt"] = {};
-
-
-    binning_map["em"][1] = {};
-    binning_map["em"][2][0] = {50., 200., 10.};
-    binning_map["em"][2][1] = {200., 350., 25.};
-    binning_map["em"][2][2] = {350., 500., 50.};
-    binning_map["em"][2][3] = {500., 900., 100.};
-    binning_map["em"][2][4] = {900., 1100., 200.};
-    binning_map["em"][13] = {};
-    binning_map["em"][14] = {};
-    binning_map["em"][16] = {};
-    binning_map["em"][20] = {};
-    binning_map["em"][19] = {};
-
-    binning_map["em"][32] = {};
-    binning_map["em"][33] = {};
-    binning_map["em"][34] = {};
-    binning_map["em"][35] = {};
-    binning_map["em"][36] = {};
-    binning_map["em"][37] = {};
-
-    binning_map["et"][1] = {};
-    binning_map["et"][13] = {};
-    binning_map["et"][15] = {};
-    binning_map["et"][16] = {};
-    binning_map["et"][20] = {};
-    binning_map["et"][21] = {};
-
-    binning_map["et"][32] = {};
-    binning_map["et"][33] = {};
-    binning_map["et"][35] = {};
-    binning_map["et"][36] = {};
-
-
-    binning_map["mt"][1] = {};
-    binning_map["mt"][13] = {};
-    binning_map["mt"][15] = {};
-    binning_map["mt"][16] = {};
-    binning_map["mt"][20] = {};
-    binning_map["mt"][21] = {};
-
-    binning_map["mt"][32] = {};
-    binning_map["mt"][33] = {};
-    binning_map["mt"][35] = {};
-    binning_map["mt"][36] = {};
-
-
-    binning_map["tt"][1] = {};
-    binning_map["tt"][10] = {};
-    binning_map["tt"][16] = {};
-    binning_map["tt"][20] = {};
-    binning_map["tt"][21] = {};
-
-    binning_map["tt"][32] = {};
-    binning_map["tt"][35] = {};
-
-    for(auto chn : chns)
-    {
-      for(auto b : cb.cp().channel({chn}).bin_id_set())
-      {
-        std::vector<double> binning = binning_from_map(binning_map[chn][b]);
-        if(binning.size() > 0)
-        {
-            std::cout << "[INFO] Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
-            cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
-        }
-      }
-    }
-  }
   // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
   if (rebin_sm && sm) {
     // Rebin background categories
