@@ -132,13 +132,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    // Notes:
    // ##########################################################################
 
-   cb.cp().process(mssm_bbH_signals).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"80"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {""}, 0.996) // for SM bbH125
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 0.995)
@@ -170,7 +169,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 0.995)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {""}, 0.995) // for SM bbH125
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 0.994)
@@ -202,7 +200,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {""}, 0.995) // for SM bbH125
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 0.994)
@@ -234,7 +231,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 1.017)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 1.015)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 1.015)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {""}, 1.015) // for SM bbH125
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 1.015)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 1.016)
      ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 1.017)
@@ -266,7 +262,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {""}, 1.016) // for SM bbH125
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 1.015)
      ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 1.016)
@@ -298,7 +293,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {""}, 1.016) // for SM bbH125
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 1.014)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 1.016)
@@ -326,13 +320,20 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3200"}, 1.022)
      ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3500"}, 1.024));
 
-   cb.cp().process(mssm_bbH_signals).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process({"bbH125"}).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id>::init
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, 0.996)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, 0.995)
+     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, 1.016));
+
+   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"60"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"80"}, 1.013, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 1.016, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 1.009, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 1.007, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {""}, 1.007, 0.993) // for SM bbH125
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 1.009, 0.994)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 1.012, 0.995)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 1.013, 0.994)
@@ -364,7 +365,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 1.020, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 1.010, 0.992)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 1.008, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {""}, 1.008, 0.992) // for SM bbH125
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 1.009, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 1.012, 0.994)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 1.014, 0.993)
@@ -396,7 +396,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 1.021, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 1.011, 0.992)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 1.009, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {""}, 1.009, 0.992) // for SM bbH125
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 1.013, 0.994)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 1.015, 0.993)
@@ -428,7 +427,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 0.926, 1.035)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 0.964, 1.028)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 0.974, 1.026)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {""}, 0.974, 1.026) // for SM bbH125
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 0.969, 1.024)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 0.958, 1.019)
     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 0.958, 1.021)
@@ -460,7 +458,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 0.920, 1.029)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 0.972, 1.025)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {""}, 0.972, 1.025) // for SM bbH125
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 0.969, 1.023)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 0.962, 1.018)
     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 0.960, 1.019)
@@ -492,7 +489,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 0.920, 1.027)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 0.972, 1.026)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {""}, 0.972, 1.026) // for SM bbH125
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 0.969, 1.023)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 0.962, 1.017)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 0.961, 1.019)
@@ -519,6 +515,15 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2900"}, 0.961, 1.034)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3200"}, 0.957, 1.033)
     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3500"}, 0.953, 1.032));
+
+
+   cb.cp().process({"bbH125"}).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, 1.007, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, 1.008, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, 1.009, 0.992)
+    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, 0.974, 1.026)
+    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, 0.972, 1.025)
+    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, 0.972, 1.026));
 
   // ##########################################################################
   // Uncertainty: Lumi
@@ -1125,7 +1130,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {35}, 1.01, 0.975)
   ({"tt"}, {"2018"}, {35}, 1.011, 1.0)
   );
- 
+
  cb.cp().process(signals_ggH).process({"ggX"}, false).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.995, 1.01)
   ({"em"}, {"2017"}, {35}, 0.993, 1.019)
@@ -1570,7 +1575,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{""}, bbH_btag_down, bbH_btag_up));
+              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
             }
 
             double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
@@ -1584,8 +1589,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-              ({c}, {yr}, nobtag_catagories, {""}, bbH_nobtag_down, bbH_nobtag_up));
+              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+              ({c}, {yr}, nobtag_catagories, bbH_nobtag_down, bbH_nobtag_up));
             }
 
             double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
