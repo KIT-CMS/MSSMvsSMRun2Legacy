@@ -500,7 +500,7 @@ int main(int argc, char **argv) {
         { 35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        {  2, "em_DZetaLtm35"},
+        {  2, "em_NbtagGt1_DZetaLtm35"},
         { 32, "em_Nbtag0_DZetaGt30"},
         { 33, "em_Nbtag0_DZetam10To30"},
         { 34, "em_Nbtag0_DZetam35Tom10"},
@@ -592,7 +592,7 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_xxh"}, // SM Signal Category
 
-        { 2, "em_DZetaLtm35"},
+        { 2, "em_NbtagGt1_DZetaLtm35"},
 
         {13, "em_tt"},
         {14, "em_ss"},
