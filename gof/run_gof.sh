@@ -33,8 +33,7 @@ ulimit -s unlimited
 # Get the code to calculate the correct masks for the given options.
 source ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/gof/build_masks.sh
 
-# DATACARD=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/analysis/cmb_ind_unblinding/datacards_bsm-model-indep/${ERA}/${CHANNEL}/ws.root
-DATACARD=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/analysis/cmb_ind/datacards_bsm-model-indep/${ERA}/${CHANNEL}/ws.root
+DATACARD=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/analysis/cmb_ind_unblinding/datacards_bsm-model-indep/${ERA}/${CHANNEL}/ws-gof.root
 if [[ ! -f ${DATACARD} ]]; then
     echo "Workspace ${DATACARD} does not exist. Please produce it first."
     exit 1
@@ -52,7 +51,8 @@ then
 fi
 
 MASKS=$(build_masks $ERA $CHANNEL $CATEGORY mod-indep)
-# MASK_ARG="--setParametersForFit $MASKS --setParametersForEval $MASKS"
+MASKS_EVAL=$(build_masks_evaluation $ERA $CHANNEL $CATEGORY mod-indep)
+MASK_ARG="--setParametersForFit $MASKS --setParametersForEval ${MASKS_EVAL}"
 
 case "$ERA" in
     "2016")
@@ -78,9 +78,9 @@ do
     # Get test statistic value
     if [[ "$ALGO" == "saturated" ]]
     then
-        combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -v 1 --setParameters $MASKS --fixedSignalStrength=0 -t -1 
+        combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -v 1 --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
     else
-        combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -v 1 --setParameters $MASKS --fixedSignalStrength=0 -t -1 --plots
+        combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -v 1 --setParameters $MASKS --fixedSignalStrength=0 --plots --expectSignal=0 $MASK_ARG
     fi
 
     # Throw toys
@@ -90,20 +90,20 @@ do
     case "$MODE" in
 
         local)
-            combineTool.py -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1230:1239:1 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --parallel 10
+            combineTool.py -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1230:1239:1 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --parallel 10 --expectSignal=0 $MASK_ARG
             ;;
 
         submit)
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1230 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1231 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1232 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1233 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1234 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1235 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1236 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1237 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1238 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
-            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1239 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1230 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1231 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1232 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1233 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1234 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1235 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1236 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1237 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1238 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
+            combine -M GoodnessOfFit -n Test.${ID} --algo=$ALGO -m $MASS -d $DATACARD -s 1239 -t $NUM_TOYS $TOYSOPT --setParameters $MASKS --fixedSignalStrength=0 --expectSignal=0 $MASK_ARG
             ;;
     esac
 
@@ -129,9 +129,9 @@ do
     # Plot
     if [[ "$ALGO" != "saturated" ]]
     then
-        plotGof.py --statistic $ALGO --mass $MASS.0 --output gof_${ALGO} $(dirname ${DATACARD})/gof/${ID}/gof_${ALGO}.json --title-right=$TITLE --title-left="${CHANNEL}, ${CATEGORY}"
-        mv htt_${CHANNEL}_300_${ERA}gof_${ALGO}.p{df,ng} output/gof/${ID}/
-        ./gof/plot_gof_metrics.py -e $ERA -g $ALGO -o output/gof/${ID}/${ERA}_plots -i higgsCombineTest.${ID}.GoodnessOfFit.mH$MASS.root
+        plotGof.py --statistic $ALGO --mass $MASS.0 --output gof_${ALGO} $(dirname ${DATACARD})/gof/${ID}/gof_${ALGO}.json --title-right="$TITLE" --title-left="${CHANNEL}, ${CATEGORY}"
+        mv htt_${CHANNEL}_${CATEGORY}_${ERA}gof_${ALGO}.p{df,ng} $(dirname ${DATACARD})/gof/${ID}/
+        ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/gof/plot_gof_metrics.py -e $ERA -g $ALGO -o $(dirname ${DATACARD})/gof/${ID}/${ERA}_plots -i higgsCombineTest.${ID}.GoodnessOfFit.mH$MASS.root
     else
         plotGof.py --statistic $ALGO --mass $MASS.0 --output gof $(dirname ${DATACARD})/gof/${ID}/gof.json --title-right="$TITLE" --title-left="${CHANNEL}, ${CATEGORY}"
         mv gof.p{df,ng} $(dirname ${DATACARD})/gof/${ID}/
