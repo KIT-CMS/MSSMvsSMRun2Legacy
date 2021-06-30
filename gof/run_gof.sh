@@ -130,7 +130,7 @@ do
     if [[ "$ALGO" != "saturated" ]]
     then
         plotGof.py --statistic $ALGO --mass $MASS.0 --output gof_${ALGO} $(dirname ${DATACARD})/gof/${ID}/gof_${ALGO}.json --title-right="$TITLE" --title-left="${CHANNEL}, ${CATEGORY}"
-        mv htt_${CHANNEL}_${CATEGORY}_${ERA}gof_${ALGO}.p{df,ng} $(dirname ${DATACARD})/gof/${ID}/
+        mv htt_*gof_${ALGO}.p{df,ng} $(dirname ${DATACARD})/gof/${ID}/
         ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/gof/plot_gof_metrics.py -e $ERA -g $ALGO -o $(dirname ${DATACARD})/gof/${ID}/${ERA}_plots -i higgsCombineTest.${ID}.GoodnessOfFit.mH$MASS.root
     else
         plotGof.py --statistic $ALGO --mass $MASS.0 --output gof $(dirname ${DATACARD})/gof/${ID}/gof.json --title-right="$TITLE" --title-left="${CHANNEL}, ${CATEGORY}"
