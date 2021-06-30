@@ -64,6 +64,9 @@ def parse_arguments():
     parser.add_argument("era", type=str, help="Select era to be plotted")
     parser.add_argument("mode", choices=["cats-per-era", "cats-per-channel", "per-channel"],
                         help="Plotting mode.")
+    parser.add_argument("-c", "--comparison-path",
+                        default=None,
+                        help="Path to directory with GoF results for comparison.")
     return parser.parse_args()
 
 
@@ -83,11 +86,13 @@ def make_cmap(colors, position):
     return cmap
 
 
-def plot_1d(categories, results, filename, channel):
+def plot_1d(categories, results, filename, channel, comparison=None):
     plt.figure(figsize=(len(categories) * 0.5, 5.0))
     y = results
     x = range(len(y))
     plt.plot(x, y, '+', mew=4, ms=16)
+    if comparison is not None:
+        plt.plot(x, comparison, '+', mew=4, ms=16)
     plt.ylim((-0.05, 1.05))
     plt.xlim((-0.5, len(x) - 0.5))
     plt.xticks(x, categories, rotation='vertical')
@@ -99,17 +104,17 @@ def plot_1d(categories, results, filename, channel):
     plt.ylabel('Saturated goodness of fit p-value', labelpad=20)
     ax = plt.gca()
     ax.xaxis.grid()
-    plt.savefig(filename+".png", bbox_inches="tight")
-    plt.savefig(filename+".pdf", bbox_inches="tight")
+    plt.savefig(filename+".png" if comparison is None else filename+"-comparison.png", bbox_inches="tight")
+    plt.savefig(filename+".pdf" if comparison is None else filename+"-comparison.pdf", bbox_inches="tight")
 
 
-def search_results_1d(path, mode, era="combined", channel="cmb"):
+def search_results_1d(path, mode, era="combined", channel="cmb", forComp=False):
     results = []
     missing = []
     if mode == "cats-per-era":
         for ch_ in ["et", "mt", "tt", "em"]:
             for category in sorted(category_dict[ch_].keys()):
-                p_val, present = get_gof_result(path, era, ch_, category)
+                p_val, present = get_gof_result(path, era, ch_, category, forComp)
                 if present:
                     results.append(p_val)
                 else:
@@ -133,13 +138,13 @@ def search_results_1d(path, mode, era="combined", channel="cmb"):
     return missing, results
 
 
-def get_gof_result(path, era, channel, category=None):
+def get_gof_result(path, era, channel, category=None, forComp=False):
     if category is None:
         filename = os.path.join(path, era, channel, "gof",
-                                "{}-{}".format(era, channel), "gof.json")
+                                "{}-{}".format(era, channel), "gof.json" if not forComp else "gof.json")
     else:
         filename = os.path.join(path, era, channel, "gof",
-                                "{}-{}-{}".format(era, channel, category), "gof.json")
+                                "{}-{}-{}".format(era, channel, category), "gof.json" if not forComp else "gof.json")
     print("Looking for file with name: {}".format(filename))
     if not os.path.exists(filename):
         return -1.0, False
@@ -148,7 +153,7 @@ def get_gof_result(path, era, channel, category=None):
         category, channel, era)
 
     p_value = json.load(open(filename))
-    return p_value["400.0"]["p"], True
+    return p_value["160.0"]["p"], True
 
 
 def main(args):
@@ -161,6 +166,11 @@ def main(args):
     logger.debug("Missing categories for 1D plot in channel %s:", args.channel)
     for category in missing_1d:
         print("{}".format(category))
+    if args.comparison_path is not None:
+        missing_1d_comp, results_1d_comp = search_results_1d(args.comparison_path, args.mode, args.era, args.channel, forComp=True)
+        logger.debug("Missing categories for 1D comparison plot in channel %s:", args.channel)
+        for category in missing_1d_comp:
+            print("{}".format(category))
 
     avail_era = ["2016", "2017", "2018"]
     avail_ch = ["et", "mt", "tt", "em"]
@@ -174,7 +184,10 @@ def main(args):
         categories = [", ".join([era_, channel_dict[ch_]]) for era_ in avail_era for ch_ in avail_ch]
         outname = "{}/gof_{}".format(args.path, args.mode)
 
-    plot_1d(categories, results_1d, outname, args.channel)
+    if args.comparison_path is None:
+        plot_1d(categories, results_1d, outname, args.channel)
+    else:
+        plot_1d(categories, results_1d, outname, args.channel, comparison=results_1d_comp)
 
 
 if __name__ == "__main__":
