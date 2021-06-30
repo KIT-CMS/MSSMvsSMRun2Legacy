@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, bkgs_em_noCR;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
   VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
@@ -364,7 +364,8 @@ int main(int argc, char **argv) {
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
+  bkgs_em = {"EMB", "W", "ZL", "TTL", "VVL"};
+  bkgs_em_noCR = {"QCD"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
     bkgs.push_back("jetFakesSM");
@@ -629,6 +630,7 @@ int main(int argc, char **argv) {
     Categories sm_and_btag_cats = cats[chn]; // contain 1, 2, 13-21, 35-37
     Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
     Categories mssm_cats = cats[chn]; // contain 2, 32-37
+    Categories exclude_em_control = cats[chn]; // contain all except 2
     Categories sm_signal_cat = cats[chn]; // contain 1
 
     for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
@@ -659,6 +661,14 @@ int main(int argc, char **argv) {
       }
       if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_cats.erase(catit);
+        --catit;
+      }
+    }
+
+    for (auto catit = exclude_em_control.begin(); catit != exclude_em_control.end(); ++catit)
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        exclude_em_control.erase(catit);
         --catit;
       }
     }
@@ -711,6 +721,10 @@ int main(int argc, char **argv) {
     // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
+    // Include QCD process in em channel for all categories except for CR
+    if (chn == "em") {
+        cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
+    }
 
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
