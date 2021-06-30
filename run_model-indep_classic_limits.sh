@@ -33,6 +33,7 @@ if [[ $MODE == "initial" ]]; then
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
+        --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
         --variable mt_tot_puppi \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
@@ -68,7 +69,7 @@ elif [[ $MODE == "ws" ]]; then
     ############
     cd ${defaultdir}/limits_ind/condor
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits \
+    -M AsymptoticLimits -t -1\
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
@@ -85,7 +86,7 @@ elif [[ $MODE == "ws" ]]; then
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
 
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits \
+    -M AsymptoticLimits -t -1 \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
@@ -102,11 +103,21 @@ elif [[ $MODE == "ws" ]]; then
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_ggh.txt
 
 elif [[ $MODE == "ws-gof" ]]; then
+    for CH in et mt tt em; do
+        rsync -av --progress ${datacarddir}/201?/htt_${CH}_*/* ${datacarddir}/combined/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    done
+    # Copy ttbar control region to every channel to include it in the workspaces
+    for ERA in 2016 2017 2018; do
+        for CH in et mt tt; do
+            rsync -av --progress ${datacarddir}/${ERA}/htt_em_2_${ERA}/* ${datacarddir}/${ERA}/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+            rsync -av --progress ${datacarddir}/${ERA}/htt_em_2_${ERA}/* ${datacarddir}/combined/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+        done
+    done
     ############
     # workspace creation for GoF tests
     ############
 
-    combineTool.py -M T2W -o "ws.root" \
+    combineTool.py -M T2W -o "ws-gof.root" \
     -i ${datacarddir}/*/{et,mt,tt,em,cmb}/ \
     --channel-masks \
     -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_independent.txt
