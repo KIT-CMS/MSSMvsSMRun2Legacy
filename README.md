@@ -172,6 +172,34 @@ plot_shapes_mssm_model_independent.sh $ERA output_mssm_classic/combined/cmb/pref
 ```
 The last parameter given to the script is optional and will be the mass that is displayed in the legend of the plot. Currently the plotting is only possible for one experiment era a time. The output directory can be freely chosen and will be created if it is not yet present.
 
+## Running GoF tests
+
+**Workspace creation**
+
+The datacards from the usual datacard creation step can be directly used for the GoF tests. If the datacards are not available yet they can be produced via the `run_model-indep_classic_limits.sh` script. The script can then also be used to produce the necessary workspaces for the GoF tests. For the datacard and workspace creation the commands would be:
+```bash
+bash run_model-indep_classic_limits.sh auto initial
+bash run_model-indep_classic_limits.sh auto ws-gof
+```
+where auto can be set to any tag value desired. The default when using `auto` as tag value is `cmb_ind`. These steps will create the workspaces separately for each category and era as well as their combinations in the directoy `analysis/cmb_ind/datacards_bsm-model-indep` if the tag value `auto` is used. The command used to produce the workspaces is
+```bash
+combineTool.py -M T2W -o "ws-gof.root" \
+    -i analysis/cmb_ind/datacards_bsm-model-indep/*/{et,mt,tt,em,cmb}/ \
+    --channel-masks \
+    -m 125.0 --parallel 8
+```
+
+**Running the GoF tests**
+
+A script is provided to run the GoF tests per category, per channel and year, per year and for the full combination. The script is located under `gof/run_gof.sh`. To run the GoF test on a single category the script should be invoked with to run the GoF test with 500 toys on a single core:
+```bash
+bash gof/run_gof.sh $ERA $CHANNEL $CATEGORY $PWD submit
+```
+To run the toy generation in parallel on 10 cores the argument `submit` can be changed to `local`. To run on the combined fit the easiest way is to call the script with the arguments:
+```bash
+bash gof/run_gof.sh combined cmb all $PWD local
+```
+
 # Model-dependent MSSM analysis
 
 In case of the calculation of model-dependent limits, several choices of signal models and categorization are available, denoted with an appropriate `--analysis`.
