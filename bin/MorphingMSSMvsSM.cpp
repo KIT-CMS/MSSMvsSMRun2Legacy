@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
   bool do_morph = true;
   bool auto_rebin = false;
-  bool manual_rebin = false;
+  bool manual_rebin = true;
   bool real_data = false;
   bool verbose = true;
   bool use_automc = true;
