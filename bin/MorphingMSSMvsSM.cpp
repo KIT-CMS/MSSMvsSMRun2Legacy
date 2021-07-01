@@ -723,8 +723,8 @@ int main(int argc, char **argv) {
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
     // Include QCD process in em channel for all categories except for CR
     if (chn == "em") {
-        //cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
-        cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, cats[chn], false); // adding back QCD for tests
+        cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
+        //cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, cats[chn], false); // adding back QCD for tests
     }
 
     if(analysis == "sm"){
@@ -1275,8 +1275,12 @@ int main(int argc, char **argv) {
 
   // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
   // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
+  // convert all processes except ttbar
   for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL"},false), u);
+  // also convert ttbar in the tt channel
   for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL"}), u);
+  // also convert ttbar in the nobtag categories
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL"}), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
