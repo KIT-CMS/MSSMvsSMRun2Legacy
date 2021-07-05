@@ -1325,6 +1325,17 @@ int main(int argc, char **argv) {
       cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
   }
 
+  std::vector<std::string> met_uncerts = {
+    "CMS_htt_boson_scale_met_2016",
+    "CMS_htt_boson_res_met_2016",
+    "CMS_htt_boson_scale_met_2017",
+    "CMS_htt_boson_res_met_2017",
+    "CMS_htt_boson_scale_met_2018",
+    "CMS_htt_boson_res_met_2018",
+  };
+
+  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
+
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
