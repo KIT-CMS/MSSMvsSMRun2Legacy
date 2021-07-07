@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 import Dumbledraw.dumbledraw as dd
 #import Dumbledraw.rootfile_parser_inputshapes as rootfile_parser
@@ -9,6 +11,8 @@ import Dumbledraw.styles as styles
 import argparse
 import copy
 import yaml
+import os
+from array import array
 
 import logging
 logger = logging.getLogger("")
@@ -97,6 +101,29 @@ def setup_logging(output_file, level=logging.DEBUG):
     file_handler = logging.FileHandler(output_file, "w")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+
+def rebin_hist_for_logX(hist, xlow=1.0):
+    bins = []
+    contents= []
+    errors = []
+    # Get low bin edges, contents and errors of all bins.
+    for i in range(1, hist.GetNbinsX()+1):
+        bins.append(hist.GetBinLowEdge(i))
+        contents.append(hist.GetBinContent(i))
+        errors.append(hist.GetBinError(i))
+    # Add low edge of overflow bin as high edge of last regular bin.
+    bins.append(hist.GetBinLowEdge((hist.GetNbinsX()+1)))
+    # Check if first bin extents to zero and if it does change it to larger value
+    if bins[0] == 0.:
+        bins[0] = xlow
+    # Create the new histogram
+    bin_arr = array("f", bins)
+    hist_capped = ROOT.TH1F(hist.GetName(), hist.GetTitle(), len(bin_arr)-1, bin_arr)
+    for i in range(0, hist_capped.GetNbinsX()):
+        hist_capped.SetBinContent(i+1, contents[i])
+        hist_capped.SetBinError(i+1, errors[i])
+    return hist_capped
 
 
 def main(args):
@@ -257,13 +284,13 @@ def main(args):
             # get background histograms
             for process in bkg_processes:
                 if process in ["jetFakes", "jetFakesEMB"] and channel == "tt":
-                    jetfakes_hist = rootfile.get(era, channel, category, process)
-                    jetfakes_hist.Add(rootfile.get(era, channel, category, "wFakes"))
+                    jetfakes_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, process), xlow=30.)
+                    jetfakes_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "wFakes"), xlow=30.))
                     plot.add_hist(jetfakes_hist, process, "bkg")
                 else:
                     #print era, channel, category, process
                     plot.add_hist(
-                        rootfile.get(era, channel, category, process), process, "bkg")
+                        rebin_hist_for_logX(rootfile.get(era, channel, category, process), xlow=30.), process, "bkg")
                 plot.setGraphStyle(
                     process, "hist", fillcolor=styles.color_dict[process])
 
@@ -271,28 +298,28 @@ def main(args):
             plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
             for i in plot_idx_to_add_signal:
                 if args.model_independent:
-                    ggH_hist = rootfile.get(era, channel, category, "ggh_t").Clone()
-                    ggH_hist.Add(rootfile.get(era, channel, category, "ggh_i"))
-                    ggH_hist.Add(rootfile.get(era, channel, category, "ggh_b"))
+                    ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
+                    ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
+                    ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
                     plot.subplot(i).add_hist(
                         ggH_hist, "ggH")
                     plot.subplot(i).add_hist(
                         ggH_hist, "ggH_top")
                     plot.subplot(i).add_hist(
-                        rootfile.get(era, channel, category, "bbh"), "bbH")
+                        rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH")
                     plot.subplot(i).add_hist(
-                        rootfile.get(era, channel, category, "bbh"), "bbH_top")
+                        rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH_top")
                 else:
                     plot.subplot(i).add_hist(
-                        rootfile.get(era, channel, category, "TotalSig"), "mssm_sig")
+                        rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig")
                     plot.subplot(i).add_hist(
-                        rootfile.get(era, channel, category, "TotalSig"), "mssm_sig_top")
+                        rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig_top")
 
             # get observed data and total background histograms
             plot.add_hist(
-                rootfile.get(era, channel, category, "data_obs"), "data_obs")
+                rebin_hist_for_logX(rootfile.get(era, channel, category, "data_obs"), xlow=30.), "data_obs")
             plot.add_hist(
-                rootfile.get(era, channel, category, "TotalBkg"), "total_bkg")
+                rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalBkg"), xlow=30.), "total_bkg")
 
             plot.subplot(0).setGraphStyle("data_obs", "e0")
             if args.model_independent:
@@ -370,10 +397,15 @@ def main(args):
             # stack background processes
             plot.create_stack(bkg_processes, "stack")
 
+            # Use binning from data histogram to get bin widths for the normalization.
+            hist_for_rebinning = rootfile.get(era, channel, category, "data_obs")
+            widths = []
+            for i in range(hist_for_rebinning.GetNbinsX()):
+                widths.append(hist_for_rebinning.GetBinWidth(i+1))
             # normalize stacks by bin-width
             if args.normalize_by_bin_width:
-                plot.subplot(0).normalizeByBinWidth()
-                plot.subplot(1).normalizeByBinWidth()
+                plot.subplot(0).normalizeByBinWidth(widths=widths)
+                plot.subplot(1).normalizeByBinWidth(widths=widths)
 
             # set axes limits and labels
             plot.subplot(0).setYlims(
@@ -417,8 +449,6 @@ def main(args):
 
 
             if int(category) > 30 or int(category) == 2:
-                low_edge = max(10, rootfile.get(era, channel, category, "TotalSig").GetBinLowEdge(2))
-                plot.setXlims(low_edge, 5000)
                 plot.subplot(0).setLogX()
                 plot.subplot(2).setLogX()
 
@@ -559,6 +589,8 @@ def main(args):
                 begin_left=posChannelCategoryLabelLeft)
 
             # save plot
+            if not os.path.exists(args.output_dir):
+                os.makedirs(args.output_dir)
             postfix = "prefit" if "prefit" in args.input else "postfit" if "postfit" in args.input else "undefined"
             plot.save("%s/%s_%s_%s_%s.%s" % (args.output_dir, args.era, channel, args.control_variable if args.control_variable is not None else category,
                                                 postfix, "png"
