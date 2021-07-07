@@ -574,7 +574,7 @@ def main(args):
             # draw additional labels
             # plot.DrawCMS()
             if "2016" in args.era:
-                plot.DrawLumi("35.9 fb^{-1} (2016, 13 TeV)")
+                plot.DrawLumi("36.3 fb^{-1} (2016, 13 TeV)")
             elif "2017" in args.era:
                 plot.DrawLumi("41.5 fb^{-1} (2017, 13 TeV)")
             elif "2018" in args.era:
