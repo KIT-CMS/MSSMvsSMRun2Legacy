@@ -412,14 +412,14 @@ def main(args):
                 split_dict[channel],
                 # max(2 * plot.subplot(0).get_hist("total_bkg").GetMaximum(),
                 #     split_dict[channel] * 2))
-                max(1.3 * plot.subplot(0).get_hist("total_bkg").GetMaximum(),
+                max(1.3 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
                     split_dict[channel] * 2))
 
-            plot.subplot(2).setYlims(0., 2.0)
+            plot.subplot(2).setYlims(0.65, 1.8)
 
             if args.linear != True:
                 # plot.subplot(1).setYlims(1.e-4, split_dict[channel])
-                plot.subplot(1).setYlims(1.e-3, split_dict[channel])
+                plot.subplot(1).setYlims(min(1.e-3, plot.subplot(1).get_hist("data_obs").GetMinimum(), plot.subplot(1).get_hist("total_bkg").GetMinimum()), split_dict[channel])
                 plot.subplot(1).setLogY()
                 if int(category) > 30 or int(category) == 2:
                     plot.subplot(1).setLogX()
