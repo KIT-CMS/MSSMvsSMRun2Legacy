@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
   bool do_morph = true;
   bool auto_rebin = false;
-  bool manual_rebin = false;
+  bool manual_rebin = true;
   bool real_data = false;
   bool verbose = true;
   bool use_automc = true;
@@ -734,6 +734,7 @@ int main(int argc, char **argv) {
     // Include QCD process in em channel for all categories except for CR
     if (chn == "em") {
         cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
+        //cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, cats[chn], false); // adding back QCD for tests
     }
 
     if(analysis == "sm"){
@@ -1282,7 +1283,14 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
+  // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
+  // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
+  // convert all processes except ttbar
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL"},false), u);
+  // also convert ttbar in the tt channel
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL"}), u);
+  // also convert ttbar in the nobtag categories
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL"}), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
@@ -1326,6 +1334,17 @@ int main(int argc, char **argv) {
       cb.cp().bin_id({32,33,34}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
       cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
   }
+
+  std::vector<std::string> met_uncerts = {
+    "CMS_htt_boson_scale_met_2016",
+    "CMS_htt_boson_res_met_2016",
+    "CMS_htt_boson_scale_met_2017",
+    "CMS_htt_boson_res_met_2017",
+    "CMS_htt_boson_scale_met_2018",
+    "CMS_htt_boson_res_met_2018",
+  };
+
+  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
