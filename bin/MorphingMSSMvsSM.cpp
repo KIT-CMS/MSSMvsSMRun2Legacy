@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
   bool do_morph = true;
   bool auto_rebin = false;
-  bool manual_rebin = true;
+  bool manual_rebin = false;
   bool real_data = false;
   bool verbose = true;
   bool use_automc = true;
@@ -697,6 +697,16 @@ int main(int argc, char **argv) {
       }
     }
 
+    Categories sm_and_btag_cats_exclude_em_control = sm_and_btag_cats;
+
+    for (auto catit = sm_and_btag_cats_exclude_em_control.begin(); catit != sm_and_btag_cats_exclude_em_control.end(); ++catit)
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_and_btag_cats_exclude_em_control.erase(catit);
+        --catit;
+      }
+    }
+
     std::cout << "[INFO] Using the following categories:" << std::endl;
     std::cout << "   sm_and_btag_cats:" << std::endl;
     for (const auto i: sm_and_btag_cats)
@@ -724,7 +734,6 @@ int main(int argc, char **argv) {
     // Include QCD process in em channel for all categories except for CR
     if (chn == "em") {
         cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
-        //cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, cats[chn], false); // adding back QCD for tests
     }
 
     if(analysis == "sm"){
@@ -736,8 +745,8 @@ int main(int argc, char **argv) {
       // Comprising BSM signal h
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -750,11 +759,11 @@ int main(int argc, char **argv) {
       {
          if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
          {
-             additional_higgses_cats = mssm_cats;
+             additional_higgses_cats = exclude_em_control;
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
-             additional_higgses_cats = sm_and_btag_cats;
+             additional_higgses_cats = sm_and_btag_cats_exclude_em_control;
          }
       }
       // sm-like-light sub_analysis: H and A
@@ -1273,14 +1282,7 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
-  // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
-  // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
-  // convert all processes except ttbar
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL"},false), u);
-  // also convert ttbar in the tt channel
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL"}), u);
-  // also convert ttbar in the nobtag categories
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL"}), u);
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
@@ -1324,17 +1326,6 @@ int main(int argc, char **argv) {
       cb.cp().bin_id({32,33,34}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
       cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
   }
-
-  std::vector<std::string> met_uncerts = {
-    "CMS_htt_boson_scale_met_2016",
-    "CMS_htt_boson_res_met_2016",
-    "CMS_htt_boson_scale_met_2017",
-    "CMS_htt_boson_res_met_2017",
-    "CMS_htt_boson_scale_met_2018",
-    "CMS_htt_boson_res_met_2018",
-  };
-
-  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
