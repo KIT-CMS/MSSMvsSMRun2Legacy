@@ -119,7 +119,7 @@ elif [[ $MODE == "ws-gof" ]]; then
     combineTool.py -M T2W -o "ws-gof.root" \
     -i ${datacarddir}/*/{et,mt,tt,em,cmb}/ \
     --channel-masks \
-    -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_independent.txt
+    -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_gof_independent.txt
 
 elif [[ $MODE == "ws-plot" ]]; then
     ###############
