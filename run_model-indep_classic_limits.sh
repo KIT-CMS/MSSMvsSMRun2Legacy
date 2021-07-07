@@ -19,8 +19,7 @@ sm_like_hists="bsm"
 [[ ! -d ${defaultdir}/limits_ind/condor ]] && mkdir -p ${defaultdir}/limits_ind/condor
 defaultdir=$(readlink -f analysis/$TAG)
 datacarddir=${defaultdir}/datacards_${analysis}
-taskname="${analysis}_${TAG}_1"
-taskname2="${analysis}_${TAG}_2"
+freeze="MH=200,r_ggH=0.0,r_bbH=0.0"
 
 if [[ $MODE == "initial" ]]; then
     ############
@@ -122,6 +121,18 @@ elif [[ $MODE == "ws-gof" ]]; then
     --channel-masks \
     -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_independent.txt
 
+elif [[ $MODE == "ws-plot" ]]; then
+    ###############
+    # workspace production for plots
+    ###############
+    combineTool.py -M T2W -o "ws.root" \
+    -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+    --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
+    --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
+    -i ${datacarddir}/201?/htt_*/ \
+    -m 125.0 \
+    --parallel 8 | tee -a ${defaultdir}/logs/workspace_plots_independent.txt
+
 elif [[ $MODE == "submit" ]]; then
     ############
     # job submission
@@ -155,5 +166,67 @@ elif [[ $MODE == "collect" ]]; then
         --output mssm_model-independent_${p}H_cmb \
         --logx \
         --logy
+    done
+
+elif [[ $MODE == "prefit-plots" ]]; then
+    #####################
+    # Extract prefit shapes.
+    #####################
+    for era in 2016 2017 2018; do
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --freeze_arguments "--freeze ${freeze}" \
+                                          --output_name prefit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+    done
+    hadd -f ${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root ${datacarddir}/201?/htt_*/prefit_shapes_${freeze}.root | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+
+    for era in 2016 2017 2018; do
+        bash plotting/plot_shapes_mssm_model_independent.sh \
+            ${era} \
+            "${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root" \
+            "${datacarddir}/plots/prefit_shapes_$(echo ${freeze} | sed 's/=//g; s/\./p/g')/" \
+            et,mt,tt,em \
+            $(echo $freeze | cut -d, -f1 | cut -d= -f2) \
+            $(echo $freeze | cut -d, -f2 | cut -d= -f2)
+    done
+
+elif [[ $MODE == "fit-for-plots" ]]; then
+    combineTool.py -M FitDiagnostics \
+        -d ${datacarddir}/combined/cmb/ws.root \
+        -m 200 \
+        --setParameters r_ggH=0,r_bbH=0 --setParameterRange r_ggH=-0.00001,0.00001:r_bbH=-2,5 \
+        --redefineSignalPOIs r_ggH --freezeParameters r_bbH,r_ggH \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
+        --robustHesse 1 \
+        -n .combined-cmb.for_shape_unblinding \
+        --there \
+        -v 1
+
+elif [[ $MODE == "postfit-plots" ]]; then
+    ######################
+    # Extract postfit shapes.
+    #####################
+    fitfile=${datacarddir}/combined/cmb/fitDiagnostics.combined-cmb.for_shape_unblinding.root
+    for era in 2016 2017 2018; do
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --freeze_arguments "--freeze ${freeze}" \
+                                          --fit_arguments "-f ${fitfile}:fit_b --postfit --sampling" \
+                                          --output_name postfit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-postfit-combined-${freeze}.log
+    done
+
+    hadd -f ${datacarddir}/combined/cmb/postfit_shapes_${freeze}.root ${datacarddir}/201?/htt_*/postfit_shapes_${freeze}.root | tee -a ${defaultdir}/logs/extract_model_independent_shapes-postfit-combined-${freeze}.log
+
+    for era in 2016 2017 2018; do
+        bash plotting/plot_shapes_mssm_model_independent.sh \
+            ${era} \
+            "${datacarddir}/combined/cmb/postfit_shapes_${freeze}.root" \
+            "${datacarddir}/plots/postfit_shapes_$(echo ${freeze} | sed 's/=//g; s/\./p/g')/" \
+            et,mt,tt,em \
+            $(echo $freeze | cut -d, -f1 | cut -d= -f2) \
+            $(echo $freeze | cut -d, -f2 | cut -d= -f2)
     done
 fi
