@@ -697,6 +697,16 @@ int main(int argc, char **argv) {
       }
     }
 
+    Categories sm_and_btag_cats_exclude_em_control = sm_and_btag_cats;
+
+    for (auto catit = sm_and_btag_cats_exclude_em_control.begin(); catit != sm_and_btag_cats_exclude_em_control.end(); ++catit)
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_and_btag_cats_exclude_em_control.erase(catit);
+        --catit;
+      }
+    }
+
     std::cout << "[INFO] Using the following categories:" << std::endl;
     std::cout << "   sm_and_btag_cats:" << std::endl;
     for (const auto i: sm_and_btag_cats)
@@ -736,8 +746,8 @@ int main(int argc, char **argv) {
       // Comprising BSM signal h
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -750,11 +760,11 @@ int main(int argc, char **argv) {
       {
          if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
          {
-             additional_higgses_cats = mssm_cats;
+             additional_higgses_cats = exclude_em_control;
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
-             additional_higgses_cats = sm_and_btag_cats;
+             additional_higgses_cats = sm_and_btag_cats_exclude_em_control;
          }
       }
       // sm-like-light sub_analysis: H and A
