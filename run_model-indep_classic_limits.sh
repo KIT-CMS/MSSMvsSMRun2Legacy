@@ -19,8 +19,7 @@ sm_like_hists="bsm"
 [[ ! -d ${defaultdir}/limits_ind/condor ]] && mkdir -p ${defaultdir}/limits_ind/condor
 defaultdir=$(readlink -f analysis/$TAG)
 datacarddir=${defaultdir}/datacards_${analysis}
-taskname="${analysis}_${TAG}_1"
-taskname2="${analysis}_${TAG}_2"
+freeze="MH=200,r_ggH=0.0,r_bbH=0.0"
 
 if [[ $MODE == "initial" ]]; then
     ############
@@ -33,6 +32,7 @@ if [[ $MODE == "initial" ]]; then
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
+        --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
         --variable mt_tot_puppi \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
@@ -42,6 +42,14 @@ if [[ $MODE == "initial" ]]; then
     ############
     mkdir -p ${datacarddir}/combined/cmb/
     rsync -av --progress ${datacarddir}/201?/htt_*/* ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    for ERA in 2016 2017 2018; do
+        for CH in et mt tt em; do
+            mkdir -p ${datacarddir}/${ERA}/${CH}/
+            rsync -av --progress ${datacarddir}/${ERA}/htt_${CH}*/* ${datacarddir}/${ERA}/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+        done
+        mkdir -p ${datacarddir}/${ERA}/cmb/
+        rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    done
 
 elif [[ $MODE == "ws" ]]; then
     ############
@@ -60,7 +68,7 @@ elif [[ $MODE == "ws" ]]; then
     ############
     cd ${defaultdir}/limits_ind/condor
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits \
+    -M AsymptoticLimits -t -1\
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
@@ -77,7 +85,7 @@ elif [[ $MODE == "ws" ]]; then
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
 
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits \
+    -M AsymptoticLimits -t -1 \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
@@ -92,6 +100,38 @@ elif [[ $MODE == "ws" ]]; then
     --cminDefaultMinimizerStrategy 0 \
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_ggh.txt
+
+elif [[ $MODE == "ws-gof" ]]; then
+    for CH in et mt tt em; do
+        rsync -av --progress ${datacarddir}/201?/htt_${CH}_*/* ${datacarddir}/combined/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+    done
+    # Copy ttbar control region to every channel to include it in the workspaces
+    for ERA in 2016 2017 2018; do
+        for CH in et mt tt; do
+            rsync -av --progress ${datacarddir}/${ERA}/htt_em_2_${ERA}/* ${datacarddir}/${ERA}/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+            rsync -av --progress ${datacarddir}/${ERA}/htt_em_2_${ERA}/* ${datacarddir}/combined/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+        done
+    done
+    ############
+    # workspace creation for GoF tests
+    ############
+
+    combineTool.py -M T2W -o "ws-gof.root" \
+    -i ${datacarddir}/*/{et,mt,tt,em,cmb}/ \
+    --channel-masks \
+    -m 125.0 --parallel 8 | tee -a ${defaultdir}/logs/workspace_gof_independent.txt
+
+elif [[ $MODE == "ws-plot" ]]; then
+    ###############
+    # workspace production for plots
+    ###############
+    combineTool.py -M T2W -o "ws.root" \
+    -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+    --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
+    --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
+    -i ${datacarddir}/201?/htt_*/ \
+    -m 125.0 \
+    --parallel 8 | tee -a ${defaultdir}/logs/workspace_plots_independent.txt
 
 elif [[ $MODE == "submit" ]]; then
     ############
@@ -126,5 +166,67 @@ elif [[ $MODE == "collect" ]]; then
         --output mssm_model-independent_${p}H_cmb \
         --logx \
         --logy
+    done
+
+elif [[ $MODE == "prefit-plots" ]]; then
+    #####################
+    # Extract prefit shapes.
+    #####################
+    for era in 2016 2017 2018; do
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --freeze_arguments "--freeze ${freeze}" \
+                                          --output_name prefit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+    done
+    hadd -f ${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root ${datacarddir}/201?/htt_*/prefit_shapes_${freeze}.root | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+
+    for era in 2016 2017 2018; do
+        bash plotting/plot_shapes_mssm_model_independent.sh \
+            ${era} \
+            "${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root" \
+            "${datacarddir}/plots/prefit_shapes_$(echo ${freeze} | sed 's/=//g; s/\./p/g')/" \
+            et,mt,tt,em \
+            $(echo $freeze | cut -d, -f1 | cut -d= -f2) \
+            $(echo $freeze | cut -d, -f2 | cut -d= -f2)
+    done
+
+elif [[ $MODE == "fit-for-plots" ]]; then
+    combineTool.py -M FitDiagnostics \
+        -d ${datacarddir}/combined/cmb/ws.root \
+        -m 200 \
+        --setParameters r_ggH=0,r_bbH=0 --setParameterRange r_ggH=-0.00001,0.00001:r_bbH=-2,5 \
+        --redefineSignalPOIs r_ggH --freezeParameters r_bbH,r_ggH \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
+        --robustHesse 1 \
+        -n .combined-cmb.for_shape_unblinding \
+        --there \
+        -v 1
+
+elif [[ $MODE == "postfit-plots" ]]; then
+    ######################
+    # Extract postfit shapes.
+    #####################
+    fitfile=${datacarddir}/combined/cmb/fitDiagnostics.combined-cmb.for_shape_unblinding.root
+    for era in 2016 2017 2018; do
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --freeze_arguments "--freeze ${freeze}" \
+                                          --fit_arguments "-f ${fitfile}:fit_b --postfit --sampling" \
+                                          --output_name postfit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-postfit-combined-${freeze}.log
+    done
+
+    hadd -f ${datacarddir}/combined/cmb/postfit_shapes_${freeze}.root ${datacarddir}/201?/htt_*/postfit_shapes_${freeze}.root | tee -a ${defaultdir}/logs/extract_model_independent_shapes-postfit-combined-${freeze}.log
+
+    for era in 2016 2017 2018; do
+        bash plotting/plot_shapes_mssm_model_independent.sh \
+            ${era} \
+            "${datacarddir}/combined/cmb/postfit_shapes_${freeze}.root" \
+            "${datacarddir}/plots/postfit_shapes_$(echo ${freeze} | sed 's/=//g; s/\./p/g')/" \
+            et,mt,tt,em \
+            $(echo $freeze | cut -d, -f1 | cut -d= -f2) \
+            $(echo $freeze | cut -d, -f2 | cut -d= -f2)
     done
 fi

@@ -26,7 +26,11 @@ args = parser.parse_args()
 
 datacards = [d for d in glob.glob(args.datacard_pattern) if "/cmb/" not in d]
 
-cmds = ['card=DATACARD; basedir=$(dirname $(dirname ${card})); category=$(basename $(dirname ${card})); echo $card; echo ${card/combined.txt.cmb/WSNAME}; echo ${card/combined.txt.cmb/OUTPUT}; PostFitShapesFromWorkspace -w ${card/combined.txt.cmb/WSNAME}  -o ${card/combined.txt.cmb/OUTPUT} -d ${basedir}/restore_binning/${category}/${category}.txt FREEZEARGS FITARGS'.replace("DATACARD",d).replace("FREEZEARGS",args.freeze_arguments).replace("FITARGS",args.fit_arguments).replace("WSNAME",args.workspace_name).replace("OUTPUT",args.output_name) for d in datacards]
+cmds = ['card=DATACARD;'
+        'basedir=$(dirname $(dirname ${card}));'
+        'category=$(basename $(dirname ${card}));'
+        'echo $card; echo ${card/combined.txt.cmb/WSNAME}; echo ${card/combined.txt.cmb/OUTPUT};'
+        'PostFitShapesFromWorkspace -w ${card/combined.txt.cmb/WSNAME} -o ${card/combined.txt.cmb/OUTPUT} -d $(dirname ${basedir})/restore_binning/${category}.txt FREEZEARGS FITARGS'.replace("DATACARD",d).replace("FREEZEARGS",args.freeze_arguments).replace("FITARGS",args.fit_arguments).replace("WSNAME",args.workspace_name).replace("OUTPUT",args.output_name) for d in datacards]
 
 p = Pool(args.parallel)
 if args.dry_run:

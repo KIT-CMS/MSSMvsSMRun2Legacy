@@ -19,7 +19,7 @@ if [[ "${TAG}" == "auto" ]]; then
     TAG=${ERA}_${CHANNEL}
 fi
 
-defaultdir="${CMSSW_BASE}/src/fits_powheg/${TAG}"
+defaultdir="${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/analysis/cmb_ind_unblinding"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 defaultdir=$(readlink -f ${defaultdir})
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
@@ -37,9 +37,7 @@ else
 fi
 
 
-echo ${defaultdir}
-echo $(dirname ${defaultdir})
-datacarddir=$(dirname ${defaultdir})/output_mssm_classic
+datacarddir=${defaultdir}/datacards_bsm-model-indep
 taskname="impacts_${TAG}_${PROCESS}_mH${MASS}"
 
 case $MODE in
@@ -50,17 +48,17 @@ case $MODE in
                        --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
                        --doInitialFit --robustFit 1 \
                        -t -1 -m $MASS \
-                       --setParameters r_ggH=0,r_bbH=0 --setParameterRanges r_ggH=-0.3,0.3:r_bbH=-0.3,0.3 \
-                       --redefineSignalPOIs ${signal_process} --freezeParameters ${freeze_process} -v 1 --stepSize 0.01
+                       --setParameters r_ggH=0,r_bbH=0 --setParameterRanges r_ggH=-1.0,1.0:r_bbH=-1.0,1.0 \
+                       --redefineSignalPOIs ${signal_process} --freezeParameters ${freeze_process} -v 0 # --stepSize 0.01
                        # --rAbsAcc 0 --rRelAcc 0.0005 \
 
         combineTool.py -M Impacts -d ${datacarddir}/${ERA}/${CHANNEL}/ws.root \
                        --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
                        --robustFit 1 --doFits \
                        -t -1 -m $MASS \
-                       --setParameters r_ggH=0,r_bbH=0 --setParameterRanges r_ggH=-0.3,0.3:r_bbH=-0.3,0.3 \
+                       --setParameters r_ggH=0,r_bbH=0 --setParameterRanges r_ggH=-1.0,1.0:r_bbH=-1.0,1.0 \
                        --redefineSignalPOIs ${signal_process} --freezeParameters ${freeze_process} \
-                       --job-mode condor --task-name ${taskname} --dry-run --merge 5 --stepSize 0.01
+                       --job-mode condor --task-name ${taskname} --dry-run --merge 5
                        # --rAbsAcc 0 --rRelAcc 0.0005 \
         popd
         ;;
@@ -100,9 +98,9 @@ case $MODE in
         # job collection
         ############
         pushd ${defaultdir}/impacts_${PROCESS}_mH${MASS}/condor
-        combineTool.py -M Impacts -d ${datacarddir}/${ERA}/${CHANNEL}/ws.root -m $MASS -o ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts.json --redefineSignalPOIs ${signal_process}
+        combineTool.py -M Impacts -d ${datacarddir}/${ERA}/${CHANNEL}/ws.root -m $MASS -o ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts.json --redefineSignalPOIs ${signal_process} --exclude ${freeze_process}
 
-        plotImpacts.py -i ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts.json -o ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts --transparent --translate ${CMSSW_BASE}/src/translate.json # _nobbb --no-bbb
+        plotImpacts.py -i ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts.json -o ${ERA}_${CHANNEL}_${signal_process}_${MASS}_impacts --transparent --translate ${CMSSW_BASE}/src/translate.json --blind # _nobbb --no-bbb
         popd
         ;;
 

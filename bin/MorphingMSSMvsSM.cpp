@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
   bool do_morph = true;
   bool auto_rebin = false;
-  bool manual_rebin = false;
+  bool manual_rebin = true;
   bool real_data = false;
   bool verbose = true;
   bool use_automc = true;
@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
 
   // Define background and signal processes
   map<string, VString> bkg_procs;
-  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals;
+  VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, bkgs_em_noCR;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
   VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
@@ -364,7 +364,8 @@ int main(int argc, char **argv) {
   bkgs = {"EMB", "ZL", "TTL", "VVL", "jetFakes"};
   bkgs_tt = {"EMB", "ZL", "TTL", "VVL", "jetFakes", "wFakes"};
   bkgs_HWW = {"ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"};
-  bkgs_em = {"EMB", "W", "QCD", "ZL", "TTL", "VVL"};
+  bkgs_em = {"EMB", "W", "ZL", "TTL", "VVL"};
+  bkgs_em_noCR = {"QCD"};
   if ( sm == true){
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "jetFakes"), bkgs.end());
     bkgs.push_back("jetFakesSM");
@@ -500,7 +501,7 @@ int main(int argc, char **argv) {
         { 35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        {  2, "em_DZetaLtm35"},
+        {  2, "em_NbtagGt1_DZetaLtm35"},
         { 32, "em_Nbtag0_DZetaGt30"},
         { 33, "em_Nbtag0_DZetam10To30"},
         { 34, "em_Nbtag0_DZetam35Tom10"},
@@ -592,7 +593,7 @@ int main(int argc, char **argv) {
     cats["em"] = {
         { 1, "em_xxh"}, // SM Signal Category
 
-        { 2, "em_DZetaLtm35"},
+        { 2, "em_NbtagGt1_DZetaLtm35"},
 
         {13, "em_tt"},
         {14, "em_ss"},
@@ -629,6 +630,7 @@ int main(int argc, char **argv) {
     Categories sm_and_btag_cats = cats[chn]; // contain 1, 2, 13-21, 35-37
     Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
     Categories mssm_cats = cats[chn]; // contain 2, 32-37
+    Categories exclude_em_control = cats[chn]; // contain all except 2
     Categories sm_signal_cat = cats[chn]; // contain 1
 
     for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
@@ -663,6 +665,14 @@ int main(int argc, char **argv) {
       }
     }
 
+    for (auto catit = exclude_em_control.begin(); catit != exclude_em_control.end(); ++catit)
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        exclude_em_control.erase(catit);
+        --catit;
+      }
+    }
+
     for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
@@ -683,6 +693,16 @@ int main(int argc, char **argv) {
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         sm_and_btag_cats.erase(catit);
+        --catit;
+      }
+    }
+
+    Categories sm_and_btag_cats_exclude_em_control = sm_and_btag_cats;
+
+    for (auto catit = sm_and_btag_cats_exclude_em_control.begin(); catit != sm_and_btag_cats_exclude_em_control.end(); ++catit)
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_and_btag_cats_exclude_em_control.erase(catit);
         --catit;
       }
     }
@@ -711,6 +731,11 @@ int main(int argc, char **argv) {
     // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
+    // Include QCD process in em channel for all categories except for CR
+    if (chn == "em") {
+        cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, exclude_em_control, false);
+        //cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkgs_em_noCR, cats[chn], false); // adding back QCD for tests
+    }
 
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
@@ -721,8 +746,8 @@ int main(int argc, char **argv) {
       // Comprising BSM signal h
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, mssm_cats, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, mssm_cats, true);
+      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
+      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -735,11 +760,11 @@ int main(int argc, char **argv) {
       {
          if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
          {
-             additional_higgses_cats = mssm_cats;
+             additional_higgses_cats = exclude_em_control;
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
-             additional_higgses_cats = sm_and_btag_cats;
+             additional_higgses_cats = sm_and_btag_cats_exclude_em_control;
          }
       }
       // sm-like-light sub_analysis: H and A
@@ -792,7 +817,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Add systematics TODO: update also for all BSM flavours (ggphi, bbphi, qqphi)
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
   ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
   dout("[INFO] Systematics added");
@@ -933,6 +957,85 @@ int main(int argc, char **argv) {
   cb.cp().process({"bbH125"}).ForEachProc([&](ch::Process * proc) {
     proc->set_rate(proc->rate()*sm_preds.get<float>("xs_bb_SMH125")*sm_preds.get<float>("br_SMH125_tautau"));
     });
+
+
+  // Manual rebinning for histograms
+  if(manual_rebin)
+  {
+    std::map<std::string, std::map<unsigned int, std::map<unsigned int, std::vector<double> > > >binning_map;
+    binning_map["em"] = {};
+    binning_map["et"] = {};
+    binning_map["mt"] = {};
+    binning_map["tt"] = {};
+
+
+    binning_map["em"][1] = {};
+    binning_map["em"][2][0] = {100., 200., 10.};
+    binning_map["em"][2][1] = {200., 350., 25.};
+    binning_map["em"][2][2] = {350., 500., 50.};
+    binning_map["em"][2][3] = {500., 900., 100.};
+    binning_map["em"][2][4] = {900., 1100., 200.};
+    binning_map["em"][13] = {};
+    binning_map["em"][14] = {};
+    binning_map["em"][16] = {};
+    binning_map["em"][20] = {};
+    binning_map["em"][19] = {};
+
+    binning_map["em"][32] = {};
+    binning_map["em"][33] = {};
+    binning_map["em"][34] = {};
+    binning_map["em"][35] = {};
+    binning_map["em"][36] = {};
+    binning_map["em"][37] = {};
+
+    binning_map["et"][1] = {};
+    binning_map["et"][13] = {};
+    binning_map["et"][15] = {};
+    binning_map["et"][16] = {};
+    binning_map["et"][20] = {};
+    binning_map["et"][21] = {};
+
+    binning_map["et"][32] = {};
+    binning_map["et"][33] = {};
+    binning_map["et"][35] = {};
+    binning_map["et"][36] = {};
+
+
+    binning_map["mt"][1] = {};
+    binning_map["mt"][13] = {};
+    binning_map["mt"][15] = {};
+    binning_map["mt"][16] = {};
+    binning_map["mt"][20] = {};
+    binning_map["mt"][21] = {};
+
+    binning_map["mt"][32] = {};
+    binning_map["mt"][33] = {};
+    binning_map["mt"][35] = {};
+    binning_map["mt"][36] = {};
+
+
+    binning_map["tt"][1] = {};
+    binning_map["tt"][10] = {};
+    binning_map["tt"][16] = {};
+    binning_map["tt"][20] = {};
+    binning_map["tt"][21] = {};
+
+    binning_map["tt"][32] = {};
+    binning_map["tt"][35] = {};
+
+    for(auto chn : chns)
+    {
+      for(auto b : cb.cp().channel({chn}).bin_id_set())
+      {
+        std::vector<double> binning = binning_from_map(binning_map[chn][b]);
+        if(binning.size() > 0)
+        {
+            std::cout << "[INFO] Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
+            cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
+        }
+      }
+    }
+  }
 
   // Delete processes (other than mssm signals) with 0 yield
   std::cout << "[INFO] Filtering processes with null yield: \n";
@@ -1087,80 +1190,6 @@ int main(int argc, char **argv) {
       }
     }
   });
-
-  // Manual rebinning for histograms
-  if(manual_rebin)
-  {
-    std::map<std::string, std::map<unsigned int, std::map<unsigned int, std::vector<double> > > >binning_map;
-    binning_map["em"] = {};
-    binning_map["et"] = {};
-    binning_map["mt"] = {};
-    binning_map["tt"] = {};
-
-
-    binning_map["em"][1] = {};
-    binning_map["em"][2] = {};
-    binning_map["em"][13] = {};
-    binning_map["em"][14] = {};
-    binning_map["em"][16] = {};
-    binning_map["em"][20] = {};
-    binning_map["em"][19] = {};
-
-    binning_map["em"][32] = {};
-    binning_map["em"][33] = {};
-    binning_map["em"][34] = {};
-    binning_map["em"][35] = {};
-    binning_map["em"][36] = {};
-    binning_map["em"][37] = {};
-
-    binning_map["et"][1] = {};
-    binning_map["et"][13] = {};
-    binning_map["et"][15] = {};
-    binning_map["et"][16] = {};
-    binning_map["et"][20] = {};
-    binning_map["et"][21] = {};
-
-    binning_map["et"][32] = {};
-    binning_map["et"][33] = {};
-    binning_map["et"][35] = {};
-    binning_map["et"][36] = {};
-
-
-    binning_map["mt"][1] = {};
-    binning_map["mt"][13] = {};
-    binning_map["mt"][15] = {};
-    binning_map["mt"][16] = {};
-    binning_map["mt"][20] = {};
-    binning_map["mt"][21] = {};
-
-    binning_map["mt"][32] = {};
-    binning_map["mt"][33] = {};
-    binning_map["mt"][35] = {};
-    binning_map["mt"][36] = {};
-
-
-    binning_map["tt"][1] = {};
-    binning_map["tt"][10] = {};
-    binning_map["tt"][16] = {};
-    binning_map["tt"][20] = {};
-    binning_map["tt"][21] = {};
-
-    binning_map["tt"][32] = {};
-    binning_map["tt"][35] = {};
-
-    for(auto chn : chns)
-    {
-      for(auto b : cb.cp().channel({chn}).bin_id_set())
-      {
-        std::vector<double> binning = binning_from_map(binning_map[chn][b]);
-        if(binning.size() > 0)
-        {
-            std::cout << "[INFO] Rebinning by hand for discriminator for bin: " << b << " in channel: " << chn << std::endl;
-            cb.cp().channel({chn}).bin_id({b}).VariableRebin(binning);
-        }
-      }
-    }
-  }
   // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
   if (rebin_sm && sm) {
     // Rebin background categories
@@ -1254,7 +1283,14 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
+  // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
+  // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
+  // convert all processes except ttbar
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL"},false), u);
+  // also convert ttbar in the tt channel
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL"}), u);
+  // also convert ttbar in the nobtag categories
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL"}), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
@@ -1290,6 +1326,25 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  // rename MC subtraction uncertainty in the em channel to decorrelate between years and ttbar fraction.
+  for (std::string y: {"2016", "2017", "2018"}) {
+      cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "CMS_htt_qcd_iso", "CMS_htt_qcd_iso_"+y);
+
+      cb.cp().bin_id({32,33,34}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
+      cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+  }
+
+  std::vector<std::string> met_uncerts = {
+    "CMS_htt_boson_scale_met_2016",
+    "CMS_htt_boson_res_met_2016",
+    "CMS_htt_boson_scale_met_2017",
+    "CMS_htt_boson_res_met_2017",
+    "CMS_htt_boson_scale_met_2018",
+    "CMS_htt_boson_res_met_2018",
+  };
+
+  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
