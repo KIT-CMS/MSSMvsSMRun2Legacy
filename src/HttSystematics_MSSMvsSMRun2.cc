@@ -1443,11 +1443,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2018"}, {35}, 1.005, 0.994)
   );
 
-<<<<<<< HEAD
-  cb.cp().process({"ggH125"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
-=======
   cb.cp().process(signals_ggH).process({"ggX"}, false).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
->>>>>>> 970da867afbad38db5971bad8d41966bb9d634f6
   ({"em"}, {"2016"}, {35}, 0.905, 1.092)
   ({"em"}, {"2017"}, {35}, 0.892, 1.106)
   ({"em"}, {"2018"}, {35}, 0.867, 1.113)
@@ -1466,18 +1462,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.003, 0.997)
   ({"em"}, {"2017"}, {34}, 1.005, 0.996)
   ({"em"}, {"2018"}, {34}, 1.008, 0.994)
-<<<<<<< HEAD
-  ({"em"}, {"2016"}, {2}, 1.0, 1.0)
-  ({"em"}, {"2017"}, {2}, 1.0, 1.0)
-  ({"em"}, {"2018"}, {2}, 1.0, 1.0)
-=======
   ({"em"}, {"2016"}, {2}, 0.921, 1.109)
   ({"em"}, {"2017"}, {2}, 0.886, 1.078)
   ({"em"}, {"2018"}, {2}, 0.924, 1.132)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
->>>>>>> 970da867afbad38db5971bad8d41966bb9d634f6
   ({"et"}, {"2016"}, {35}, 0.939, 1.08)
   ({"et"}, {"2017"}, {35}, 0.921, 1.074)
   ({"et"}, {"2018"}, {35}, 0.882, 1.118)
@@ -1510,11 +1500,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2018"}, {35}, 1.007, 0.993)
   );
 
-<<<<<<< HEAD
-  cb.cp().process({"qqH125"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
-=======
   cb.cp().process(signals_qqH).process({"qqX"}, false).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
->>>>>>> 970da867afbad38db5971bad8d41966bb9d634f6
   ({"em"}, {"2016"}, {35}, 0.939, 1.09)
   ({"em"}, {"2017"}, {35}, 0.858, 1.103)
   ({"em"}, {"2018"}, {35}, 0.898, 1.125)
@@ -1533,18 +1519,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"em"}, {"2016"}, {34}, 1.007, 0.997)
   ({"em"}, {"2017"}, {34}, 1.008, 0.994)
   ({"em"}, {"2018"}, {34}, 1.01, 0.99)
-<<<<<<< HEAD
-  ({"em"}, {"2016"}, {2}, 1.0, 1.0)
-  ({"em"}, {"2017"}, {2}, 1.0, 1.0)
-  ({"em"}, {"2018"}, {2}, 1.0, 1.0)
-=======
   ({"em"}, {"2016"}, {2}, 0.925, 1.100)
   ({"em"}, {"2017"}, {2}, 0.910, 1.141)
   ({"em"}, {"2018"}, {2}, 0.829, 1.116)
   // ({"em"}, {"2016"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
->>>>>>> 970da867afbad38db5971bad8d41966bb9d634f6
   ({"et"}, {"2016"}, {35}, 0.958, 1.047)
   ({"et"}, {"2017"}, {35}, 0.954, 1.046)
   ({"et"}, {"2018"}, {35}, 0.922, 1.073)
@@ -1577,9 +1557,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2018"}, {35}, 1.009, 0.991)
   );
 
-<<<<<<< HEAD
-  // TODO: what about SM signals ggH125 and qqH125 (and corresponding BSM flavours of these templates) in these categories?
-=======
   cb.cp().process({"ggHWW125"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
      ({"em"}, {"2016"}, {35}, 1.000, 1.000)
      ({"em"}, {"2016"}, {2}, 0.992, 1.011)
@@ -1771,7 +1748,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em"}, {"2018"}, {34}, 1.013, 0.979)
      ({"em"}, {"2018"}, {37}, 0.875, 1.150)
   );
->>>>>>> 970da867afbad38db5971bad8d41966bb9d634f6
 
   // Do signal b efficiency and mistag uncertainties. Load from json to solve memory issues
   if (not sm){
