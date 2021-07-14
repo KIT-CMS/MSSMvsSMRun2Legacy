@@ -75,7 +75,7 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
       syst->set_type("lnN");
       return;
     }
-  }); 
+  });
 }
 
 int main(int argc, char **argv) {
@@ -442,16 +442,20 @@ int main(int argc, char **argv) {
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
     bkg_procs["em"] = JoinStr({bkg_procs["em"],main_sm_signals,sm_signals,bkgs_HWW});
-    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff"){
+    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff" ||
+       category == "et_xxh_bin_1" || category == "et_xxh_bin_2" || category == "et_xxh_bin_3" || category == "et_xxh_bin_4" || category == "et_xxh_bin_5" || category == "et_xxh_bin_6"){
       bkg_procs["et"] = JoinStr({bkg_procs["et"],sm_signals,main_sm_signals,bkgs_HWW});
     }
-    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff"){
+    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff" ||
+            category == "mt_xxh_bin_1" || category == "mt_xxh_bin_2" || category == "mt_xxh_bin_3" || category == "mt_xxh_bin_4" || category == "mt_xxh_bin_5" || category == "mt_xxh_bin_6"){
       bkg_procs["mt"] = JoinStr({bkg_procs["mt"],sm_signals,main_sm_signals,bkgs_HWW});
     }
-    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff"){
+    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff" ||
+            category == "tt_xxh_bin_1" || category == "tt_xxh_bin_2" || category == "tt_xxh_bin_3" || category == "tt_xxh_bin_4" || category == "tt_xxh_bin_5" || category == "tt_xxh_bin_6"){
       bkg_procs["tt"] = JoinStr({bkg_procs["tt"],sm_signals,main_sm_signals,bkgs_HWW});
     }
-    else if (category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb") {
+    else if(category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb" ||
+            category == "em_xxh_bin_1" || category == "em_xxh_bin_2" || category == "em_xxh_bin_3" || category == "em_xxh_bin_4" || category == "em_xxh_bin_5" || category == "em_xxh_bin_6"){
       bkg_procs["em"] = JoinStr({bkg_procs["em"], sm_signals, main_sm_signals,bkgs_HWW});
     }
   }
@@ -516,7 +520,13 @@ int main(int argc, char **argv) {
   }
   else if(categorization == "sm-ml-only"){
     cats["et"] = {
-      { 1, "et_xxh"}, // SM Signal Category
+      // SM Signal Categories
+      { 1, "et_xxh_bin_1"},
+      { 3, "et_xxh_bin_2"},
+      { 4, "et_xxh_bin_3"},
+      { 5, "et_xxh_bin_4"},
+      { 6, "et_xxh_bin_5"},
+      { 7, "et_xxh_bin_6"},
 
       {13, "et_tt"},
       {15, "et_zll"},
@@ -526,7 +536,13 @@ int main(int argc, char **argv) {
     };
 
     cats["mt"] = {
-      { 1, "mt_xxh"}, // SM Signal Category
+      // SM Signal Categories
+      { 1, "mt_xxh_bin_1"},
+      { 3, "mt_xxh_bin_2"},
+      { 4, "mt_xxh_bin_3"},
+      { 5, "mt_xxh_bin_4"},
+      { 6, "mt_xxh_bin_5"},
+      { 7, "mt_xxh_bin_6"},
 
       {13, "mt_tt"},
       {15, "mt_zll"},
@@ -536,7 +552,13 @@ int main(int argc, char **argv) {
     };
 
     cats["tt"] = {
-      { 1, "tt_xxh"}, // SM Signal Category
+      // SM Signal Categories
+      { 1, "tt_xxh_bin_1"},
+      { 3, "tt_xxh_bin_2"},
+      { 4, "tt_xxh_bin_3"},
+      { 5, "tt_xxh_bin_4"},
+      { 6, "tt_xxh_bin_5"},
+      { 7, "tt_xxh_bin_6"},
 
       {16, "tt_misc"},
       {20, "tt_emb"},
@@ -544,7 +566,13 @@ int main(int argc, char **argv) {
     };
 
     cats["em"] = {
-      { 1, "em_xxh"}, // SM Signal Category
+      // SM Signal Categories
+      { 1, "em_xxh_bin_1"},
+      { 3, "em_xxh_bin_2"},
+      { 4, "em_xxh_bin_3"},
+      { 5, "em_xxh_bin_4"},
+      { 6, "em_xxh_bin_5"},
+      { 7, "em_xxh_bin_6"},
 
       {13, "em_tt"},
       {14, "em_ss"},
@@ -555,7 +583,13 @@ int main(int argc, char **argv) {
   }
   else if(categorization == "with-sm-ml"){
     cats["et"] = {
-        { 1, "et_xxh"}, // SM Signal Category
+        // SM Signal Categories
+        { 1, "et_xxh_bin_1"},
+        { 3, "et_xxh_bin_2"},
+        { 4, "et_xxh_bin_3"},
+        { 5, "et_xxh_bin_4"},
+        { 6, "et_xxh_bin_5"},
+        { 7, "et_xxh_bin_6"},
 
         {13, "et_tt"},
         {15, "et_zll"},
@@ -569,7 +603,13 @@ int main(int argc, char **argv) {
         {36, "et_NbtagGt1_MT40To70"},
     };
     cats["mt"] = {
-        { 1, "mt_xxh"}, // SM Signal Category
+        // SM Signal Categories
+        { 1, "mt_xxh_bin_1"},
+        { 3, "mt_xxh_bin_2"},
+        { 4, "mt_xxh_bin_3"},
+        { 5, "mt_xxh_bin_4"},
+        { 6, "mt_xxh_bin_5"},
+        { 7, "mt_xxh_bin_6"},
 
         {13, "mt_tt"},
         {15, "mt_zll"},
@@ -584,7 +624,13 @@ int main(int argc, char **argv) {
         {36, "mt_NbtagGt1_MT40To70"},
     };
     cats["tt"] = {
-        { 1, "tt_xxh"}, // SM Signal Category
+        // SM Signal Categories
+        { 1, "tt_xxh_bin_1"},
+        { 3, "tt_xxh_bin_2"},
+        { 4, "tt_xxh_bin_3"},
+        { 5, "tt_xxh_bin_4"},
+        { 6, "tt_xxh_bin_5"},
+        { 7, "tt_xxh_bin_6"},
 
         {16, "tt_misc"},
         {20, "tt_emb"},
@@ -595,7 +641,13 @@ int main(int argc, char **argv) {
         {35, "tt_NbtagGt1"},
     };
     cats["em"] = {
-        { 1, "em_xxh"}, // SM Signal Category
+        // SM Signal Categories
+        { 1, "em_xxh_bin_1"},
+        { 3, "em_xxh_bin_2"},
+        { 4, "em_xxh_bin_3"},
+        { 5, "em_xxh_bin_4"},
+        { 6, "em_xxh_bin_5"},
+        { 7, "em_xxh_bin_6"},
 
         { 2, "em_NbtagGt1_DZetaLtm35"},
 
@@ -626,16 +678,16 @@ int main(int argc, char **argv) {
   std::vector<int> em_control_category = {2}; // Control region for em channel
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> sm_signal_category = {1}; // category for the SM signal
+  std::vector<int> sm_signal_category = {1,3,4,5,6,7}; // category for the SM signal
 
 
   for (auto chn : chns) {
   // build category maps used for the different analyses
-    Categories sm_and_btag_cats = cats[chn]; // contain 1, 2, 13-21, 35-37
+    Categories sm_and_btag_cats = cats[chn]; // contain 1, 3-7, 2, 13-21, 35-37
     Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
     Categories mssm_cats = cats[chn]; // contain 2, 32-37
     Categories exclude_em_control = cats[chn]; // contain all except 2
-    Categories sm_signal_cat = cats[chn]; // contain 1
+    Categories sm_signal_cat = cats[chn]; // contain 1, 3-7
 
     for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
     {
@@ -1258,7 +1310,7 @@ int main(int argc, char **argv) {
     "CMS_scale_j_Absolute",
     "CMS_scale_j_BBEC1",
     "CMS_scale_j_EC2",
-    "CMS_scale_j_FlavorQCD",          
+    "CMS_scale_j_FlavorQCD",
     "CMS_scale_j_HF",
     "CMS_scale_j_RelativeBal",
     "CMS_scale_j_Absolute_2016",
@@ -1270,9 +1322,9 @@ int main(int argc, char **argv) {
     "CMS_scale_j_EC2_2016",
     "CMS_scale_j_EC2_2017",
     "CMS_scale_j_EC2_2018",
-    "CMS_scale_j_HF_2016", 
-    "CMS_scale_j_HF_2017", 
-    "CMS_scale_j_HF_2018", 
+    "CMS_scale_j_HF_2016",
+    "CMS_scale_j_HF_2017",
+    "CMS_scale_j_HF_2018",
     "CMS_scale_j_RelativeSample_2016",
     "CMS_scale_j_RelativeSample_2017",
     "CMS_scale_j_RelativeSample_2018",
@@ -1317,7 +1369,7 @@ int main(int argc, char **argv) {
         cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MT40To70_"+y);
         cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MTLt40_"+y);
         cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MT40To70_"+y);
-        
+
         cb.cp().bin_id({32,35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MTLt40_"+y);
         cb.cp().bin_id({33,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MT40To70_"+y);
 
@@ -1515,7 +1567,7 @@ int main(int argc, char **argv) {
     };
 
 
-   
+
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
     TFile fractions_sm(sm_gg_fractions.c_str());
@@ -1623,13 +1675,13 @@ int main(int argc, char **argv) {
    double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
    //if (Ifrac<0.) {
    //  Ifrac=fabs(Ifrac);
-   //  // set a constant rate parameter = -1 for the interference 
+   //  // set a constant rate parameter = -1 for the interference
    //  cb.cp()
    //   .process({"ggh_i"})
    //   .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
    //  cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
    //}
-   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl; 
+   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl;
 
    cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
      proc->set_rate(proc->rate()*Tfrac);
