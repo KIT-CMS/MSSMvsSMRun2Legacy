@@ -379,9 +379,13 @@ int main(int argc, char **argv) {
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
-    dout("WARNING: the EMB process is removed from backgrounds");
+    dout("WARNING: the EMB process is removed from backgrounds and ZTT, TTT and VVT templates are added");
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
     bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "EMB"), bkgs_tt.end());
+    bkgs.push_back("ZTT"); bkgs.push_back("TTT"); bkgs.push_back("VVT");
+    bkgs_em.push_back("ZTT"); bkgs_em.push_back("TTT"); bkgs_em.push_back("VVT");
+    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");   
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;

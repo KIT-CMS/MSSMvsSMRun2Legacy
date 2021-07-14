@@ -754,10 +754,25 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   // 3% in Tau ID SF with different anti-l fake WP
+    // cb.cp()
+    //     .channel({"mt", "tt"})
+    //      .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+    //      .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
   cb.cp()
-      .channel({"mt", "tt"})
-      .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
-      .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
+    .channel({"mt"})
+    .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+    .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
+  // tt with double genuine hadronic taus 
+  cb.cp()
+    .channel({"tt"})
+    .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
+    .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.06));
+  // tt with single genuine hadronic tau
+  cb.cp()
+    .channel({"tt"})
+    .process({"TTL","VVL"})
+    .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
+
 
   std::string tauIDptbins[5] = {"30-35", "35-40", "40-500", "highpT_100-500", "highpT_500-inf"};
   if (sm) {
