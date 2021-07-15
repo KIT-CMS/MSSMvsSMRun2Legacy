@@ -394,9 +394,13 @@ int main(int argc, char **argv) {
   update_vector_by_byparser(bkgs_em, parser_bkgs_em, "bkgs_em");
 
   if (no_emb) {
-    dout("WARNING: the EMB process is removed from backgrounds");
+    dout("WARNING: the EMB process is removed from backgrounds and ZTT, TTT and VVT templates are added");
     bkgs.erase(std::remove(bkgs.begin(), bkgs.end(), "EMB"), bkgs.end());
     bkgs_em.erase(std::remove(bkgs_em.begin(), bkgs_em.end(), "EMB"), bkgs_em.end());
+    bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "EMB"), bkgs_tt.end());
+    bkgs.push_back("ZTT"); bkgs.push_back("TTT"); bkgs.push_back("VVT");
+    bkgs_em.push_back("ZTT"); bkgs_em.push_back("TTT"); bkgs_em.push_back("VVT");
+    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");   
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
@@ -1305,11 +1309,11 @@ int main(int argc, char **argv) {
   // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
   // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
   // convert all processes except ttbar
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL"},false), u);
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL","TTT"},false), u);
   // also convert ttbar in the tt channel
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL"}), u);
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL","TTT"}), u);
   // also convert ttbar in the nobtag categories
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL"}), u);
+  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL","TTT"}), u);
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
