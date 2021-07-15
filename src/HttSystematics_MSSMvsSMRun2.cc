@@ -754,10 +754,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
 
   // 3% in Tau ID SF with different anti-l fake WP
-    // cb.cp()
-    //     .channel({"mt", "tt"})
-    //      .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
-    //      .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
   cb.cp()
     .channel({"mt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
@@ -2182,6 +2178,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"W"})
       .AddSyst(cb, "CMS_htt_fake_em_$ERA", "lnN", SystMap<>::init(1.15));
 
+  cb.cp()
+      .channel({"em"})
+      .process({"ZL"})
+      .AddSyst(cb, "CMS_htt_ZL_fake_em_$ERA", "lnN", SystMap<>::init(1.2));
 
   // ##########################################################################
   // Uncertainty: Drell-Yan LO->NLO reweighting
