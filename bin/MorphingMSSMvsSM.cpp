@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
   string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
-  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"};
+  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional","vlq_betaRd33_0","vlq_betaRd33_minus1"};
   string sub_analysis = "hSM-in-bg"; // analysis = "bsm-model-indep": "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
   std::vector<string> sub_analysis_choices_model_dep = {"sm-like-light", "sm-like-heavy", "cpv"};
   std::vector<string> sub_analysis_choices_model_indep = {"hSM-in-bg", "no-hSM-in-bg"};
@@ -266,13 +266,17 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, bkgs_em_noCR;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
-  VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
+  VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals, vlq_signals;
   if (sm == true){
     sm_signals = {"WH125", "ZH125", "bbH125"};
   }
-  else {
+  else if (analysis != "vlq_betaRd33_0" && analysis != "vlq_betaRd33_minus1") {
     sm_signals = {"bbH125"};
   }
+  else {
+    sm_signals = {};
+  }
+
   main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
@@ -352,6 +356,17 @@ int main(int argc, char **argv) {
     mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
     mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
   }
+  else if(analysis == "vlq_betaRd33_0")
+  {
+   mssm_ggH_signals = {"VLQ_betaRd33_0_M"};
+   mssm_bbH_signals = {}; 
+  }
+  else if(analysis == "vlq_betaRd33_minus1")
+  {
+   mssm_ggH_signals = {"VLQ_betaRd33_minus1_M"};
+   mssm_bbH_signals = {};
+  }
+
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
 
 
@@ -399,6 +414,10 @@ int main(int argc, char **argv) {
     SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
     SUSYggH_masses[2016] = SUSYggH_masses[2018];
     SUSYggH_masses[2017] = SUSYggH_masses[2018];
+    if (analysis == "vlq_betaRd33_0" || analysis == "vlq_betaRd33_minus1") {
+      SUSYggH_masses[2018] = {"2000","3000","4000"};
+      SUSYbbH_masses[2018] = {};
+    }
 
   } else {
     // dont use mass morphing - need to specify a mass here
@@ -437,7 +456,7 @@ int main(int argc, char **argv) {
         bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
     }
   }
-  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional" || (analysis == "vlq_betaRd33_minus1" && sub_analysis == "hSM-in-bg") || (analysis == "vlq_betaRd33_0" && sub_analysis == "hSM-in-bg")){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -744,7 +763,7 @@ int main(int argc, char **argv) {
     if(analysis == "sm"){
       cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
     }
-    else if(analysis == "bsm-model-indep"){
+    else if(analysis == "bsm-model-indep" || analysis == "vlq_betaRd33_minus1" || analysis == "vlq_betaRd33_0"){
 
       // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
       // Comprising BSM signal h
@@ -855,7 +874,7 @@ int main(int argc, char **argv) {
     }
     // Adding templates for configured SUSY signals
     // Comprising BSM signal h in model-independent case
-    else if(analysis == "bsm-model-indep"){
+    else if(analysis == "bsm-model-indep" || analysis == "vlq_betaRd33_minus1" || analysis == "vlq_betaRd33_0"){
       cb.cp().channel({chn}).process(mssm_ggH_signals).ExtractShapes(
         input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
@@ -1416,7 +1435,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG( + Higgs). Since H->tautau treated all as background( if required), so it is sufficient to consider the bg shape
-      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional"){
+      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "vlq_betaRd33_minus1" || analysis == "vlq_betaRd33_0"){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -1583,7 +1602,7 @@ int main(int argc, char **argv) {
   }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
+  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full" || analysis == "vlq_betaRd33_minus1" || analysis == "vlq_betaRd33_0"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
