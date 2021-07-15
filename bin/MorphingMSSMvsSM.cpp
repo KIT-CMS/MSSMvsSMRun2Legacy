@@ -358,12 +358,12 @@ int main(int argc, char **argv) {
   }
   else if(analysis == "vlq_betaRd33_0")
   {
-   mssm_ggH_signals = {"VLQ_betaRd33_0_M-"};
+   mssm_ggH_signals = {"VLQ_betaRd33_0_M"};
    mssm_bbH_signals = {}; 
   }
   else if(analysis == "vlq_betaRd33_minus1")
   {
-   mssm_ggH_signals = {"VLQ_betaRd33_minus1_M-"};
+   mssm_ggH_signals = {"VLQ_betaRd33_minus1_M"};
    mssm_bbH_signals = {};
   }
 
