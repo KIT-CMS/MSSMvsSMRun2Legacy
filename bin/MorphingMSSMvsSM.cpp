@@ -1348,7 +1348,7 @@ int main(int argc, char **argv) {
     "CMS_htt_boson_res_met_2018",
   };
 
-  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins), u);
+  for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
