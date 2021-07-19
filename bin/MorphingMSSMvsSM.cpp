@@ -103,6 +103,7 @@ int main(int argc, char **argv) {
   bool use_automc = true;
   bool mva(false), no_emb(false);
   bool sm = false;
+  bool split_sm_signal_cat = false;
   bool rebin_sm = true;
   bool no_shape_systs = false;
 
@@ -147,6 +148,7 @@ int main(int argc, char **argv) {
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
       ("sm", po::value<bool>(&sm)->default_value(sm))
+      ("split_sm_signal_cat", po::value<bool>(&sm)->default_value(sm))
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
       ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
@@ -490,6 +492,7 @@ int main(int argc, char **argv) {
   MH.setConstant(true);
 
   // Define categories
+  Categories sm_signal = {};
   map<string, Categories> cats;
   if(categorization == "classic"){
     cats["et"] = {
@@ -520,77 +523,113 @@ int main(int argc, char **argv) {
   }
   else if(categorization == "sm-ml-only"){
     cats["et"] = {
-      // SM Signal Categories
-      { 1, "et_xxh_bin_1"},
-      { 3, "et_xxh_bin_2"},
-      { 4, "et_xxh_bin_3"},
-      { 5, "et_xxh_bin_4"},
-      { 6, "et_xxh_bin_5"},
-      { 7, "et_xxh_bin_6"},
-
       {13, "et_tt"},
       {15, "et_zll"},
       {16, "et_misc"},
       {20, "et_emb"},
       {21, "et_ff"}
     };
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "et_xxh_bin_1"},
+        { 3, "et_xxh_bin_2"},
+        { 4, "et_xxh_bin_3"},
+        { 5, "et_xxh_bin_4"},
+        { 6, "et_xxh_bin_5"},
+        { 7, "et_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "et_xxh"}
+      };
+    }
+    cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["et"].insert(cats["et"].end(), sm_signal.begin(), sm_signal.end());
 
     cats["mt"] = {
-      // SM Signal Categories
-      { 1, "mt_xxh_bin_1"},
-      { 3, "mt_xxh_bin_2"},
-      { 4, "mt_xxh_bin_3"},
-      { 5, "mt_xxh_bin_4"},
-      { 6, "mt_xxh_bin_5"},
-      { 7, "mt_xxh_bin_6"},
-
       {13, "mt_tt"},
       {15, "mt_zll"},
       {16, "mt_misc"},
       {20, "mt_emb"},
       {21, "mt_ff"}
     };
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "mt_xxh_bin_1"},
+        { 3, "mt_xxh_bin_2"},
+        { 4, "mt_xxh_bin_3"},
+        { 5, "mt_xxh_bin_4"},
+        { 6, "mt_xxh_bin_5"},
+        { 7, "mt_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "mt_xxh"}
+      };
+    }
+    cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["mt"].insert(cats["mt"].end(), sm_signal.begin(), sm_signal.end());
 
     cats["tt"] = {
-      // SM Signal Categories
-      { 1, "tt_xxh_bin_1"},
-      { 3, "tt_xxh_bin_2"},
-      { 4, "tt_xxh_bin_3"},
-      { 5, "tt_xxh_bin_4"},
-      { 6, "tt_xxh_bin_5"},
-      { 7, "tt_xxh_bin_6"},
-
       {16, "tt_misc"},
       {20, "tt_emb"},
       {21, "tt_ff"}
     };
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "tt_xxh_bin_1"},
+        { 3, "tt_xxh_bin_2"},
+        { 4, "tt_xxh_bin_3"},
+        { 5, "tt_xxh_bin_4"},
+        { 6, "tt_xxh_bin_5"},
+        { 7, "tt_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "tt_xxh"}
+      };
+    }
+    cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["tt"].insert(cats["tt"].end(), sm_signal.begin(), sm_signal.end());
 
     cats["em"] = {
-      // SM Signal Categories
-      { 1, "em_xxh_bin_1"},
-      { 3, "em_xxh_bin_2"},
-      { 4, "em_xxh_bin_3"},
-      { 5, "em_xxh_bin_4"},
-      { 6, "em_xxh_bin_5"},
-      { 7, "em_xxh_bin_6"},
-
       {13, "em_tt"},
       {14, "em_ss"},
       {16, "em_misc"},
       {19, "em_db"},
       {20, "em_emb"}
     };
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "em_xxh_bin_1"},
+        { 3, "em_xxh_bin_2"},
+        { 4, "em_xxh_bin_3"},
+        { 5, "em_xxh_bin_4"},
+        { 6, "em_xxh_bin_5"},
+        { 7, "em_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "em_xxh"}
+      };
+    }
+    cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["em"].insert(cats["em"].end(), sm_signal.begin(), sm_signal.end());
   }
   else if(categorization == "with-sm-ml"){
     cats["et"] = {
-        // SM Signal Categories
-        { 1, "et_xxh_bin_1"},
-        { 3, "et_xxh_bin_2"},
-        { 4, "et_xxh_bin_3"},
-        { 5, "et_xxh_bin_4"},
-        { 6, "et_xxh_bin_5"},
-        { 7, "et_xxh_bin_6"},
-
         {13, "et_tt"},
         {15, "et_zll"},
         {16, "et_misc"},
@@ -602,15 +641,27 @@ int main(int argc, char **argv) {
         {35, "et_NbtagGt1_MTLt40"},
         {36, "et_NbtagGt1_MT40To70"},
     };
-    cats["mt"] = {
-        // SM Signal Categories
-        { 1, "mt_xxh_bin_1"},
-        { 3, "mt_xxh_bin_2"},
-        { 4, "mt_xxh_bin_3"},
-        { 5, "mt_xxh_bin_4"},
-        { 6, "mt_xxh_bin_5"},
-        { 7, "mt_xxh_bin_6"},
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "et_xxh_bin_1"},
+        { 3, "et_xxh_bin_2"},
+        { 4, "et_xxh_bin_3"},
+        { 5, "et_xxh_bin_4"},
+        { 6, "et_xxh_bin_5"},
+        { 7, "et_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "et_xxh"}
+      };
+    }
+    cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["et"].insert(cats["et"].end(), sm_signal.begin(), sm_signal.end());
 
+    cats["mt"] = {
         {13, "mt_tt"},
         {15, "mt_zll"},
         {16, "mt_misc"},
@@ -623,15 +674,27 @@ int main(int argc, char **argv) {
         {35, "mt_NbtagGt1_MTLt40"},
         {36, "mt_NbtagGt1_MT40To70"},
     };
-    cats["tt"] = {
-        // SM Signal Categories
-        { 1, "tt_xxh_bin_1"},
-        { 3, "tt_xxh_bin_2"},
-        { 4, "tt_xxh_bin_3"},
-        { 5, "tt_xxh_bin_4"},
-        { 6, "tt_xxh_bin_5"},
-        { 7, "tt_xxh_bin_6"},
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "mt_xxh_bin_1"},
+        { 3, "mt_xxh_bin_2"},
+        { 4, "mt_xxh_bin_3"},
+        { 5, "mt_xxh_bin_4"},
+        { 6, "mt_xxh_bin_5"},
+        { 7, "mt_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "mt_xxh"}
+      };
+    }
+    cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["mt"].insert(cats["mt"].end(), sm_signal.begin(), sm_signal.end());
 
+    cats["tt"] = {
         {16, "tt_misc"},
         {20, "tt_emb"},
         {21, "tt_ff"},
@@ -640,15 +703,27 @@ int main(int argc, char **argv) {
 
         {35, "tt_NbtagGt1"},
     };
-    cats["em"] = {
-        // SM Signal Categories
-        { 1, "em_xxh_bin_1"},
-        { 3, "em_xxh_bin_2"},
-        { 4, "em_xxh_bin_3"},
-        { 5, "em_xxh_bin_4"},
-        { 6, "em_xxh_bin_5"},
-        { 7, "em_xxh_bin_6"},
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "tt_xxh_bin_1"},
+        { 3, "tt_xxh_bin_2"},
+        { 4, "tt_xxh_bin_3"},
+        { 5, "tt_xxh_bin_4"},
+        { 6, "tt_xxh_bin_5"},
+        { 7, "tt_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "tt_xxh"}
+      };
+    }
+    cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["tt"].insert(cats["tt"].end(), sm_signal.begin(), sm_signal.end());
 
+    cats["em"] = {
         { 2, "em_NbtagGt1_DZetaLtm35"},
 
         {13, "em_tt"},
@@ -665,6 +740,26 @@ int main(int argc, char **argv) {
         {36, "em_NbtagGt1_DZetam10To30"},
         {37, "em_NbtagGt1_DZetam35Tom10"},
     };
+    if(split_sm_signal_cat){
+      sm_signal = {
+        // Split SM Signal Categories
+        { 1, "em_xxh_bin_1"},
+        { 3, "em_xxh_bin_2"},
+        { 4, "em_xxh_bin_3"},
+        { 5, "em_xxh_bin_4"},
+        { 6, "em_xxh_bin_5"},
+        { 7, "em_xxh_bin_6"}
+      };
+    }
+    else{
+      sm_signal = {
+        // 2D SM Signal Category
+        { 1, "em_xxh"}
+      };
+    }
+    cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
+    cats["em"].insert(cats["em"].end(), sm_signal.begin(), sm_signal.end());
+
   }
   else throw std::runtime_error("Given categorization is not known.");
 
