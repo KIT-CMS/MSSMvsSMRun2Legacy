@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
       ("debug,d", po::bool_switch(&debug), "debug printout")
       ("mva", po::bool_switch(&mva), "mva tau id is used")
       ("sm", po::value<bool>(&sm)->default_value(sm))
-      ("split_sm_signal_cat", po::value<bool>(&sm)->default_value(sm))
+      ("split_sm_signal_cat", po::value<bool>(&split_sm_signal_cat)->default_value(split_sm_signal_cat))
       ("mass-susy-ggH,mass_susy_ggH", po::value<vector<string>>(&mass_susy_ggH)->multitoken(), "mass_susy_ggH")
       ("mass-susy-qqH,mass_susy_qqH", po::value<vector<string>>(&mass_susy_qqH)->multitoken(), "mass_susy_qqH")
       ("bkgs", po::value<vector<string>>(&parser_bkgs)->multitoken(), "backgrounds")
