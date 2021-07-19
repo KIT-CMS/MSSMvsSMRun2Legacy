@@ -105,6 +105,7 @@ int main(int argc, char **argv) {
   bool sm = false;
   bool rebin_sm = true;
   bool no_shape_systs = false;
+  bool low_mass = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -154,6 +155,7 @@ int main(int argc, char **argv) {
       ("sm_signals", po::value<vector<string>>(&parser_sm_signals)->multitoken(), "sm_signals")
       ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
       ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
+      ("low_mass", po::value<bool>(&low_mass)->default_value(low_mass))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -266,6 +268,7 @@ int main(int argc, char **argv) {
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, bkgs_em_noCR;
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
+  VString mssm_qqH_signals;
   VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
   if (sm == true){
     sm_signals = {"WH125", "ZH125", "bbH125"};
@@ -353,7 +356,7 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-
+  if (low_mass) mssm_qqH_signals = {"qqX"}
 
   std::cout << "Used BSM signals: ";
   for(auto proc : mssm_signals){
@@ -389,6 +392,7 @@ int main(int argc, char **argv) {
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
+  map<int, VString> SUSYqqH_masses;
 
   if(do_morph) {
 
@@ -408,6 +412,19 @@ int main(int argc, char **argv) {
     SUSYbbH_masses[2016] = {non_morphed_mass};
     SUSYbbH_masses[2017] = {non_morphed_mass};
     SUSYbbH_masses[2018] = {non_morphed_mass};
+  }
+  if(low_mass) {
+    // if doing low mass analysis we use morphing to get M=95 mass point for bbH
+    // we take M=95 directly from template for both ggH and VBF 
+    SUSYbbH_masses[2018] = {"80","100"};
+    SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+    SUSYbbH_masses[2016] = SUSYbbH_masses[2018];
+    SUSYggH_masses[2018] = {"95"}; 
+    SUSYggH_masses[2016] = SUSYggH_masses[2018];
+    SUSYggH_masses[2017] = SUSYggH_masses[2018];
+    SUSYqqH_masses[2018] = {"95"};
+    SUSYqqH_masses[2017] = {"95"};
+    SUSYqqH_masses[2016] = {"95"};
   }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -748,10 +765,12 @@ int main(int argc, char **argv) {
 
       // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
       // Comprising BSM signal h
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
+
+      if(low_mass) {
+        cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
+      }
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -949,6 +968,10 @@ int main(int argc, char **argv) {
         cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
           input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // "bbH125" needs special treatment because of template name spelling
       }
+    }
+    if(low_mass) {
+      cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
+          input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
     }
   }
 
