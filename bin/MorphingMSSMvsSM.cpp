@@ -747,9 +747,6 @@ int main(int argc, char **argv) {
     else if(analysis == "bsm-model-indep"){
 
       // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
-      // Comprising BSM signal h
-      cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, sm_signal_cat, true);
-      cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, sm_signal_cat, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
