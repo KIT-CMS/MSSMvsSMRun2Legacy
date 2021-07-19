@@ -755,7 +755,7 @@ int main(int argc, char **argv) {
       Categories additional_higgses_cats;
       if(categorization == "classic") // classic categories cover full mass range for additional Higgs signals
       {
-         additional_higgses_cats = cats[chn];
+         additional_higgses_cats = exclude_em_control;
       }
       else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
       {
