@@ -2099,14 +2099,14 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         for (auto c: channels) {
         for (auto yr: years) {
             for (auto m: masses) {
-            double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-            double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-            double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-            double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-            double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-            double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-            double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-            double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
+            double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_categories"][c][yr]["Up"].asDouble();
+            double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_categories"][c][yr]["Down"].asDouble();
+            double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_categories"][c][yr]["Up"].asDouble();
+            double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_categories"][c][yr]["Down"].asDouble();
+            double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_categories"][c][yr]["Up"].asDouble();
+            double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_categories"][c][yr]["Down"].asDouble();
+            double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_categories"][c][yr]["Up"].asDouble();
+            double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_categories"][c][yr]["Down"].asDouble();
             double bbH_ttbar_cr_up = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double bbH_ttbar_cr_down = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
             double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
@@ -2122,7 +2122,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             ({c}, {yr}, btag_categories_forlnN, {m}, ggH_btag_down, ggH_btag_up));
 
             cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-            ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
+            ({c}, {yr}, nobtag_categories, {m}, bbH_nobtag_down, bbH_nobtag_up));
 
             // Cover SM bbH125 case
             if(m == "125"){
