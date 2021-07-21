@@ -434,12 +434,7 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
-  if(analysis == "sm"){
-    for(auto chn : chns){
-        bkg_procs[chn] = JoinStr({bkg_procs[chn],sm_signals});
-    }
-  }
-  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -915,7 +910,7 @@ int main(int argc, char **argv) {
     }
 
     if(analysis == "sm"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, main_sm_signals, cats[chn], true); // These are ggH125 and qqH125
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true); // These are ggH125 and qqH125
     }
     else if(analysis == "bsm-model-indep"){
 
@@ -1020,8 +1015,10 @@ int main(int argc, char **argv) {
       input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
     if(analysis == "sm"){
-      cb.cp().channel({chn}).process(main_sm_signals).ExtractShapes( // these are ggH125 and qqH125
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).process({"bbH125"}, false).ExtractShapes( // these are ggH125 and qqH125
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+      cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
+        input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
     }
     // Adding templates for configured SUSY signals
     // Comprising BSM signal h in model-independent case
@@ -1819,7 +1816,7 @@ int main(int argc, char **argv) {
 
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
-    // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
+  // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
 
