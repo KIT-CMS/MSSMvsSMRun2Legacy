@@ -784,83 +784,105 @@ int main(int argc, char **argv) {
     Categories exclude_em_control = cats[chn]; // contain all except 2
     Categories sm_signal_cat = cats[chn]; // contain 1, 3-7
 
-    for (auto catit = sm_signal_cat.begin(); catit != sm_signal_cat.end(); ++catit)
+    auto catit = sm_signal_cat.begin();
+    while(catit != sm_signal_cat.end())
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         sm_signal_cat.erase(catit);
-        --catit;
       }
-      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+      else if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         sm_signal_cat.erase(catit);
-        --catit;
       }
-      if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
+      else if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
         sm_signal_cat.erase(catit);
-        --catit;
       }
-      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+      else if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
         sm_signal_cat.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
-    for (auto catit = mssm_cats.begin(); catit != mssm_cats.end(); ++catit)
+    catit = mssm_cats.begin();
+    while(catit != mssm_cats.end())
     {
       if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_cats.erase(catit);
-        --catit;
       }
-      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+      else if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_cats.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
-    for (auto catit = exclude_em_control.begin(); catit != exclude_em_control.end(); ++catit)
+    catit = exclude_em_control.begin();
+    while(catit != exclude_em_control.end())
     {
       if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
         exclude_em_control.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
-    for (auto catit = mssm_btag_cats.begin(); catit != mssm_btag_cats.end(); ++catit)
+    catit = mssm_btag_cats.begin();
+    while(catit != mssm_btag_cats.end())
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         mssm_btag_cats.erase(catit);
-        --catit;
       }
-      if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
+      else if(std::find(sm_categories.begin(), sm_categories.end(), (*catit).first) != sm_categories.end()){
         mssm_btag_cats.erase(catit);
-        --catit;
       }
-      if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
+      else if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_btag_cats.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
-    for (auto catit = sm_and_btag_cats.begin(); catit != sm_and_btag_cats.end(); ++catit)
+    catit = sm_and_btag_cats.begin();
+    while(catit != sm_and_btag_cats.end())
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         sm_and_btag_cats.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
     Categories sm_and_btag_cats_exclude_em_control = sm_and_btag_cats;
 
-    for (auto catit = sm_and_btag_cats_exclude_em_control.begin(); catit != sm_and_btag_cats_exclude_em_control.end(); ++catit)
+    catit = sm_and_btag_cats_exclude_em_control.begin();
+    while(catit != sm_and_btag_cats_exclude_em_control.end())
     {
       if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
         sm_and_btag_cats_exclude_em_control.erase(catit);
-        --catit;
+      }
+      else
+      {
+        ++catit;
       }
     }
 
     std::cout << "[INFO] Using the following categories:" << std::endl;
     std::cout << "   sm_and_btag_cats:" << std::endl;
     for (const auto i: sm_and_btag_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "   sm_and_btag_cats_exclude_em_control:" << std::endl;
+    for (const auto i: sm_and_btag_cats_exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    mssm_cats:" << std::endl;
@@ -873,6 +895,10 @@ int main(int argc, char **argv) {
     std::cout  << std::endl;
     std::cout << "    sm_signal_cat:" << std::endl;
     for (const auto i: sm_signal_cat)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    exclude_em_control:" << std::endl;
+    for (const auto i: exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
 
