@@ -4,14 +4,14 @@ ulimit -s unlimited
 TAG=$1
 MODE=$2
 if [[ $TAG == "auto" ]]; then
-    TAG="cmb_sm_analysis"
+    TAG="cmb_sm_analysis_allcats"
 fi
 
 
 defaultdir=analysis/$TAG
 analysis="sm"
 sub_analysis="no-hSM-in-bg"
-categorization="sm-ml-only"
+categorization="with-sm-ml"
 sm_like_hists="sm125"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
@@ -33,7 +33,19 @@ if [[ $MODE == "initial" ]]; then
         --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
         --variable nnscore \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
-        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_sm_cats_log.txt
+
+    morph_parallel.py --output ${defaultdir}/datacards \
+        --analysis ${analysis} \
+        --sub-analysis ${sub_analysis} \
+        --categorization ${categorization} \
+        --sm-like-hists ${sm_like_hists} \
+        --eras 2016,2017,2018 \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+        --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=0" \
+        --variable mt_tot_puppi \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_mssm_cats_log.txt
 
     ############
     # combining outputs
