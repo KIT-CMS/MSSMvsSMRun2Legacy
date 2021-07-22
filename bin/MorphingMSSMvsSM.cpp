@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
     mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  if (low_mass) mssm_qqH_signals = {"qqX"}
+  if (low_mass) mssm_qqH_signals = {"qqX"};
 
   std::cout << "Used BSM signals: ";
   for(auto proc : mssm_signals){
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
   if(low_mass) {
     // if doing low mass analysis we use morphing to get M=95 mass point for bbH
     // we take M=95 directly from template for both ggH and VBF 
-    SUSYbbH_masses[2018] = {"80","100"};
+    SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200"};
     SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
     SUSYbbH_masses[2016] = SUSYbbH_masses[2018];
     SUSYggH_masses[2018] = {"95"}; 
@@ -500,6 +500,7 @@ int main(int argc, char **argv) {
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
+  if(low_mass) MH.setVal(95.);
   MH.setConstant(true);
 
   // Define categories
@@ -1154,7 +1155,7 @@ int main(int argc, char **argv) {
 
        && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA"
            || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i"
-           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i"))
+           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i" || syst->signal() ))
 
       || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos
            || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos)

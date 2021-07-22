@@ -97,7 +97,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1", "bbH125"};
-  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals, {"qqX"}});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
     jetFakes = {"jetFakesSM"};
