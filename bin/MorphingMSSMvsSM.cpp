@@ -778,7 +778,7 @@ int main(int argc, char **argv) {
       Categories additional_higgses_cats;
       if(categorization == "classic") // classic categories cover full mass range for additional Higgs signals
       {
-         additional_higgses_cats = cats[chn];
+         additional_higgses_cats = exclude_em_control;
       }
       else if(categorization == "with-sm-ml" || categorization == "sm-ml-only")
       {
@@ -1351,6 +1351,73 @@ int main(int argc, char **argv) {
         cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_Nbtag0_"+y);
         cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_NbtagGt1_"+y);
 
+      }
+    }
+  }
+ 
+  // the following code is used to decorrelate wjets and qcd systematics by category
+  // the btag and nobtag are always decorrelated
+  // we also decorrelate the wjets by loose and tight mT since we are extrapolating to different mT regions 
+  // in cases where these uncertainties were not derived seperatly for Nbjets>0 (usually due to limited stats) we double the uncertainty
+  // note this doubling is already done in the FF workspaces for the wjets_syst_extrap so we don't need to do it again here 
+  // we decorrelate the wjets extrapolation uncertainties by category
+  
+  for (string y : {"2016","2017","2018"}) {
+    for (string c : {"mt","et"}) {
+      cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MTLt40_"+y);
+      cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MT40To70_"+y);
+      cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MTLt40_"+y);
+      cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MT40To70_"+y);
+
+      cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MTLt40_"+y);
+      cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MT40To70_"+y);
+      cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MTLt40_"+y);
+      cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MT40To70_"+y);
+    }
+  }
+  for (string y : {"2016","2017","2018"}) {
+    string c = "tt";
+    cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_"+y);
+    cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y);
+
+    cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_Nbtag0_"+y);
+    cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_NbtagGt1_"+y);
+
+    // scale Wjets uncertainty by 2 for tt channels in btag category.
+    cb.cp().bin_id({35}).channel({c}).syst_name({"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
+      if (syst->type().find("shape") != std::string::npos) {
+        syst->set_scale(syst->scale() * 2.);
+      }
+      if (syst->type().find("lnN") != std::string::npos) {
+        syst->set_value_u((syst->value_u() - 1.) * 2. + 1.);
+        if (syst->asymm()){
+          syst->set_value_d((syst->value_d() - 1.) * 2. + 1.);
+        }
+      }
+    });
+  }
+
+  // we decorrelate the qcd extrapolation systematics by NBtag
+
+  for (string y : {"2016","2017","2018"}) {
+    for (string c : {"mt","et","tt"}) {
+      cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_Nbtag0_"+y);
+      cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y);
+      if(c != "tt") {
+        cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_Nbtag0_"+y);
+        cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y);
+        // scale QCD extrapolation uncertainties by 2 for et and mt channels in btag category.
+        cb.cp().bin_id({35,36}).channel({c}).syst_name({"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
+          if (syst->type().find("shape") != std::string::npos) {
+            syst->set_scale(syst->scale() * 2.);
+          }
+          if (syst->type().find("lnN") != std::string::npos) {
+            syst->set_value_u((syst->value_u() - 1.) * 2. + 1.);
+            if (syst->asymm()){
+              syst->set_value_d((syst->value_d() - 1.) * 2. + 1.);
+            }
+          }
+        });
       }
     }
   }

@@ -2112,19 +2112,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double ggH_ttbar_cr_down = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
 
-            // tt channel numbers are swapped for btag and nobtag categories so swap round here
-            // if this are fixed in the json file need to swap back!!
-            if(c=="tt") {
-              bbH_btag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-              bbH_btag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-              ggH_btag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-              ggH_btag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-              bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-              bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-              ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-              ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-            }
-
             cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
             // Cover SM bbH125 case
             if(m == "125"){
@@ -3061,6 +3048,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"et", "mt", "tt"})
         .process({"jetFakes"})
         .AddSyst(cb, "CMS_ff_total_wjets_syst_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+        .channel({"et", "mt"})
+        .process({"jetFakes"})
+        .AddSyst(cb, "CMS_ff_total_wjets_syst_extrap_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
     cb.cp()
         .channel({"et", "mt"})
