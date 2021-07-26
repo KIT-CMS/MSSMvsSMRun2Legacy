@@ -304,25 +304,26 @@ def main(args):
                     process, "hist", fillcolor=styles.color_dict[process])
 
             # get signal histograms
-            plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
-            for i in plot_idx_to_add_signal:
-                if args.model_independent:
-                    ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
-                    ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
-                    ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
-                    plot.subplot(i).add_hist(
-                        ggH_hist, "ggH")
-                    plot.subplot(i).add_hist(
-                        ggH_hist, "ggH_top")
-                    plot.subplot(i).add_hist(
-                        rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH")
-                    plot.subplot(i).add_hist(
-                        rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH_top")
-                else:
-                    plot.subplot(i).add_hist(
-                        rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig")
-                    plot.subplot(i).add_hist(
-                        rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig_top")
+            if int(category) > 30:
+                plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
+                for i in plot_idx_to_add_signal:
+                    if args.model_independent:
+                        ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
+                        ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
+                        ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
+                        plot.subplot(i).add_hist(
+                            ggH_hist, "ggH")
+                        plot.subplot(i).add_hist(
+                            ggH_hist, "ggH_top")
+                        plot.subplot(i).add_hist(
+                            rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH")
+                        plot.subplot(i).add_hist(
+                            rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH_top")
+                    else:
+                        plot.subplot(i).add_hist(
+                            rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig")
+                        plot.subplot(i).add_hist(
+                            rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig_top")
 
             # get observed data and total background histograms
             plot.add_hist(
@@ -332,14 +333,15 @@ def main(args):
 
             plot.subplot(0).setGraphStyle("data_obs", "e0")
             if args.model_independent:
-                plot.subplot(0 if args.linear else 1).setGraphStyle(
-                    "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
-                plot.subplot(0 if args.linear else 1).setGraphStyle(
-                    "ggH_top", "hist", linecolor=0)
-                plot.subplot(0 if args.linear else 1).setGraphStyle(
-                    "bbH", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
-                plot.subplot(0 if args.linear else 1).setGraphStyle(
-                    "bbH_top", "hist", linecolor=0)
+                if int(category) > 30:
+                    plot.subplot(0 if args.linear else 1).setGraphStyle(
+                        "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
+                    plot.subplot(0 if args.linear else 1).setGraphStyle(
+                        "ggH_top", "hist", linecolor=0)
+                    plot.subplot(0 if args.linear else 1).setGraphStyle(
+                        "bbH", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
+                    plot.subplot(0 if args.linear else 1).setGraphStyle(
+                        "bbH_top", "hist", linecolor=0)
             else:
                 plot.subplot(0 if args.linear else 1).setGraphStyle(
                     "mssm_sig", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
@@ -354,36 +356,41 @@ def main(args):
 
             # assemble ratio
             if args.model_independent:
-                bkg_ggH = plot.subplot(2).get_hist("ggH")
-                bkg_bbH = plot.subplot(2).get_hist("bbH")
-                bkg_ggH.Add(plot.subplot(2).get_hist("total_bkg"))
-                bkg_bbH.Add(plot.subplot(2).get_hist("total_bkg"))
-                plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH")
-                plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH_top")
-                plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH")
-                plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH_top")
-                plot.subplot(2).setGraphStyle(
-                    "bkg_ggH",
-                    "hist",
-                    linecolor=styles.color_dict["ggH"],
-                    linewidth=3)
-                plot.subplot(2).setGraphStyle(
-                    "bkg_ggH_top",
-                    "hist",
-                    linecolor=0)
-                plot.subplot(2).setGraphStyle(
-                    "bkg_bbH",
-                    "hist",
-                    linecolor=styles.color_dict["bbH"],
-                    linewidth=3)
-                plot.subplot(2).setGraphStyle(
-                    "bkg_bbH_top",
-                    "hist",
-                    linecolor=0)
-                plot.subplot(2).normalize([
-                    "total_bkg", "bkg_ggH", "bkg_ggH_top", "bkg_bbH",
-                    "bkg_bbH_top", "data_obs"
-                ], "total_bkg")
+                if int(category) > 30:
+                    bkg_ggH = plot.subplot(2).get_hist("ggH")
+                    bkg_bbH = plot.subplot(2).get_hist("bbH")
+                    bkg_ggH.Add(plot.subplot(2).get_hist("total_bkg"))
+                    bkg_bbH.Add(plot.subplot(2).get_hist("total_bkg"))
+                    plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH")
+                    plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH_top")
+                    plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH")
+                    plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH_top")
+                    plot.subplot(2).setGraphStyle(
+                        "bkg_ggH",
+                        "hist",
+                        linecolor=styles.color_dict["ggH"],
+                        linewidth=3)
+                    plot.subplot(2).setGraphStyle(
+                        "bkg_ggH_top",
+                        "hist",
+                        linecolor=0)
+                    plot.subplot(2).setGraphStyle(
+                        "bkg_bbH",
+                        "hist",
+                        linecolor=styles.color_dict["bbH"],
+                        linewidth=3)
+                    plot.subplot(2).setGraphStyle(
+                        "bkg_bbH_top",
+                        "hist",
+                        linecolor=0)
+                    plot.subplot(2).normalize([
+                        "total_bkg", "bkg_ggH", "bkg_ggH_top", "bkg_bbH",
+                        "bkg_bbH_top", "data_obs"
+                    ], "total_bkg")
+                else:
+                    plot.subplot(2).normalize([
+                        "total_bkg", "data_obs"
+                    ], "total_bkg")
             else:
                 bkg_sig = plot.subplot(2).get_hist("mssm_sig")
                 bkg_sig.Add(plot.subplot(2).get_hist("total_bkg"))
@@ -521,7 +528,10 @@ def main(args):
                 ])
             else:
                 if args.model_independent:
-                    procs_to_draw = ["total_bkg", "bkg_ggH", "bkg_bbH", "bkg_ggH_top", "bkg_bbH_top", "data_obs"]
+                    if int(category) > 30:
+                        procs_to_draw = ["total_bkg", "bkg_ggH", "bkg_bbH", "bkg_ggH_top", "bkg_bbH_top", "data_obs"]
+                    else:
+                        procs_to_draw = ["total_bkg", "data_obs"]
                 else:
                     procs_to_draw = ["total_bkg", "bkg_mssm_sig", "bkg_mssm_sig_top", "data_obs"]
                 if args.blinded:
