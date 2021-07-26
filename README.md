@@ -200,6 +200,24 @@ To run the toy generation in parallel on 10 cores the argument `submit` can be c
 bash gof/run_gof.sh combined cmb all $PWD local
 ```
 
+## Running channel compatibility checks
+
+**Workspace creation**
+The workspaces created to obtain the model-independent limits on the cross section times branching ratio of the production of additional neutral Higgs bosons can be used directly for the channel compatibility checks. To create the workspaces please refer to the (corresponding section).
+
+**Running the channel compatibility checks**
+The command to obtain the Chi^2 like test statistics on data is:
+```bash
+combine -M ChannelCompatibilityCheck ${WORKSPACE} -m ${MASS} -n .Test.combined-cmb -v 1 --setParameters r_ggH=0,r_bbH=0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,80:r_bbH=-200,80 --robustFit 1 --rMin=-200 --saveFitResult --stepSize 0.005
+```
+The command will calculate the test statistics by performing a fit with the common parameter of interest(POI) and a fit with separate POIs for each category in the provided workspace. To perform the channel compatibility check for a combination of categories the `--group` argument can be used to group the categories together, e.g. `--group htt_em --group htt_et --group htt_mt --group htt_tt` to perform the channel compatibility check per final state. Depending on the mass considered the parameter ranges for `r_ggH` and `r_bbH` and the step size might need to be adjusted to get the fit and the searches for the crossing points to converge. Note that the `--saveFitResult` is necessary to be able to plot the nominal and alternative fits afterwards.
+
+The combine tool can be used to run the computation of the test statistics on toys. The command for this is then:
+```bash
+combineTool.py -M ChannelCompatibilityCheck ${WORKSPACE} -m ${MASS} -n .Test.combined-cmb -v 0 --setParameters r_ggH=0,r_bbH=0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,200:r_bbH=-200,200 --robustFit 1 --rMin=-200 --dry-run -s 1230:1329:1 -t 5 --job-mode condor --task-name ChannelCompatibilityCheck.Test.combined-cmb.mH${MASS}
+```
+A faster runtime of the jobs but the same results with toys can probably achieved by adding the option `--runMinos=false` to the combine tool command as the uncertainties on the POIs are not of interest for the toys. Please note that this has not been tested so far. The splitting of the jobs is based on the range of the seeds given and can be adjusted to your needs.
+
 # Model-dependent MSSM analysis
 
 In case of the calculation of model-dependent limits, several choices of signal models and categorization are available, denoted with an appropriate `--analysis`.
