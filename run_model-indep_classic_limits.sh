@@ -127,8 +127,9 @@ elif [[ $MODE == "ws-plot" ]]; then
     ###############
     combineTool.py -M T2W -o "ws.root" \
     -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
-    --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
-    --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
+    --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[-50,200]"' \
+    --PO '"map=^.*/bbh$:r_bbH[-50,0,200]"' \
+    --X-allow-no-signal \
     -i ${datacarddir}/201?/htt_*/ \
     -m 125.0 \
     --parallel 8 | tee -a ${defaultdir}/logs/workspace_plots_independent.txt
@@ -173,7 +174,11 @@ elif [[ $MODE == "prefit-plots" ]]; then
     # Extract prefit shapes.
     #####################
     for era in 2016 2017 2018; do
-        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_em_2_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --output_name prefit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*_3*/combined.txt.cmb" \
                                           --workspace_name ws.root \
                                           --freeze_arguments "--freeze ${freeze}" \
                                           --output_name prefit_shapes_${freeze}.root \
@@ -210,7 +215,12 @@ elif [[ $MODE == "postfit-plots" ]]; then
     #####################
     fitfile=${datacarddir}/combined/cmb/fitDiagnostics.combined-cmb.for_shape_unblinding.root
     for era in 2016 2017 2018; do
-        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*/combined.txt.cmb" \
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_em_2_*/combined.txt.cmb" \
+                                          --workspace_name ws.root \
+                                          --fit_arguments "-f ${fitfile}:fit_b --postfit --sampling" \
+                                          --output_name postfit_shapes_${freeze}.root \
+                                          --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-postfit-combined-${freeze}.log
+        prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*_3*_*/combined.txt.cmb" \
                                           --workspace_name ws.root \
                                           --freeze_arguments "--freeze ${freeze}" \
                                           --fit_arguments "-f ${fitfile}:fit_b --postfit --sampling" \
