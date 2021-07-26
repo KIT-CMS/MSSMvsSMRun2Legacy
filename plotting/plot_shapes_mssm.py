@@ -92,6 +92,10 @@ def parse_arguments():
     parser.add_argument("--blinded",
                         action="store_true",
                         help="Do not draw data.")
+    parser.add_argument("--x-range",
+                        type=lambda xranges: [float(edge) for edge in xranges.split(',')],
+                        default=None,
+                        help="Smaller x-range used in the plot to zoom into problematic regions")
     return parser.parse_args()
 
 
@@ -412,13 +416,25 @@ def main(args):
                 plot.subplot(0).normalizeByBinWidth(widths=widths)
                 plot.subplot(1).normalizeByBinWidth(widths=widths)
 
+            if args.x_range is not None:
+                for i in range(3):
+                    plot.subplot(i).setXlims(*args.x_range)
+
             # set axes limits and labels
-            plot.subplot(0).setYlims(
-                split_dict[channel],
-                # max(2 * plot.subplot(0).get_hist("total_bkg").GetMaximum(),
-                #     split_dict[channel] * 2))
-                max(1.3 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
-                    split_dict[channel] * 2))
+            if args.x_range is not None:
+                range_hist = plot.subplot(0).get_hist("data_obs").Clone()
+                range_hist.GetXaxis().SetRangeUser(*args.x_range)
+                plot.subplot(0).setYlims(
+                    split_dict[channel],
+                    max(1.8 * range_hist.GetMaximum(),
+                        split_dict[channel] * 2))
+                    # max(1,
+                    #     split_dict[channel] * 2))
+            else:
+                plot.subplot(0).setYlims(
+                    split_dict[channel],
+                    max(1.8 * plot.subplot(0).get_hist("total_bkg").GetMaximum(),
+                        split_dict[channel] * 2))
 
             plot.subplot(2).setYlims(0.65, 1.8)
 
@@ -453,7 +469,7 @@ def main(args):
             plot.subplot(2).setYlabel("")
 
 
-            if int(category) > 30 or int(category) == 2:
+            if (int(category) > 30 or int(category) == 2) and args.x_range is None:
                 plot.subplot(0).setLogX()
                 plot.subplot(2).setLogX()
 
