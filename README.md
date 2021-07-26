@@ -203,20 +203,61 @@ bash gof/run_gof.sh combined cmb all $PWD local
 ## Running channel compatibility checks
 
 **Workspace creation**
-The workspaces created to obtain the model-independent limits on the cross section times branching ratio of the production of additional neutral Higgs bosons can be used directly for the channel compatibility checks. To create the workspaces please refer to the (corresponding section).
+
+The workspaces created to obtain the model-independent limits on the cross section times branching ratio of the production of additional neutral Higgs bosons can be used directly for the channel compatibility checks. To create the workspaces please refer to the [corresponding section](https://github.com/KIT-CMS/MSSMvsSMRun2Legacy/tree/master#workspace-creation-1).
 
 **Running the channel compatibility checks**
+
 The command to obtain the Chi^2 like test statistics on data is:
 ```bash
-combine -M ChannelCompatibilityCheck ${WORKSPACE} -m ${MASS} -n .Test.combined-cmb -v 1 --setParameters r_ggH=0,r_bbH=0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,80:r_bbH=-200,80 --robustFit 1 --rMin=-200 --saveFitResult --stepSize 0.005
+combine -M ChannelCompatibilityCheck \
+    ${WORKSPACE} \
+    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustFit 1 --stepSize 0.005 \
+    --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,80:r_bbH=-200,80 --rMin=-200 \
+    -m ${MASS} \
+    --saveFitResult \
+    -n .Test.combined-cmb \
+    -v 1
 ```
 The command will calculate the test statistics by performing a fit with the common parameter of interest(POI) and a fit with separate POIs for each category in the provided workspace. To perform the channel compatibility check for a combination of categories the `--group` argument can be used to group the categories together, e.g. `--group htt_em --group htt_et --group htt_mt --group htt_tt` to perform the channel compatibility check per final state. Depending on the mass considered the parameter ranges for `r_ggH` and `r_bbH` and the step size might need to be adjusted to get the fit and the searches for the crossing points to converge. Note that the `--saveFitResult` is necessary to be able to plot the nominal and alternative fits afterwards.
 
 The combine tool can be used to run the computation of the test statistics on toys. The command for this is then:
 ```bash
-combineTool.py -M ChannelCompatibilityCheck ${WORKSPACE} -m ${MASS} -n .Test.combined-cmb -v 0 --setParameters r_ggH=0,r_bbH=0 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,200:r_bbH=-200,200 --robustFit 1 --rMin=-200 --dry-run -s 1230:1329:1 -t 5 --job-mode condor --task-name ChannelCompatibilityCheck.Test.combined-cmb.mH${MASS}
+combineTool.py -M ChannelCompatibilityCheck \
+    ${WORKSPACE} \
+    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustFit 1 --stepSize 0.005 \ 
+    --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-200,80:r_bbH=-200,80 --rMin=-200 \
+    -m ${MASS} \
+    -n .Test.combined-cmb \
+    -v 0 \
+    --dry-run -s 1230:1329:1 -t 5 --job-mode condor --task-name ChannelCompatibilityCheck.Test.combined-cmb.mH${MASS}
 ```
 A faster runtime of the jobs but the same results with toys can probably achieved by adding the option `--runMinos=false` to the combine tool command as the uncertainties on the POIs are not of interest for the toys. Please note that this has not been tested so far. The splitting of the jobs is based on the range of the seeds given and can be adjusted to your needs.
+
+As the outputs from the ChannelCompatibilityCheck method have the same outputs as the results from GoF tests, the collection and plotting scripts for the GoF tests can be used to extract the p-value of the tests and plot the distribution of the test statistics. The commands to do this are:
+```bash
+combineTool.py -M CollectGoodnessOfFit --input \
+    higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.root higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.1230.root \
+    higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.root higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.1231.root \
+    ...
+    higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.root higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.1329.root \
+    --output ChannelCompatibilityCheck_combined_cmb-mH${MASS}.json
+
+plotGof.py ChannelCompatibilityCheck_combined_cmb-mH${MASS}.json \
+    --output ChannelCompatibilityCheck_combined_cmb-mH${MASS} \
+    --statistic CCC \
+    --mass ${MASS}.0 \
+    --title-right="160 fb^{-1} (13 TeV)" --title-left="m_{#phi} = ${MASS} GeV"
+```
+To plot the nominal and the alternative fit results a script is provided that extracts the results for the POIs of both fits from the fit file that has been written by the fit on data. It is invoked via
+```bash
+python ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plot_ccc.py \
+    higgsCombine.Test.combined-cmb.ChannelCompatibilityCheck.mH${MASS}.root \
+    -o ChannelCompatibilityCheck_FitResults_mH${MASS} \
+    -p r_ggH \
+    -r m0.012,0.01
+```
+where `-r` sets the x-range of the resulting plot.
 
 # Model-dependent MSSM analysis
 
