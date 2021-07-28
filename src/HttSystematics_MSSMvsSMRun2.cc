@@ -96,8 +96,19 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH2_t", "ggH2_b", "ggH2_i",
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
+
+  std::vector<std::string> mssm_ggH_lowmass_signals;
+  for(auto ggH : mssm_ggH_signals){
+    mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
+  }
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1", "bbH125"};
-  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  std::vector<std::string> mssm_bbH_lowmass_signals;
+  for(auto bbH : mssm_bbH_signals){
+    if(bbH != "bbH125"){
+      mssm_bbH_lowmass_signals.push_back(bbH + "_lowmass");
+    }
+  }
+  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals, mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
     jetFakes = {"jetFakesSM"};
@@ -132,7 +143,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    // Notes:
    // ##########################################################################
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).process({"bbH125"}, false).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 0.996)
@@ -328,7 +339,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, 1.016)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, 1.016));
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).process({"bbH125"}, false).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 1.013, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 1.016, 0.992)
@@ -596,7 +607,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(mssm_ggH_signals)
+      .process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals}))
       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
 
 
@@ -758,7 +769,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .channel({"mt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
     .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
-  // tt with double genuine hadronic taus 
+  // tt with double genuine hadronic taus
   cb.cp()
     .channel({"tt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
@@ -1868,7 +1879,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.137, 0.889)
   ({"tt"}, {"2018"}, {32}, 1.076, 0.926)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.991, 1.009)
   ({"em"}, {"2017"}, {35}, 0.98, 1.023)
@@ -1976,7 +1987,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.004, 0.996)
   ({"tt"}, {"2018"}, {32}, 1.008, 0.994)
   );
-  
+
   cb.cp().process({"TTT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.999, 1.001)
   ({"em"}, {"2017"}, {35}, 1.0, 1.001)
@@ -2030,7 +2041,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.005, 0.995)
   ({"tt"}, {"2018"}, {32}, 1.009, 0.990)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.986, 1.015)
   ({"em"}, {"2017"}, {35}, 0.974, 1.011)
@@ -2112,16 +2123,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double ggH_ttbar_cr_down = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
             // Cover SM bbH125 case
             if(m == "125"){
               cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, btag_categories_forlnN, {m}, ggH_btag_down, ggH_btag_up));
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_categories, {m}, bbH_nobtag_down, bbH_nobtag_up));
 
             // Cover SM bbH125 case
@@ -2130,18 +2141,18 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               ({c}, {yr}, nobtag_categories, bbH_nobtag_down, bbH_nobtag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_categories, {m}, ggH_nobtag_down, ggH_nobtag_up));
 
 
             // ttbar control region uncertainties
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             // Cover SM bbH125 case
             if(m == "125"){
               cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, {2}, {m}, ggH_ttbar_cr_down, ggH_ttbar_cr_up));
             }
         }

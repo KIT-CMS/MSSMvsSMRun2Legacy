@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
     bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "EMB"), bkgs_tt.end());
     bkgs.push_back("ZTT"); bkgs.push_back("TTT"); bkgs.push_back("VVT");
     bkgs_em.push_back("ZTT"); bkgs_em.push_back("TTT"); bkgs_em.push_back("VVT");
-    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");   
+    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
@@ -1627,14 +1627,14 @@ int main(int argc, char **argv) {
       }
     }
   }
- 
+
   // the following code is used to decorrelate wjets and qcd systematics by category
   // the btag and nobtag are always decorrelated
-  // we also decorrelate the wjets by loose and tight mT since we are extrapolating to different mT regions 
+  // we also decorrelate the wjets by loose and tight mT since we are extrapolating to different mT regions
   // in cases where these uncertainties were not derived seperatly for Nbjets>0 (usually due to limited stats) we double the uncertainty
-  // note this doubling is already done in the FF workspaces for the wjets_syst_extrap so we don't need to do it again here 
+  // note this doubling is already done in the FF workspaces for the wjets_syst_extrap so we don't need to do it again here
   // we decorrelate the wjets extrapolation uncertainties by category
-  
+
   for (string y : {"2016","2017","2018"}) {
     for (string c : {"mt","et"}) {
       cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MTLt40_"+y);
