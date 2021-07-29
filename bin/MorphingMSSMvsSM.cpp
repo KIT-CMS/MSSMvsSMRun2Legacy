@@ -580,18 +580,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "et_xxh_bin_1"},
-        { 3, "et_xxh_bin_2"},
-        { 4, "et_xxh_bin_3"},
-        { 5, "et_xxh_bin_4"},
-        { 6, "et_xxh_bin_5"},
-        { 7, "et_xxh_bin_6"}
+        { 101, "et_xxh_bin_1"},
+        { 102, "et_xxh_bin_2"},
+        { 103, "et_xxh_bin_3"},
+        { 104, "et_xxh_bin_4"},
+        { 105, "et_xxh_bin_5"},
+        { 106, "et_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "et_xxh"}
+        { 101, "et_xxh"}
       };
     }
     cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -607,18 +607,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "mt_xxh_bin_1"},
-        { 3, "mt_xxh_bin_2"},
-        { 4, "mt_xxh_bin_3"},
-        { 5, "mt_xxh_bin_4"},
-        { 6, "mt_xxh_bin_5"},
-        { 7, "mt_xxh_bin_6"}
+        { 101, "mt_xxh_bin_1"},
+        { 102, "mt_xxh_bin_2"},
+        { 103, "mt_xxh_bin_3"},
+        { 104, "mt_xxh_bin_4"},
+        { 105, "mt_xxh_bin_5"},
+        { 106, "mt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "mt_xxh"}
+        { 101, "mt_xxh"}
       };
     }
     cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -632,18 +632,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "tt_xxh_bin_1"},
-        { 3, "tt_xxh_bin_2"},
-        { 4, "tt_xxh_bin_3"},
-        { 5, "tt_xxh_bin_4"},
-        { 6, "tt_xxh_bin_5"},
-        { 7, "tt_xxh_bin_6"}
+        { 101, "tt_xxh_bin_1"},
+        { 102, "tt_xxh_bin_2"},
+        { 103, "tt_xxh_bin_3"},
+        { 104, "tt_xxh_bin_4"},
+        { 105, "tt_xxh_bin_5"},
+        { 106, "tt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "tt_xxh"}
+        { 101, "tt_xxh"}
       };
     }
     cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -659,18 +659,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "em_xxh_bin_1"},
-        { 3, "em_xxh_bin_2"},
-        { 4, "em_xxh_bin_3"},
-        { 5, "em_xxh_bin_4"},
-        { 6, "em_xxh_bin_5"},
-        { 7, "em_xxh_bin_6"}
+        { 101, "em_xxh_bin_1"},
+        { 102, "em_xxh_bin_2"},
+        { 103, "em_xxh_bin_3"},
+        { 104, "em_xxh_bin_4"},
+        { 105, "em_xxh_bin_5"},
+        { 106, "em_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "em_xxh"}
+        { 101, "em_xxh"}
       };
     }
     cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -692,18 +692,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "et_xxh_bin_1"},
-        { 3, "et_xxh_bin_2"},
-        { 4, "et_xxh_bin_3"},
-        { 5, "et_xxh_bin_4"},
-        { 6, "et_xxh_bin_5"},
-        { 7, "et_xxh_bin_6"}
+        { 101, "et_xxh_bin_1"},
+        { 102, "et_xxh_bin_2"},
+        { 103, "et_xxh_bin_3"},
+        { 104, "et_xxh_bin_4"},
+        { 105, "et_xxh_bin_5"},
+        { 106, "et_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "et_xxh"}
+        { 101, "et_xxh"}
       };
     }
     cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -725,18 +725,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "mt_xxh_bin_1"},
-        { 3, "mt_xxh_bin_2"},
-        { 4, "mt_xxh_bin_3"},
-        { 5, "mt_xxh_bin_4"},
-        { 6, "mt_xxh_bin_5"},
-        { 7, "mt_xxh_bin_6"}
+        { 101, "mt_xxh_bin_1"},
+        { 102, "mt_xxh_bin_2"},
+        { 103, "mt_xxh_bin_3"},
+        { 104, "mt_xxh_bin_4"},
+        { 105, "mt_xxh_bin_5"},
+        { 106, "mt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "mt_xxh"}
+        { 101, "mt_xxh"}
       };
     }
     cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -754,18 +754,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "tt_xxh_bin_1"},
-        { 3, "tt_xxh_bin_2"},
-        { 4, "tt_xxh_bin_3"},
-        { 5, "tt_xxh_bin_4"},
-        { 6, "tt_xxh_bin_5"},
-        { 7, "tt_xxh_bin_6"}
+        { 101, "tt_xxh_bin_1"},
+        { 102, "tt_xxh_bin_2"},
+        { 103, "tt_xxh_bin_3"},
+        { 104, "tt_xxh_bin_4"},
+        { 105, "tt_xxh_bin_5"},
+        { 106, "tt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "tt_xxh"}
+        { 101, "tt_xxh"}
       };
     }
     cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -791,18 +791,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "em_xxh_bin_1"},
-        { 3, "em_xxh_bin_2"},
-        { 4, "em_xxh_bin_3"},
-        { 5, "em_xxh_bin_4"},
-        { 6, "em_xxh_bin_5"},
-        { 7, "em_xxh_bin_6"}
+        { 101, "em_xxh_bin_1"},
+        { 102, "em_xxh_bin_2"},
+        { 103, "em_xxh_bin_3"},
+        { 104, "em_xxh_bin_4"},
+        { 105, "em_xxh_bin_5"},
+        { 106, "em_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "em_xxh"}
+        { 101, "em_xxh"}
       };
     }
     cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -821,17 +821,17 @@ int main(int argc, char **argv) {
   std::vector<int> em_control_category = {2}; // Control region for em channel
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> sm_signal_category = {1,3,4,5,6,7}; // category for the SM signal
+  std::vector<int> sm_signal_category = {101,102,103,104,105,106}; // category for the SM signal
 
 
   for (auto chn : chns) {
   // build category maps used for the different analyses
-    Categories sm_and_btag_cats = cats[chn]; // contain 1, 3-7, 2, 13-21, 35-37
-    Categories sm_cats = cats[chn]; // contain 1, 3-7, 13-21
+    Categories sm_and_btag_cats = cats[chn]; // contain 101-106, 2, 13-21, 35-37
+    Categories sm_cats = cats[chn]; // contain 101-106, 13-21
     Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
     Categories mssm_cats = cats[chn]; // contain 2, 32-37
     Categories exclude_em_control = cats[chn]; // contain all except 2
-    Categories sm_signal_cat = cats[chn]; // contain 1, 3-7
+    Categories sm_signal_cat = cats[chn]; // contain 101-106
 
     auto catit = sm_signal_cat.begin();
     while(catit != sm_signal_cat.end())
@@ -1270,7 +1270,12 @@ int main(int argc, char **argv) {
     binning_map["tt"] = {};
 
 
-    binning_map["em"][1] = {};
+    binning_map["em"][101] = {};
+    binning_map["em"][102] = {};
+    binning_map["em"][103] = {};
+    binning_map["em"][104] = {};
+    binning_map["em"][105] = {};
+    binning_map["em"][106] = {};
     binning_map["em"][2][0] = {100., 200., 10.};
     binning_map["em"][2][1] = {200., 350., 25.};
     binning_map["em"][2][2] = {350., 500., 50.};
@@ -1289,7 +1294,12 @@ int main(int argc, char **argv) {
     binning_map["em"][36] = {};
     binning_map["em"][37] = {};
 
-    binning_map["et"][1] = {};
+    binning_map["et"][101] = {};
+    binning_map["et"][102] = {};
+    binning_map["et"][103] = {};
+    binning_map["et"][104] = {};
+    binning_map["et"][105] = {};
+    binning_map["et"][106] = {};
     binning_map["et"][13] = {};
     binning_map["et"][15] = {};
     binning_map["et"][16] = {};
@@ -1302,7 +1312,12 @@ int main(int argc, char **argv) {
     binning_map["et"][36] = {};
 
 
-    binning_map["mt"][1] = {};
+    binning_map["mt"][101] = {};
+    binning_map["mt"][102] = {};
+    binning_map["mt"][103] = {};
+    binning_map["mt"][104] = {};
+    binning_map["mt"][105] = {};
+    binning_map["mt"][106] = {};
     binning_map["mt"][13] = {};
     binning_map["mt"][15] = {};
     binning_map["mt"][16] = {};
@@ -1315,7 +1330,12 @@ int main(int argc, char **argv) {
     binning_map["mt"][36] = {};
 
 
-    binning_map["tt"][1] = {};
+    binning_map["tt"][101] = {};
+    binning_map["tt"][102] = {};
+    binning_map["tt"][103] = {};
+    binning_map["tt"][104] = {};
+    binning_map["tt"][105] = {};
+    binning_map["tt"][106] = {};
     binning_map["tt"][10] = {};
     binning_map["tt"][16] = {};
     binning_map["tt"][20] = {};
