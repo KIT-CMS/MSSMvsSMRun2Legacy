@@ -855,7 +855,7 @@ int main(int argc, char **argv) {
     }
 
     catit = sm_cats.begin();
-    while(catit != mssm_cats.end())
+    while(catit != sm_cats.end())
     {
       if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
         sm_cats.erase(catit);
