@@ -1868,18 +1868,24 @@ int main(int argc, char **argv) {
     {"ggh_t", &mh}, {"ggh_b", &mh}, {"ggh_i", &mh},
     {"ggH_t", &mH}, {"ggH_b", &mH}, {"ggH_i", &mH},
     {"ggA_t", &mA}, {"ggA_b", &mA}, {"ggA_i", &mA},
-    {"bbh", &mh},
-    {"bbH", &mH},
-    {"bbA", &mA}
+    {"ggh_t_lowmass", &mh}, {"ggh_b_lowmass", &mh}, {"ggh_i_lowmass", &mh},
+    {"ggH_t_lowmass", &mH}, {"ggH_b_lowmass", &mH}, {"ggH_i_lowmass", &mH},
+    {"ggA_t_lowmass", &mA}, {"ggA_b_lowmass", &mA}, {"ggA_i_lowmass", &mA},
+    {"bbh", &mh}, {"bbh_lowmass", &mh},
+    {"bbH", &mH}, {"bbH_lowmass", &mH},
+    {"bbA", &mA}, {"bbA_lowmass", &mA}
   };
 
   std::map<std::string, std::string> process_norm_map = {
     {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
     {"ggH_t", "prenorm"}, {"ggH_b", "prenorm"}, {"ggH_i", "prenorm"},
     {"ggA_t", "prenorm"}, {"ggA_b", "prenorm"}, {"ggA_i", "prenorm"},
-    {"bbh", "norm"},
-    {"bbH", "norm"},
-    {"bbA", "norm"}
+    {"ggh_t_lowmass", "prenorm"}, {"ggh_b_lowmass", "prenorm"}, {"ggh_i_lowmass", "prenorm"},
+    {"ggH_t_lowmass", "prenorm"}, {"ggH_b_lowmass", "prenorm"}, {"ggH_i_lowmass", "prenorm"},
+    {"ggA_t_lowmass", "prenorm"}, {"ggA_b_lowmass", "prenorm"}, {"ggA_i_lowmass", "prenorm"},
+    {"bbh", "norm"}, {"bbh_lowmass", "norm"},
+    {"bbH", "norm"}, {"bbH_lowmass", "norm"},
+    {"bbA", "norm"}, {"bbA_lowmass", "norm"}
   };
 
   // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
@@ -1944,18 +1950,24 @@ int main(int argc, char **argv) {
       {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
       {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
       {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
-      {"bbH1", &mH1},
-      {"bbH2", &mH2},
-      {"bbH3", &mH3}
+      {"ggH1_t_lowmass", &mH1}, {"ggH1_b_lowmass", &mH1}, {"ggH1_i_lowmass", &mH1},
+      {"ggH2_t_lowmass", &mH2}, {"ggH2_b_lowmass", &mH2}, {"ggH2_i_lowmass", &mH2},
+      {"ggH3_t_lowmass", &mH3}, {"ggH3_b_lowmass", &mH3}, {"ggH3_i_lowmass", &mH3},
+      {"bbH1", &mH1}, {"bbH1_lowmass", &mH1},
+      {"bbH2", &mH2}, {"bbH2_lowmass", &mH2},
+      {"bbH3", &mH3}, {"bbH3_lowmass", &mH3}
     };
 
     process_norm_map = {
       {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
       {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
       {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
-      {"bbH1", "norm"},
-      {"bbH2", "norm"},
-      {"bbH3", "norm"}
+      {"ggH1_t_lowmass", "prenorm"}, {"ggH1_b_lowmass", "prenorm"}, {"ggH1_i_lowmass", "prenorm"},
+      {"ggH2_t_lowmass", "prenorm"}, {"ggH2_b_lowmass", "prenorm"}, {"ggH2_i_lowmass", "prenorm"},
+      {"ggH3_t_lowmass", "prenorm"}, {"ggH3_b_lowmass", "prenorm"}, {"ggH3_i_lowmass", "prenorm"},
+      {"bbH1", "norm"}, {"bbH1_lowmass", "norm"},
+      {"bbH2", "norm"}, {"bbH2_lowmass", "norm"},
+      {"bbH3", "norm"}, {"bbH3_lowmass", "norm"}
     };
 
     // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
