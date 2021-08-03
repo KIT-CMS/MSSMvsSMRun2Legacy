@@ -487,7 +487,13 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
-  if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  if(analysis == "sm"){
+    bkg_procs["tt"] = JoinStr({bkg_procs["tt"],bkgs_HWW});
+    bkg_procs["mt"] = JoinStr({bkg_procs["mt"],bkgs_HWW});
+    bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
+  }
+  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -507,6 +513,25 @@ int main(int argc, char **argv) {
     else if(category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb" ||
             category == "em_xxh_bin_1" || category == "em_xxh_bin_2" || category == "em_xxh_bin_3" || category == "em_xxh_bin_4" || category == "em_xxh_bin_5" || category == "em_xxh_bin_6"){
       bkg_procs["em"] = JoinStr({bkg_procs["em"], sm_signals, main_sm_signals,bkgs_HWW});
+    }
+  }
+  else if(analysis == "bsm-model-dep-full"){
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
+    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff" ||
+       category == "et_xxh_bin_1" || category == "et_xxh_bin_2" || category == "et_xxh_bin_3" || category == "et_xxh_bin_4" || category == "et_xxh_bin_5" || category == "et_xxh_bin_6"){
+      bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
+    }
+    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff" ||
+            category == "mt_xxh_bin_1" || category == "mt_xxh_bin_2" || category == "mt_xxh_bin_3" || category == "mt_xxh_bin_4" || category == "mt_xxh_bin_5" || category == "mt_xxh_bin_6"){
+      bkg_procs["mt"] = JoinStr({bkg_procs["mt"],bkgs_HWW});
+    }
+    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff" ||
+            category == "tt_xxh_bin_1" || category == "tt_xxh_bin_2" || category == "tt_xxh_bin_3" || category == "tt_xxh_bin_4" || category == "tt_xxh_bin_5" || category == "tt_xxh_bin_6"){
+      bkg_procs["tt"] = JoinStr({bkg_procs["tt"],bkgs_HWW});
+    }
+    else if(category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb" ||
+            category == "em_xxh_bin_1" || category == "em_xxh_bin_2" || category == "em_xxh_bin_3" || category == "em_xxh_bin_4" || category == "em_xxh_bin_5" || category == "em_xxh_bin_6"){
+      bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
     }
   }
 
