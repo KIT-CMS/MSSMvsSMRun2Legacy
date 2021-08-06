@@ -115,7 +115,7 @@ for cat in common:
         diff_vals = np.array([abs(diff_hist.GetBinContent(i+1)) for i in range(diff_hist.GetNbinsX())])
         diff_value = np.sum(diff_vals)
         if diff_value >  0.0:
-            print "\t\tDifference spotted:",hist,diff_value
+            print "\t\tDifference spotted:",hist,diff_value,"ratio to first:",diff_value/first_hist.Integral()
             if args.verbose:
                 print "\t\tDifference in bins:",hist,diff_vals
 
