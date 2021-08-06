@@ -8,6 +8,9 @@ import numpy as np
 parser = argparse.ArgumentParser(description="Compare two sets of hig-21-001 datacard shapes")
 parser.add_argument("--first-shapefile", required=True, help="Path to the ROOT file with reference set of datacard shapes to compare with.")
 parser.add_argument("--second-shapefile", required=True, help="Path to the ROOT file with a new set of datacard shapes.")
+parser.add_argument("--consistency-2D-vs-1D", default=1, choices=[0,1], type=int, help="Flag to perform consistency check between 2D signal and 1D split categories. Default: %(default)s")
+parser.add_argument("--check-uncertainties", default=1, choices=[0,1], type=int, help="Flag to perform check also uncertainties. Default: %(default)s")
+parser.add_argument("--process", default=None, help="Compare specific process. Default: %(default)s")
 
 args = parser.parse_args()
 ROOT.gROOT.SetBatch()
@@ -40,8 +43,22 @@ for cat in common:
     common_hists = first_hists.intersection(second_hists)
     only_first_hists = first_hists.difference(second_hists)
     only_second_hists = second_hists.difference(first_hists)
+    common_processes = set([k for k in common_hists if not k.endswith("Up") and not k.endswith("Down")])
     only_first_processes = set([k for k in only_first_hists if not k.endswith("Up") and not k.endswith("Down")])
     only_second_processes = set([k for k in only_second_hists if not k.endswith("Up") and not k.endswith("Down")])
+
+    if args.process:
+        common_hists = set([k for k in common_hists if args.process in k])
+        only_first_hists = set([k for k in only_first_hists if args.process in k])
+        only_second_hists = set([k for k in only_second_hists if args.process in k])
+        common_processes = set([k for k in common_processes if args.process in k])
+        only_first_processes = set([k for k in only_first_processes if args.process in k])
+        only_second_processes = set([k for k in only_second_processes if args.process in k])
+
+    if not args.check_uncertainties:
+        common_hists = common_processes
+        only_first_hists = only_first_processes
+        only_second_hists = only_second_processes
 
     if len(only_first_processes) > 0:
         print("\tProcesses available only in "+args.first_shapefile)
@@ -74,48 +91,49 @@ for cat in common:
         if diff_value >  0.0:
             print "\t\tDifference spotted:",hist,diff_value
 
-print("")
-first_sm_signal_categories = set([c for c in first_categories if "xxh" in c])
-second_sm_signal_categories = set([c for c in second_categories if "xxh" in c])
+if args.consistency_2D_vs_1D:
+    print("")
+    first_sm_signal_categories = set([c for c in first_categories if "xxh" in c])
+    second_sm_signal_categories = set([c for c in second_categories if "xxh" in c])
 
-# if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
-if len(first_sm_signal_categories) > 1:
-    print("Checking consistency of 1D split SM signal categories with 2D SM signal category for",args.first_shapefile)
-    assert(len([c for c in first_sm_signal_categories if "bin" not in c]) == 1)
-    sm_signal_2D = [first.Get(c) for c in first_sm_signal_categories if "bin" not in c][0]
-    sm_signal_1D = [first.Get(c) for c in sorted(first_sm_signal_categories) if "bin" in c]
-    # There should be 6 splits 
-    assert(len(sm_signal_1D) == 6)
-    for k in sm_signal_2D.GetListOfKeys():
-        h_2D = sm_signal_2D.Get(k.GetName())
-        sm_2D_values = np.array([h_2D.GetBinContent(i+1) for i in range(h_2D.GetNbinsX())])
-        sm_1D_split_values = np.array([])
-        for cat_1D in sm_signal_1D:
-            h_1D = cat_1D.Get(k.GetName())
-            sm_1D_split_values = np.concatenate((sm_1D_split_values, np.array([h_1D.GetBinContent(i+1) for i in range(h_1D.GetNbinsX())])))
+    # if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
+    if len(first_sm_signal_categories) > 1:
+        print("Checking consistency of 1D split SM signal categories with 2D SM signal category for",args.first_shapefile)
+        assert(len([c for c in first_sm_signal_categories if "bin" not in c]) == 1)
+        sm_signal_2D = [first.Get(c) for c in first_sm_signal_categories if "bin" not in c][0]
+        sm_signal_1D = [first.Get(c) for c in sorted(first_sm_signal_categories) if "bin" in c]
+        # There should be 6 splits
+        assert(len(sm_signal_1D) == 6)
+        for k in sm_signal_2D.GetListOfKeys():
+            h_2D = sm_signal_2D.Get(k.GetName())
+            sm_2D_values = np.array([h_2D.GetBinContent(i+1) for i in range(h_2D.GetNbinsX())])
+            sm_1D_split_values = np.array([])
+            for cat_1D in sm_signal_1D:
+                h_1D = cat_1D.Get(k.GetName())
+                sm_1D_split_values = np.concatenate((sm_1D_split_values, np.array([h_1D.GetBinContent(i+1) for i in range(h_1D.GetNbinsX())])))
 
-        diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
-        if np.sum(diff_2D_vs_split_1D) > 0.0:
-            print "\tDifference spotted:",k.GetName(),diff_2D_vs_split_1D
+            diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
+            if np.sum(diff_2D_vs_split_1D) > 0.0:
+                print "\tDifference spotted:",k.GetName(),diff_2D_vs_split_1D
 
-# if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
-if len(second_sm_signal_categories) > 1:
-    print("Checking consistency of 1D split SM signal categories with 2D SM signal category for "+args.second_shapefile)
-    assert(len([c for c in second_sm_signal_categories if "bin" not in c]) == 1)
-    sm_signal_2D = [second.Get(c) for c in second_sm_signal_categories if "bin" not in c][0]
-    sm_signal_1D = [second.Get(c) for c in sorted(second_sm_signal_categories) if "bin" in c]
-    # There should be 6 splits 
-    assert(len(sm_signal_1D) == 6)
-    for k in sm_signal_2D.GetListOfKeys():
-        h_2D = sm_signal_2D.Get(k.GetName())
-        sm_2D_values = np.array([h_2D.GetBinContent(i+1) for i in range(h_2D.GetNbinsX())])
-        sm_1D_split_values = np.array([])
-        for cat_1D in sm_signal_1D:
-            h_1D = cat_1D.Get(k.GetName())
-            sm_1D_split_values = np.concatenate((sm_1D_split_values, np.array([h_1D.GetBinContent(i+1) for i in range(h_1D.GetNbinsX())])))
+    # if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
+    if len(second_sm_signal_categories) > 1:
+        print("Checking consistency of 1D split SM signal categories with 2D SM signal category for "+args.second_shapefile)
+        assert(len([c for c in second_sm_signal_categories if "bin" not in c]) == 1)
+        sm_signal_2D = [second.Get(c) for c in second_sm_signal_categories if "bin" not in c][0]
+        sm_signal_1D = [second.Get(c) for c in sorted(second_sm_signal_categories) if "bin" in c]
+        # There should be 6 splits
+        assert(len(sm_signal_1D) == 6)
+        for k in sm_signal_2D.GetListOfKeys():
+            h_2D = sm_signal_2D.Get(k.GetName())
+            sm_2D_values = np.array([h_2D.GetBinContent(i+1) for i in range(h_2D.GetNbinsX())])
+            sm_1D_split_values = np.array([])
+            for cat_1D in sm_signal_1D:
+                h_1D = cat_1D.Get(k.GetName())
+                sm_1D_split_values = np.concatenate((sm_1D_split_values, np.array([h_1D.GetBinContent(i+1) for i in range(h_1D.GetNbinsX())])))
 
-        diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
-        if np.sum(diff_2D_vs_split_1D) > 0.0:
-            print "\tSplitting difference spotted:",k.GetName(),np.sum(diff_2D_vs_split_1D)
-            print "\t2D      :",sm_2D_values
-            print "\t1D split:",sm_1D_split_values
+            diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
+            if np.sum(diff_2D_vs_split_1D) > 0.0:
+                print "\tSplitting difference spotted:",k.GetName(),np.sum(diff_2D_vs_split_1D)
+                print "\t2D      :",sm_2D_values
+                print "\t1D split:",sm_1D_split_values
