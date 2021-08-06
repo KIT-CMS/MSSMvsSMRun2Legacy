@@ -68,7 +68,7 @@ elif [[ $MODE == "ws" ]]; then
     ############
     cd ${defaultdir}/limits_ind/condor
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits -t -1\
+    -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
@@ -85,7 +85,7 @@ elif [[ $MODE == "ws" ]]; then
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
 
     combineTool.py -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
-    -M AsymptoticLimits -t -1 \
+    -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \

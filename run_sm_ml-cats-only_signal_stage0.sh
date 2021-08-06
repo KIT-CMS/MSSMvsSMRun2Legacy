@@ -56,8 +56,8 @@ elif [[ $MODE == "ws" ]]; then
 
     combineTool.py -M T2W -o "ws_sm.root" \
     -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
-    --PO '"map=^.*/(bb|gg)H125.?$:r_ggH[1,-5,5]"' \
-    --PO '"map=^.*/(W|Z|qq)H125.?$:r_qqH[1,-5,5]"' \
+    --PO '"map=^.*/(bb|gg)H125.?$:r_ggH[1,0,2]"' \
+    --PO '"map=^.*/(W|Z|qq)H125.?$:r_qqH[1,0,2]"' \
     -i ${datacarddir}/combined/cmb/ \
     -m 125.0 --parallel 4 | tee -a ${defaultdir}/logs/workspace_sm.txt
 
@@ -72,10 +72,10 @@ elif [[ $MODE == "run" ]]; then
     --robustFit 1 \
     -d ${datacarddir}/combined/cmb/ws_sm.root \
     --there -n ".stage0" \
-    --X-rtd MINIMIZER_analytic \
+    --X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO \
     --cminDefaultMinimizerStrategy 0 \
     --cminDefaultMinimizerTolerance 0.01 \
     --floatOtherPOIs 1 \
-    --setParameters r_ggH=1,r_qqH=1 -t -1 \
+    --setParameters r_ggH=1,r_qqH=1 --setParameterRanges CMS_htt_ttbarShape=-10.0,10.0 \
     -v 1 | tee -a ${defaultdir}/logs/run_stage0_sm.txt
 fi
