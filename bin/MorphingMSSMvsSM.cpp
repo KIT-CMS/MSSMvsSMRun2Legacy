@@ -1185,7 +1185,7 @@ int main(int argc, char **argv) {
           for(auto ggH : mssm_ggH_lowmass_signals_additional){
             std::string template_ggH = boost::replace_all_copy(ggH, "_lowmass", "");
             cb.cp().channel({chn}).process({ggH}).ExtractShapes(
-              input_file_base, "$BIN/" + template_ggH + "_$MASS", "$BIN/" + template_ggH + "$PROCESS_$MASS_$SYSTEMATIC");
+              input_file_base, "$BIN/" + template_ggH + "_$MASS", "$BIN/" + template_ggH + "_$MASS_$SYSTEMATIC");
           }
         }
       }
