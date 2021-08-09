@@ -1088,11 +1088,7 @@ int main(int argc, char **argv) {
 
       if(analysis == "bsm-model-dep-full") // In that case of analysis we compare full neutral BSM Higgs spectrum (h, H, A or H1, H2, H3) with SM hypothesis
       {
-        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
-        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-
-        // Defining categories for qqphi, ggphi, and bbphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
+        // Defining categories for SM and BSM SM-like HTT signal: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
         Categories qq_gg_bb_phi_cats;
         if(categorization == "classic")
         {
@@ -1102,6 +1098,10 @@ int main(int argc, char **argv) {
         {
           qq_gg_bb_phi_cats = sm_and_btag_cats;
         }
+
+        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), qq_gg_bb_phi_cats, true);
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
         // sm-like-light: phi = h
