@@ -1404,6 +1404,10 @@ int main(int argc, char **argv) {
     {
       return false;
     }
+    if (std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
+    {
+      return false;
+    }
     bool null_yield = !(p->rate() > 0.0);
     if (null_yield) {
       std::cout << "[WARNING] Removing process with null yield: \n ";
@@ -1421,6 +1425,10 @@ int main(int argc, char **argv) {
   cb.FilterSysts([&](ch::Systematic *s) {
     // For mssm signals: no action yet
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+    {
+      return false;
+    }
+    if (std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       return false;
     }
@@ -1443,8 +1451,8 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([mssm_signals](ch::Process *p) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
         std::cout << "[WARNING] Setting mssm signal with negative yield to 0: \n ";
@@ -1456,8 +1464,8 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
         if (s->shape_u()->Integral() <= 0.0 || s->shape_d()->Integral() <= 0.0) {
@@ -1589,9 +1597,9 @@ int main(int argc, char **argv) {
 
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
-  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
+  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals, mssm_lowmass_signals](ch::Systematic *s){
     TString sname = TString(s->name());
-    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
+    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end() && std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) == mssm_lowmass_signals.end() ))
     {
       double err_u = 0.0;
       double err_d = 0.0;
