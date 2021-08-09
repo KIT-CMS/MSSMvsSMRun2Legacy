@@ -241,6 +241,10 @@ int main(int argc, char **argv) {
   std::map<string, string> input_dir;
   if (base_path.back() != '/' ) base_path += "/";
   if (!boost::filesystem::exists(output_folder)) boost::filesystem::create_directories(output_folder);
+  // input_dir["mt"] = base_path + "/" +era_tag + "_hig-19-010" + "/mt/";
+  // input_dir["et"] = base_path + "/" +era_tag + "_hig-19-010" + "/et/";
+  // input_dir["tt"] = base_path + "/" +era_tag + "_hig-19-010" + "/tt/";
+  // input_dir["em"] = base_path + "/" +era_tag + "_hig-19-010" + "/em/";
   input_dir["mt"] = base_path + "/" +era_tag + "/mt/";
   input_dir["et"] = base_path + "/" +era_tag + "/et/";
   input_dir["tt"] = base_path + "/" +era_tag + "/tt/";
@@ -277,6 +281,17 @@ int main(int argc, char **argv) {
   VString mssm_bbH_lowmass_signals, mssm_bbH_lowmass_signals_additional, mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar;
 
   VString mssm_signals, mssm_lowmass_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
+
+  std::string smlike = "h";
+  if(sub_analysis == "sm-like-light"){
+    smlike = "h";
+  }
+  else if(sub_analysis == "sm-like-heavy"){
+    smlike = "H";
+  }
+  else if(sub_analysis == "cpv"){
+    smlike = "H1";
+  }
 
   if (sm == true){
     sm_signals = {"WH125", "ZH125", "bbH125"};
@@ -1114,9 +1129,8 @@ int main(int argc, char **argv) {
       }
     }
   }
-
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
-  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm, smlike);
   dout("[INFO] Systematics added");
   // Define restriction to the desired category
   if(category != "all"){
