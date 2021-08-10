@@ -464,9 +464,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var(self.massparameter).setConstant(True) # either mA or mHp
         self.modelBuilder.out.var('tanb').setConstant(True)
 
-        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))"
+        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))(|_lowmass)"
         if self.replace_with_sm125:
-            bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
+            bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))(|_lowmass)".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
 
         for proc in self.PROC_SETS:
             terms = []
@@ -474,7 +474,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if "H125" in proc: # cover SM H125 processes first
                 terms = [self.sigNorms[False]]
             elif re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
-                terms = ['xs_%s' %proc, 'br_%stautau'%X]
+                terms = ['xs_%s' %proc.replace("_lowmass",""), 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})$'.format(SMLIKE=self.smlike), proc): # always done
@@ -562,7 +562,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             # Make a note of what we've built, will be used to create scaling expressions later
             self.PROC_SETS.append('bb%s'%X)
-            self.PROC_SETS.extend(['gg%s_t'%X, 'gg%s_b'%X, 'gg%s_i'%X])
+            if X != self.smlike:
+                self.PROC_SETS.append('bb%s_lowmass'%X)
+            self.PROC_SETS.extend(['gg%s_t'%X, 'gg%s_b'%X, 'gg%s_i'%X, 'gg%s_t_lowmass'%X, 'gg%s_b_lowmass'%X, 'gg%s_i_lowmass'%X])
 
         # Add BSM systematic also in case SM125 templates are used for ggphi and bbphi
         if self.replace_with_sm125:
