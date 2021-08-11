@@ -463,11 +463,11 @@ int main(int argc, char **argv) {
     SUSYggH_masses[2016] = SUSYggH_masses[2018];
     SUSYggH_masses[2017] = SUSYggH_masses[2018];
 
-    SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500"};
+    SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
     SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
-    SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500"};  // Missing 300
+    SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
 
-    SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500"};
+    SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
     SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
     SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
   } else {
@@ -564,6 +564,16 @@ int main(int argc, char **argv) {
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
+
+  std::string max_lowmass = SUSYggH_lowmasses[2018].back(); // this is set the same for all years for the time-being
+
+  TString expression = max_lowmass + "*(mA >=" + max_lowmass +") + mA*(mA < "+ max_lowmass + ")";
+  RooFormulaVar mA_lowmass("mA_lowmass", "mA_lowmass", expression, mA);
+  expression = max_lowmass + "*(mH >=" + max_lowmass +") + mH*(mH < "+ max_lowmass + ")";
+  RooFormulaVar mH_lowmass("mH_lowmass", "mH_lowmass", expression, mH);
+  expression = max_lowmass + "*(mh >=" + max_lowmass +") + mh*(mh < "+ max_lowmass + ")";
+  RooFormulaVar mh_lowmass("mh_lowmass", "mh_lowmass", expression, mh);
+
   // mA is used as model parameter in case of sub_analysis "sm-like-light", for "sm-like-heavy" and "cpv" it is mHp
   if(sub_analysis == "sm-like-light")
   {
@@ -574,6 +584,13 @@ int main(int argc, char **argv) {
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
+
+  expression = max_lowmass + "*(mH3 >=" + max_lowmass +") + mH3*(mH3 < "+ max_lowmass + ")";
+  RooFormulaVar mH3_lowmass("mH3_lowmass", "mH3_lowmass", expression, mH3);
+  expression = max_lowmass + "*(mH2 >=" + max_lowmass +") + mH2*(mH2 < "+ max_lowmass + ")";
+  RooFormulaVar mH2_lowmass("mH2_lowmass", "mH2_lowmass", expression, mH2);
+  expression = max_lowmass + "*(mH1 >=" + max_lowmass +") + mH1*(mH1 < "+ max_lowmass + ")";
+  RooFormulaVar mH1_lowmass("mH1_lowmass", "mH1_lowmass", expression, mH1);
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -1915,12 +1932,12 @@ int main(int argc, char **argv) {
     {"ggh_t", &mh}, {"ggh_b", &mh}, {"ggh_i", &mh},
     {"ggH_t", &mH}, {"ggH_b", &mH}, {"ggH_i", &mH},
     {"ggA_t", &mA}, {"ggA_b", &mA}, {"ggA_i", &mA},
-    {"ggh_t_lowmass", &mh}, {"ggh_b_lowmass", &mh}, {"ggh_i_lowmass", &mh},
-    {"ggH_t_lowmass", &mH}, {"ggH_b_lowmass", &mH}, {"ggH_i_lowmass", &mH},
-    {"ggA_t_lowmass", &mA}, {"ggA_b_lowmass", &mA}, {"ggA_i_lowmass", &mA},
-    {"bbh", &mh}, {"bbh_lowmass", &mh},
-    {"bbH", &mH}, {"bbH_lowmass", &mH},
-    {"bbA", &mA}, {"bbA_lowmass", &mA}
+    {"ggh_t_lowmass", &mh_lowmass}, {"ggh_b_lowmass", &mh_lowmass}, {"ggh_i_lowmass", &mh_lowmass},
+    {"ggH_t_lowmass", &mH_lowmass}, {"ggH_b_lowmass", &mH_lowmass}, {"ggH_i_lowmass", &mH_lowmass},
+    {"ggA_t_lowmass", &mA_lowmass}, {"ggA_b_lowmass", &mA_lowmass}, {"ggA_i_lowmass", &mA_lowmass},
+    {"bbh", &mh}, {"bbh_lowmass", &mh_lowmass},
+    {"bbH", &mH}, {"bbH_lowmass", &mH_lowmass},
+    {"bbA", &mA}, {"bbA_lowmass", &mA_lowmass}
   };
 
   std::map<std::string, std::string> process_norm_map = {
@@ -1997,12 +2014,12 @@ int main(int argc, char **argv) {
       {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
       {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
       {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
-      {"ggH1_t_lowmass", &mH1}, {"ggH1_b_lowmass", &mH1}, {"ggH1_i_lowmass", &mH1},
-      {"ggH2_t_lowmass", &mH2}, {"ggH2_b_lowmass", &mH2}, {"ggH2_i_lowmass", &mH2},
-      {"ggH3_t_lowmass", &mH3}, {"ggH3_b_lowmass", &mH3}, {"ggH3_i_lowmass", &mH3},
-      {"bbH1", &mH1}, {"bbH1_lowmass", &mH1},
-      {"bbH2", &mH2}, {"bbH2_lowmass", &mH2},
-      {"bbH3", &mH3}, {"bbH3_lowmass", &mH3}
+      {"ggH1_t_lowmass", &mH1_lowmass}, {"ggH1_b_lowmass", &mH1_lowmass}, {"ggH1_i_lowmass", &mH1_lowmass},
+      {"ggH2_t_lowmass", &mH2_lowmass}, {"ggH2_b_lowmass", &mH2_lowmass}, {"ggH2_i_lowmass", &mH2_lowmass},
+      {"ggH3_t_lowmass", &mH3_lowmass}, {"ggH3_b_lowmass", &mH3_lowmass}, {"ggH3_i_lowmass", &mH3_lowmass},
+      {"bbH1", &mH1}, {"bbH1_lowmass", &mH1_lowmass},
+      {"bbH2", &mH2}, {"bbH2_lowmass", &mH2_lowmass},
+      {"bbH3", &mH3}, {"bbH3_lowmass", &mH3_lowmass}
     };
 
     process_norm_map = {
