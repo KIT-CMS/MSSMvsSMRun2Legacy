@@ -21,7 +21,7 @@ using ch::syst::process;
 using ch::syst::bin;
 using ch::JoinStr;
 
-void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedding, bool regional_jec, bool ggh_wg1, bool qqh_wg1, int era, bool mva, bool sm) {
+void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedding, bool regional_jec, bool ggh_wg1, bool qqh_wg1, int era, bool mva, bool sm, std::string smlike) {
 
   // ##########################################################################
   // Define groups of signal processes
@@ -31,9 +31,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // STXS stage 0
       "ggH_htt125",
       "ggH125",
-      "ggH",
-      "ggh",
-      "ggH1",
+      "gg" + smlike,
       "ggX",
       // STXS stage 1.1
       "ggH_FWDH_htt",
@@ -58,9 +56,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // STXS stage 0
       "qqH_htt125",
       "qqH125",
-      "qqH",
-      "qqh",
-      "qqH1",
+      "qq" + smlike,
       "qqX",
       // STXS stage 1
       "qqH_FWDH_htt",
@@ -77,7 +73,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       };
   std::vector<std::string> signals_VH = {
       // STXS stage 0
-      "WH125", "Wh", "WH", "WH1", "ZH125", "Zh", "ZH", "ZH1", "ttH125"};
+      "WH125", "W" + smlike, "ZH125", "Z" + smlike, "ttH125"};
+  std::vector<std::string> signals_bbH = {
+      // STXS stage 0
+      "bbH125", "bb" + smlike};
   std::vector<std::string> signals_ggHToWW = {
      // STXS stage 0
      "ggHWW125"};
@@ -87,7 +86,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, signals_bbH});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
   std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i",
@@ -96,8 +95,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH2_t", "ggH2_b", "ggH2_i",
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
-  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1", "bbH125"};
-  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+
+  std::vector<std::string> mssm_ggH_lowmass_signals;
+  for(auto ggH : mssm_ggH_signals){
+    mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
+  }
+  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1"};
+  std::vector<std::string> mssm_bbH_lowmass_signals;
+  for(auto bbH : mssm_bbH_signals){
+    mssm_bbH_lowmass_signals.push_back(bbH + "_lowmass");
+  }
+  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals, mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
     jetFakes = {"jetFakesSM"};
@@ -113,6 +121,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               });
 
   std::vector<int> nobtag_categories = {1, 3, 4, 5, 6, 7, 8, 9,10,
+                                    101,102,103,104,105,106,
                                     11,12,13,14,15,16,17,18,19,20,
                                     21,22,23,24,25,26,27,28,29,30,
                                     31,32,33,34}; // SM and MSSM no-btag categories
@@ -132,7 +141,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    // Notes:
    // ##########################################################################
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 0.996)
@@ -320,7 +329,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3200"}, 1.022)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3500"}, 1.024));
 
-   cb.cp().process({"bbH125"}).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id>::init
+   cb.cp().process(signals_bbH).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id>::init
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, 0.995)
@@ -328,7 +337,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, 1.016)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, 1.016));
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 1.013, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 1.016, 0.992)
@@ -517,7 +526,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3500"}, 0.953, 1.032));
 
 
-   cb.cp().process({"bbH125"}).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+   cb.cp().process(signals_bbH).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, 1.007, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, 1.008, 0.992)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, 1.009, 0.992)
@@ -596,7 +605,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(mssm_ggH_signals)
+      .process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals}))
       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
 
 
@@ -758,7 +767,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .channel({"mt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
     .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
-  // tt with double genuine hadronic taus 
+  // tt with double genuine hadronic taus
   cb.cp()
     .channel({"tt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
@@ -1868,7 +1877,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.137, 0.889)
   ({"tt"}, {"2018"}, {32}, 1.076, 0.926)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.991, 1.009)
   ({"em"}, {"2017"}, {35}, 0.98, 1.023)
@@ -1976,7 +1985,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.004, 0.996)
   ({"tt"}, {"2018"}, {32}, 1.008, 0.994)
   );
-  
+
   cb.cp().process({"TTT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.999, 1.001)
   ({"em"}, {"2017"}, {35}, 1.0, 1.001)
@@ -2030,7 +2039,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.005, 0.995)
   ({"tt"}, {"2018"}, {32}, 1.009, 0.990)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.986, 1.015)
   ({"em"}, {"2017"}, {35}, 0.974, 1.011)
@@ -2112,36 +2121,36 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
             double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double ggH_ttbar_cr_down = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, btag_categories_forlnN, {m}, ggH_btag_down, ggH_btag_up));
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_categories, {m}, bbH_nobtag_down, bbH_nobtag_up));
 
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
               ({c}, {yr}, nobtag_categories, bbH_nobtag_down, bbH_nobtag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, nobtag_categories, {m}, ggH_nobtag_down, ggH_nobtag_up));
 
 
             // ttbar control region uncertainties
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, {2}, {m}, ggH_ttbar_cr_down, ggH_ttbar_cr_up));
             }
         }
@@ -2710,15 +2719,15 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
 
   // 95 GeV samples BR uncertainties
@@ -2744,11 +2753,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // QCD scale (no ggH & qqH signals for tautau decay channel) for 125 GeV Higgs
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
+      .process({"ZH125", "Z" + smlike, "ZHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.009));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
+      .process({"WH125", "W" + smlike, "WHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.008));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -2756,7 +2765,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "QCDScale_ttH", "lnN", SystMap<>::init(1.08));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"bbH125"})
+      .process(signals_bbH)
       .AddSyst(cb, "QCDScale_bbH", "lnN", SystMap<>::init(1.22));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -2784,11 +2793,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
+    .process({"ZH125", "Z" + smlike, "ZHWW125"})
     .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
+    .process({"WH125", "W" + smlike, "WHWW125"})
     .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -2883,6 +2892,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"et", "mt", "tt", "em"})
      .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_JET01", "shape", SystMap<>::init(1.00));
+  }
+  else {
+    cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({signals_ggH}).process({"ggX"}, false)
+      .AddSyst(cb, "QCDScale_ggH", "lnN", SystMap<>::init(1.039));
+    cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({signals_qqH}).process({"qqX"}, false)
+      .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
   }
   // ##########################################################################
   // Uncertainty: Embedded events

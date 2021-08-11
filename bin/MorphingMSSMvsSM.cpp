@@ -16,6 +16,7 @@
 #include "RooWorkspace.h"
 #include "TF1.h"
 #include "TH2.h"
+#include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/algorithm/string/split.hpp"
 #include "boost/lexical_cast.hpp"
@@ -106,6 +107,7 @@ int main(int argc, char **argv) {
   bool split_sm_signal_cat = false;
   bool rebin_sm = true;
   bool no_shape_systs = false;
+  bool enable_bsm_lowmass = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -156,6 +158,7 @@ int main(int argc, char **argv) {
       ("sm_signals", po::value<vector<string>>(&parser_sm_signals)->multitoken(), "sm_signals")
       ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
       ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
+      ("enable_bsm_lowmass", po::value<bool>(&enable_bsm_lowmass)->default_value(enable_bsm_lowmass))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -238,6 +241,10 @@ int main(int argc, char **argv) {
   std::map<string, string> input_dir;
   if (base_path.back() != '/' ) base_path += "/";
   if (!boost::filesystem::exists(output_folder)) boost::filesystem::create_directories(output_folder);
+  // input_dir["mt"] = base_path + "/" +era_tag + "_hig-19-010" + "/mt/";
+  // input_dir["et"] = base_path + "/" +era_tag + "_hig-19-010" + "/et/";
+  // input_dir["tt"] = base_path + "/" +era_tag + "_hig-19-010" + "/tt/";
+  // input_dir["em"] = base_path + "/" +era_tag + "_hig-19-010" + "/em/";
   input_dir["mt"] = base_path + "/" +era_tag + "/mt/";
   input_dir["et"] = base_path + "/" +era_tag + "/et/";
   input_dir["tt"] = base_path + "/" +era_tag + "/tt/";
@@ -266,9 +273,26 @@ int main(int argc, char **argv) {
   // Define background and signal processes
   map<string, VString> bkg_procs;
   VString bkgs, bkgs_em, bkgs_tt, bkgs_HWW, sm_signals, main_sm_signals, bkgs_em_noCR;
+
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
-  VString mssm_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
+
+  VString mssm_ggH_lowmass_signals, mssm_ggH_lowmass_signals_additional, mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar;
+  VString mssm_bbH_lowmass_signals, mssm_bbH_lowmass_signals_additional, mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar;
+
+  VString mssm_signals, mssm_lowmass_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
+
+  std::string smlike = "h";
+  if(sub_analysis == "sm-like-light"){
+    smlike = "h";
+  }
+  else if(sub_analysis == "sm-like-heavy"){
+    smlike = "H";
+  }
+  else if(sub_analysis == "cpv"){
+    smlike = "H1";
+  }
+
   if (sm == true){
     sm_signals = {"WH125", "ZH125", "bbH125"};
   }
@@ -283,6 +307,8 @@ int main(int argc, char **argv) {
   {
     mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i"};
     mssm_bbH_signals = {"bbh"};
+    mssm_ggH_lowmass_signals = {"ggh_t_lowmass", "ggh_b_lowmass", "ggh_i_lowmass"};
+    mssm_bbH_lowmass_signals = {"bbh_lowmass"};
   }
   else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")
   {
@@ -349,16 +375,48 @@ int main(int argc, char **argv) {
         zh_bsm_signals = {"ZH1"};
       }
     }
+    for(auto proc : mssm_ggH_signals_scalar){
+        mssm_ggH_lowmass_signals_scalar.push_back(proc + "_lowmass");
+    }
+    for(auto proc : mssm_ggH_signals_pseudoscalar){
+        mssm_ggH_lowmass_signals_pseudoscalar.push_back(proc + "_lowmass");
+    }
+    for(auto proc : mssm_ggH_signals_smlike){
+        mssm_ggH_lowmass_signals_smlike.push_back(proc + "_lowmass");
+    }
+
+    for(auto proc : mssm_bbH_signals_scalar){
+        mssm_bbH_lowmass_signals_scalar.push_back(proc + "_lowmass");
+    }
+    for(auto proc : mssm_bbH_signals_pseudoscalar){
+        mssm_bbH_lowmass_signals_pseudoscalar.push_back(proc + "_lowmass");
+    }
+    for(auto proc : mssm_bbH_signals_smlike){
+        mssm_bbH_lowmass_signals_smlike.push_back(proc + "_lowmass");
+    }
+
     mssm_ggH_signals_additional = ch::JoinStr({mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
     mssm_bbH_signals_additional = ch::JoinStr({mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+    mssm_ggH_lowmass_signals_additional = ch::JoinStr({mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
+    mssm_bbH_lowmass_signals_additional = ch::JoinStr({mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
+
     mssm_ggH_signals = ch::JoinStr({mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar});
     mssm_bbH_signals = ch::JoinStr({mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar});
+    mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
+    mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
   mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  mssm_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
 
 
   std::cout << "Used BSM signals: ";
   for(auto proc : mssm_signals){
+    std::cout << proc << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "Used BSM lowmass signals: ";
+  for(auto proc : mssm_lowmass_signals){
     std::cout << proc << " ";
   }
   std::cout << std::endl;
@@ -387,10 +445,13 @@ int main(int argc, char **argv) {
     bkgs_tt.erase(std::remove(bkgs_tt.begin(), bkgs_tt.end(), "EMB"), bkgs_tt.end());
     bkgs.push_back("ZTT"); bkgs.push_back("TTT"); bkgs.push_back("VVT");
     bkgs_em.push_back("ZTT"); bkgs_em.push_back("TTT"); bkgs_em.push_back("VVT");
-    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");   
+    bkgs_tt.push_back("ZTT"); bkgs_tt.push_back("TTT"); bkgs_tt.push_back("VVT");
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
+
+  map<int, VString> SUSYggH_lowmasses;
+  map<int, VString> SUSYbbH_lowmasses;
 
   if(do_morph) {
 
@@ -402,6 +463,13 @@ int main(int argc, char **argv) {
     SUSYggH_masses[2016] = SUSYggH_masses[2018];
     SUSYggH_masses[2017] = SUSYggH_masses[2018];
 
+    SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+    SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
+    SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
+
+    SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+    SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
+    SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
   } else {
     // dont use mass morphing - need to specify a mass here
     SUSYggH_masses[2016] = {non_morphed_mass};
@@ -434,7 +502,13 @@ int main(int argc, char **argv) {
   bkg_procs["tt"] = bkgs_tt;
   bkg_procs["em"] = bkgs_em;
 
-  if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  if(analysis == "sm"){
+    bkg_procs["tt"] = JoinStr({bkg_procs["tt"],bkgs_HWW});
+    bkg_procs["mt"] = JoinStr({bkg_procs["mt"],bkgs_HWW});
+    bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
+  }
+  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -456,6 +530,25 @@ int main(int argc, char **argv) {
       bkg_procs["em"] = JoinStr({bkg_procs["em"], sm_signals, main_sm_signals,bkgs_HWW});
     }
   }
+  else if(analysis == "bsm-model-dep-full"){
+    bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
+    if(category == "et_xxh" || category == "et_tt" || category == "et_zll" || category == "et_misc" || category == "et_emb" || category == "et_ff" ||
+       category == "et_xxh_bin_1" || category == "et_xxh_bin_2" || category == "et_xxh_bin_3" || category == "et_xxh_bin_4" || category == "et_xxh_bin_5" || category == "et_xxh_bin_6"){
+      bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
+    }
+    else if(category == "mt_xxh" || category == "mt_tt" || category == "mt_zll" || category == "mt_misc" || category == "mt_emb" || category == "mt_ff" ||
+            category == "mt_xxh_bin_1" || category == "mt_xxh_bin_2" || category == "mt_xxh_bin_3" || category == "mt_xxh_bin_4" || category == "mt_xxh_bin_5" || category == "mt_xxh_bin_6"){
+      bkg_procs["mt"] = JoinStr({bkg_procs["mt"],bkgs_HWW});
+    }
+    else if(category == "tt_xxh" || category == "tt_misc" || category == "tt_emb" || category == "tt_ff" ||
+            category == "tt_xxh_bin_1" || category == "tt_xxh_bin_2" || category == "tt_xxh_bin_3" || category == "tt_xxh_bin_4" || category == "tt_xxh_bin_5" || category == "tt_xxh_bin_6"){
+      bkg_procs["tt"] = JoinStr({bkg_procs["tt"],bkgs_HWW});
+    }
+    else if(category == "em_xxh" || category == "em_tt" || category == "em_ss" || category == "em_misc" || category == "em_db" || category == "em_emb" ||
+            category == "em_xxh_bin_1" || category == "em_xxh_bin_2" || category == "em_xxh_bin_3" || category == "em_xxh_bin_4" || category == "em_xxh_bin_5" || category == "em_xxh_bin_6"){
+      bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
+    }
+  }
 
   std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
     {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
@@ -471,6 +564,16 @@ int main(int argc, char **argv) {
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
+
+  std::string max_lowmass = SUSYggH_lowmasses[2018].back(); // this is set the same for all years for the time-being
+
+  TString expression = max_lowmass + "*(mA >=" + max_lowmass +") + mA*(mA < "+ max_lowmass + ")";
+  RooFormulaVar mA_lowmass("mA_lowmass", "mA_lowmass", expression, mA);
+  expression = max_lowmass + "*(mH >=" + max_lowmass +") + mH*(mH < "+ max_lowmass + ")";
+  RooFormulaVar mH_lowmass("mH_lowmass", "mH_lowmass", expression, mH);
+  expression = max_lowmass + "*(mh >=" + max_lowmass +") + mh*(mh < "+ max_lowmass + ")";
+  RooFormulaVar mh_lowmass("mh_lowmass", "mh_lowmass", expression, mh);
+
   // mA is used as model parameter in case of sub_analysis "sm-like-light", for "sm-like-heavy" and "cpv" it is mHp
   if(sub_analysis == "sm-like-light")
   {
@@ -481,6 +584,13 @@ int main(int argc, char **argv) {
   RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
   RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
   RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
+
+  expression = max_lowmass + "*(mH3 >=" + max_lowmass +") + mH3*(mH3 < "+ max_lowmass + ")";
+  RooFormulaVar mH3_lowmass("mH3_lowmass", "mH3_lowmass", expression, mH3);
+  expression = max_lowmass + "*(mH2 >=" + max_lowmass +") + mH2*(mH2 < "+ max_lowmass + ")";
+  RooFormulaVar mH2_lowmass("mH2_lowmass", "mH2_lowmass", expression, mH2);
+  expression = max_lowmass + "*(mH1 >=" + max_lowmass +") + mH1*(mH1 < "+ max_lowmass + ")";
+  RooFormulaVar mH1_lowmass("mH1_lowmass", "mH1_lowmass", expression, mH1);
 
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
@@ -527,18 +637,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "et_xxh_bin_1"},
-        { 3, "et_xxh_bin_2"},
-        { 4, "et_xxh_bin_3"},
-        { 5, "et_xxh_bin_4"},
-        { 6, "et_xxh_bin_5"},
-        { 7, "et_xxh_bin_6"}
+        { 101, "et_xxh_bin_1"},
+        { 102, "et_xxh_bin_2"},
+        { 103, "et_xxh_bin_3"},
+        { 104, "et_xxh_bin_4"},
+        { 105, "et_xxh_bin_5"},
+        { 106, "et_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "et_xxh"}
+        { 101, "et_xxh"}
       };
     }
     cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -554,18 +664,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "mt_xxh_bin_1"},
-        { 3, "mt_xxh_bin_2"},
-        { 4, "mt_xxh_bin_3"},
-        { 5, "mt_xxh_bin_4"},
-        { 6, "mt_xxh_bin_5"},
-        { 7, "mt_xxh_bin_6"}
+        { 101, "mt_xxh_bin_1"},
+        { 102, "mt_xxh_bin_2"},
+        { 103, "mt_xxh_bin_3"},
+        { 104, "mt_xxh_bin_4"},
+        { 105, "mt_xxh_bin_5"},
+        { 106, "mt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "mt_xxh"}
+        { 101, "mt_xxh"}
       };
     }
     cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -579,18 +689,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "tt_xxh_bin_1"},
-        { 3, "tt_xxh_bin_2"},
-        { 4, "tt_xxh_bin_3"},
-        { 5, "tt_xxh_bin_4"},
-        { 6, "tt_xxh_bin_5"},
-        { 7, "tt_xxh_bin_6"}
+        { 101, "tt_xxh_bin_1"},
+        { 102, "tt_xxh_bin_2"},
+        { 103, "tt_xxh_bin_3"},
+        { 104, "tt_xxh_bin_4"},
+        { 105, "tt_xxh_bin_5"},
+        { 106, "tt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "tt_xxh"}
+        { 101, "tt_xxh"}
       };
     }
     cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -606,18 +716,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "em_xxh_bin_1"},
-        { 3, "em_xxh_bin_2"},
-        { 4, "em_xxh_bin_3"},
-        { 5, "em_xxh_bin_4"},
-        { 6, "em_xxh_bin_5"},
-        { 7, "em_xxh_bin_6"}
+        { 101, "em_xxh_bin_1"},
+        { 102, "em_xxh_bin_2"},
+        { 103, "em_xxh_bin_3"},
+        { 104, "em_xxh_bin_4"},
+        { 105, "em_xxh_bin_5"},
+        { 106, "em_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "em_xxh"}
+        { 101, "em_xxh"}
       };
     }
     cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -639,18 +749,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "et_xxh_bin_1"},
-        { 3, "et_xxh_bin_2"},
-        { 4, "et_xxh_bin_3"},
-        { 5, "et_xxh_bin_4"},
-        { 6, "et_xxh_bin_5"},
-        { 7, "et_xxh_bin_6"}
+        { 101, "et_xxh_bin_1"},
+        { 102, "et_xxh_bin_2"},
+        { 103, "et_xxh_bin_3"},
+        { 104, "et_xxh_bin_4"},
+        { 105, "et_xxh_bin_5"},
+        { 106, "et_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "et_xxh"}
+        { 101, "et_xxh"}
       };
     }
     cats["et"].reserve(cats["et"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -672,18 +782,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "mt_xxh_bin_1"},
-        { 3, "mt_xxh_bin_2"},
-        { 4, "mt_xxh_bin_3"},
-        { 5, "mt_xxh_bin_4"},
-        { 6, "mt_xxh_bin_5"},
-        { 7, "mt_xxh_bin_6"}
+        { 101, "mt_xxh_bin_1"},
+        { 102, "mt_xxh_bin_2"},
+        { 103, "mt_xxh_bin_3"},
+        { 104, "mt_xxh_bin_4"},
+        { 105, "mt_xxh_bin_5"},
+        { 106, "mt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "mt_xxh"}
+        { 101, "mt_xxh"}
       };
     }
     cats["mt"].reserve(cats["mt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -701,18 +811,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "tt_xxh_bin_1"},
-        { 3, "tt_xxh_bin_2"},
-        { 4, "tt_xxh_bin_3"},
-        { 5, "tt_xxh_bin_4"},
-        { 6, "tt_xxh_bin_5"},
-        { 7, "tt_xxh_bin_6"}
+        { 101, "tt_xxh_bin_1"},
+        { 102, "tt_xxh_bin_2"},
+        { 103, "tt_xxh_bin_3"},
+        { 104, "tt_xxh_bin_4"},
+        { 105, "tt_xxh_bin_5"},
+        { 106, "tt_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "tt_xxh"}
+        { 101, "tt_xxh"}
       };
     }
     cats["tt"].reserve(cats["tt"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -738,18 +848,18 @@ int main(int argc, char **argv) {
     if(split_sm_signal_cat){
       sm_signal = {
         // Split SM Signal Categories
-        { 1, "em_xxh_bin_1"},
-        { 3, "em_xxh_bin_2"},
-        { 4, "em_xxh_bin_3"},
-        { 5, "em_xxh_bin_4"},
-        { 6, "em_xxh_bin_5"},
-        { 7, "em_xxh_bin_6"}
+        { 101, "em_xxh_bin_1"},
+        { 102, "em_xxh_bin_2"},
+        { 103, "em_xxh_bin_3"},
+        { 104, "em_xxh_bin_4"},
+        { 105, "em_xxh_bin_5"},
+        { 106, "em_xxh_bin_6"}
       };
     }
     else{
       sm_signal = {
         // 2D SM Signal Category
-        { 1, "em_xxh"}
+        { 101, "em_xxh"}
       };
     }
     cats["em"].reserve(cats["em"].size() + std::distance(sm_signal.begin(), sm_signal.end()));
@@ -768,16 +878,17 @@ int main(int argc, char **argv) {
   std::vector<int> em_control_category = {2}; // Control region for em channel
   std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> sm_signal_category = {1,3,4,5,6,7}; // category for the SM signal
+  std::vector<int> sm_signal_category = {101,102,103,104,105,106}; // category for the SM signal
 
 
   for (auto chn : chns) {
   // build category maps used for the different analyses
-    Categories sm_and_btag_cats = cats[chn]; // contain 1, 3-7, 2, 13-21, 35-37
+    Categories sm_and_btag_cats = cats[chn]; // contain 101-106, 2, 13-21, 35-37
+    Categories sm_cats = cats[chn]; // contain 101-106, 13-21
     Categories mssm_btag_cats = cats[chn]; // contain 2, 35-37
     Categories mssm_cats = cats[chn]; // contain 2, 32-37
     Categories exclude_em_control = cats[chn]; // contain all except 2
-    Categories sm_signal_cat = cats[chn]; // contain 1, 3-7
+    Categories sm_signal_cat = cats[chn]; // contain 101-106
 
     auto catit = sm_signal_cat.begin();
     while(catit != sm_signal_cat.end())
@@ -800,6 +911,24 @@ int main(int argc, char **argv) {
       }
     }
 
+    catit = sm_cats.begin();
+    while(catit != sm_cats.end())
+    {
+      if(std::find(mssm_nobtag_categories.begin(), mssm_nobtag_categories.end(), (*catit).first) != mssm_nobtag_categories.end()){
+        sm_cats.erase(catit);
+      }
+      else if(std::find(mssm_btag_categories.begin(), mssm_btag_categories.end(), (*catit).first) != mssm_btag_categories.end()){
+        sm_cats.erase(catit);
+      }
+      else if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        sm_cats.erase(catit);
+      }
+      else
+      {
+        ++catit;
+      }
+    }
+
     catit = mssm_cats.begin();
     while(catit != mssm_cats.end())
     {
@@ -808,6 +937,20 @@ int main(int argc, char **argv) {
       }
       else if(std::find(sm_signal_category.begin(), sm_signal_category.end(), (*catit).first) != sm_signal_category.end()){
         mssm_cats.erase(catit);
+      }
+      else
+      {
+        ++catit;
+      }
+    }
+
+    Categories mssm_cats_exclude_em_control = mssm_cats;
+
+    catit = mssm_cats_exclude_em_control.begin();
+    while(catit != mssm_cats_exclude_em_control.end())
+    {
+      if(std::find(em_control_category.begin(), em_control_category.end(), (*catit).first) != em_control_category.end()){
+        mssm_cats_exclude_em_control.erase(catit);
       }
       else
       {
@@ -880,8 +1023,16 @@ int main(int argc, char **argv) {
     for (const auto i: sm_and_btag_cats_exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
+    std::cout << "    sm_cats:" << std::endl;
+    for (const auto i: sm_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
     std::cout << "    mssm_cats:" << std::endl;
     for (const auto i: mssm_cats)
+      std::cout << "      " << i.first << ' ' << i.second << std::endl;
+    std::cout  << std::endl;
+    std::cout << "    mssm_cats_exclude_em_control:" << std::endl;
+    for (const auto i: mssm_cats_exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    mssm_btag_cats:" << std::endl;
@@ -898,8 +1049,7 @@ int main(int argc, char **argv) {
     std::cout  << std::endl;
 
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
-    // Adding background processes. This also contains SMH125 templates if configured in that way.
-    // For sm analysis: bbH125, and in sm categories WH125 and ZH125
+    // Adding background processes. This also contains SMH125 templates if configured in that way:
     // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
@@ -910,11 +1060,11 @@ int main(int argc, char **argv) {
     }
 
     if(analysis == "sm"){
-      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true); // These are ggH125 and qqH125
+      cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true); // These are ggH125, qqH125, bbH125, WH125, ZH125
     }
     else if(analysis == "bsm-model-indep"){
 
-      // Adding configured SUSY signals in all categories but SM ML HTT background categories (13-21) for bsm model-independent analyses
+      // Adding configured SUSY signals in all categories but the em control region 2 for bsm model-independent analyses
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
@@ -929,7 +1079,12 @@ int main(int argc, char **argv) {
       {
          if(sub_analysis == "sm-like-light" || sub_analysis == "cpv") // in that case, the additional Higgs bosons are relatively heavy
          {
-             additional_higgses_cats = exclude_em_control;
+            if(enable_bsm_lowmass){
+              additional_higgses_cats = mssm_cats_exclude_em_control;
+            }
+            else{
+              additional_higgses_cats = exclude_em_control;
+            }
          }
          else if(sub_analysis == "sm-like-heavy") // in that case, all additional Higgs bosons are relatively light (< 200 GeV) --> don't consider them in high mass no-btag categories
          {
@@ -942,13 +1097,15 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals_additional, additional_higgses_cats, true);
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals_additional, additional_higgses_cats, true);
 
+      if(enable_bsm_lowmass)
+      {
+        cb.AddProcesses(SUSYggH_lowmasses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_lowmass_signals_additional, sm_cats, true);
+        cb.AddProcesses(SUSYbbH_lowmasses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_lowmass_signals_additional, sm_cats, true);
+      }
+
       if(analysis == "bsm-model-dep-full") // In that case of analysis we compare full neutral BSM Higgs spectrum (h, H, A or H1, H2, H3) with SM hypothesis
       {
-        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
-        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), cats[chn], true);
-
-        // Defining categories for qqphi, ggphi, and bbphi: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
+        // Defining categories for SM and BSM SM-like HTT signal: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
         Categories qq_gg_bb_phi_cats;
         if(categorization == "classic")
         {
@@ -958,6 +1115,10 @@ int main(int argc, char **argv) {
         {
           qq_gg_bb_phi_cats = sm_and_btag_cats;
         }
+
+        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), qq_gg_bb_phi_cats, true);
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
         // sm-like-light: phi = h
@@ -985,9 +1146,8 @@ int main(int argc, char **argv) {
       }
     }
   }
-
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
-  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm);
+  ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm, smlike);
   dout("[INFO] Systematics added");
   // Define restriction to the desired category
   if(category != "all"){
@@ -1006,7 +1166,6 @@ int main(int argc, char **argv) {
     dout("[INFO] Extracting shapes from ", input_file_base);
 
     // Adding background templates to processes. This also involves (if configured) SMH125 processes.
-    // sm analysis: bbH125, and in sm categories also WH125 and ZH125
     // bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     // bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}, false).ExtractShapes(
@@ -1015,7 +1174,7 @@ int main(int argc, char **argv) {
       input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
     if(analysis == "sm"){
-      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).process({"bbH125"}, false).ExtractShapes( // these are ggH125 and qqH125
+      cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).process({"bbH125"}, false).ExtractShapes( // These are ggH125, qqH125, WH125, ZH125
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
         input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
@@ -1039,6 +1198,13 @@ int main(int argc, char **argv) {
       if(sub_analysis == "sm-like-light" || sub_analysis == "sm-like-heavy"){
         cb.cp().channel({chn}).process(mssm_ggH_signals_additional).ExtractShapes(
           input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
+        if(enable_bsm_lowmass){
+          for(auto ggH : mssm_ggH_lowmass_signals_additional){
+            std::string template_ggH = boost::replace_all_copy(ggH, "_lowmass", "");
+            cb.cp().channel({chn}).process({ggH}).ExtractShapes(
+              input_file_base, "$BIN/" + template_ggH + "_$MASS", "$BIN/" + template_ggH + "_$MASS_$SYSTEMATIC");
+          }
+        }
       }
       // In case of sub_analysis cpv, the templates have to be included explicitly
       // for ggPhi due to different naming of the process
@@ -1056,11 +1222,31 @@ int main(int argc, char **argv) {
           input_file_base, "$BIN/ggA_b_$MASS", "$BIN/ggA_b_$MASS_$SYSTEMATIC");
         cb.cp().channel({chn}).process({"ggH3_i"}).ExtractShapes(
           input_file_base, "$BIN/ggA_i_$MASS", "$BIN/ggA_i_$MASS_$SYSTEMATIC");
+
+        if(enable_bsm_lowmass){
+          cb.cp().channel({chn}).process({"ggH2_t_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggH_t_$MASS", "$BIN/ggH_t_$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process({"ggH2_b_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggH_b_$MASS", "$BIN/ggH_b_$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process({"ggH2_i_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggH_i_$MASS", "$BIN/ggH_i_$MASS_$SYSTEMATIC");
+
+          cb.cp().channel({chn}).process({"ggH3_t_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggA_t_$MASS", "$BIN/ggA_t_$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process({"ggH3_b_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggA_b_$MASS", "$BIN/ggA_b_$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process({"ggH3_i_lowmass"}).ExtractShapes(
+            input_file_base, "$BIN/ggA_i_$MASS", "$BIN/ggA_i_$MASS_$SYSTEMATIC");
+        }
       }
       // Inclusion of additional bbPhi is simple for the preconfigured process names
       // in mssm_bbH_signals_additional, reflecting the corresponding sub_analysis
       cb.cp().channel({chn}).process(mssm_bbH_signals_additional).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      if(enable_bsm_lowmass){
+        cb.cp().channel({chn}).process(mssm_bbH_lowmass_signals_additional).ExtractShapes(
+          input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+      }
 
       // In case full neutral Higgs modelling needs to be used (h, H, A or H1, H2, H3),
       // need to include additionally the SM-like Higgs boson. Configured process names:
@@ -1140,7 +1326,12 @@ int main(int argc, char **argv) {
     binning_map["tt"] = {};
 
 
-    binning_map["em"][1] = {};
+    binning_map["em"][101] = {};
+    binning_map["em"][102] = {};
+    binning_map["em"][103] = {};
+    binning_map["em"][104] = {};
+    binning_map["em"][105] = {};
+    binning_map["em"][106] = {};
     binning_map["em"][2][0] = {100., 200., 10.};
     binning_map["em"][2][1] = {200., 350., 25.};
     binning_map["em"][2][2] = {350., 500., 50.};
@@ -1159,7 +1350,12 @@ int main(int argc, char **argv) {
     binning_map["em"][36] = {};
     binning_map["em"][37] = {};
 
-    binning_map["et"][1] = {};
+    binning_map["et"][101] = {};
+    binning_map["et"][102] = {};
+    binning_map["et"][103] = {};
+    binning_map["et"][104] = {};
+    binning_map["et"][105] = {};
+    binning_map["et"][106] = {};
     binning_map["et"][13] = {};
     binning_map["et"][15] = {};
     binning_map["et"][16] = {};
@@ -1172,7 +1368,12 @@ int main(int argc, char **argv) {
     binning_map["et"][36] = {};
 
 
-    binning_map["mt"][1] = {};
+    binning_map["mt"][101] = {};
+    binning_map["mt"][102] = {};
+    binning_map["mt"][103] = {};
+    binning_map["mt"][104] = {};
+    binning_map["mt"][105] = {};
+    binning_map["mt"][106] = {};
     binning_map["mt"][13] = {};
     binning_map["mt"][15] = {};
     binning_map["mt"][16] = {};
@@ -1185,7 +1386,12 @@ int main(int argc, char **argv) {
     binning_map["mt"][36] = {};
 
 
-    binning_map["tt"][1] = {};
+    binning_map["tt"][101] = {};
+    binning_map["tt"][102] = {};
+    binning_map["tt"][103] = {};
+    binning_map["tt"][104] = {};
+    binning_map["tt"][105] = {};
+    binning_map["tt"][106] = {};
     binning_map["tt"][10] = {};
     binning_map["tt"][16] = {};
     binning_map["tt"][20] = {};
@@ -1215,6 +1421,10 @@ int main(int argc, char **argv) {
     {
       return false;
     }
+    if (std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
+    {
+      return false;
+    }
     bool null_yield = !(p->rate() > 0.0);
     if (null_yield) {
       std::cout << "[WARNING] Removing process with null yield: \n ";
@@ -1232,6 +1442,10 @@ int main(int argc, char **argv) {
   cb.FilterSysts([&](ch::Systematic *s) {
     // For mssm signals: no action yet
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+    {
+      return false;
+    }
+    if (std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       return false;
     }
@@ -1254,8 +1468,8 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([mssm_signals](ch::Process *p) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end())
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
         std::cout << "[WARNING] Setting mssm signal with negative yield to 0: \n ";
@@ -1267,8 +1481,8 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([mssm_signals](ch::Systematic *s) {
-    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end())
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+    if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
         if (s->shape_u()->Integral() <= 0.0 || s->shape_d()->Integral() <= 0.0) {
@@ -1296,16 +1510,16 @@ int main(int argc, char **argv) {
   if (((syst->type().find("shape") != std::string::npos)
        && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.)
 
-       && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA"
-           || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i"
-           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i"))
+       && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"
+           || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" || syst->process() == "ggH_i_lowmass" || syst->process() == "ggh_i_lowmass" || syst->process() == "ggA_i_lowmass"
+           || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i" || syst->process() == "ggH1_i_lowmass" || syst->process() == "ggH2_i_lowmass" || syst->process() == "ggH3_i_lowmass"))
 
       || ((syst->name().find("CMS_htt_boson_scale_met") != std::string::npos || syst->name().find("CMS_htt_boson_res_met") != std::string::npos
            || syst->name().find("CMS_scale_e") != std::string::npos || syst->name().find("CMS_scale_t_3prong_2018") != std::string::npos)
 
           && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0
 
-          && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || (syst->process() == "bbA")))){
+          && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"))){
 
           std::cout << "Setting empty up and down templates to the nominal template \n";
           std::cout << ch::Systematic::PrintHeader << *syst << "\n";
@@ -1400,9 +1614,9 @@ int main(int argc, char **argv) {
 
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
-  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals](ch::Systematic *s){
+  cb.cp().bin_id(mssm_bins, false).ForEachSyst([category, mssm_signals, mssm_lowmass_signals](ch::Systematic *s){
     TString sname = TString(s->name());
-    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end()))
+    if((s->type() == "shape") && (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) == mssm_signals.end() && std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) == mssm_lowmass_signals.end() ))
     {
       double err_u = 0.0;
       double err_d = 0.0;
@@ -1497,14 +1711,14 @@ int main(int argc, char **argv) {
       }
     }
   }
- 
+
   // the following code is used to decorrelate wjets and qcd systematics by category
   // the btag and nobtag are always decorrelated
-  // we also decorrelate the wjets by loose and tight mT since we are extrapolating to different mT regions 
+  // we also decorrelate the wjets by loose and tight mT since we are extrapolating to different mT regions
   // in cases where these uncertainties were not derived seperatly for Nbjets>0 (usually due to limited stats) we double the uncertainty
-  // note this doubling is already done in the FF workspaces for the wjets_syst_extrap so we don't need to do it again here 
+  // note this doubling is already done in the FF workspaces for the wjets_syst_extrap so we don't need to do it again here
   // we decorrelate the wjets extrapolation uncertainties by category
-  
+
   for (string y : {"2016","2017","2018"}) {
     for (string c : {"mt","et"}) {
       cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MTLt40_"+y);
@@ -1587,7 +1801,7 @@ int main(int argc, char **argv) {
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1597,7 +1811,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"}, false).ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -1718,18 +1932,24 @@ int main(int argc, char **argv) {
     {"ggh_t", &mh}, {"ggh_b", &mh}, {"ggh_i", &mh},
     {"ggH_t", &mH}, {"ggH_b", &mH}, {"ggH_i", &mH},
     {"ggA_t", &mA}, {"ggA_b", &mA}, {"ggA_i", &mA},
-    {"bbh", &mh},
-    {"bbH", &mH},
-    {"bbA", &mA}
+    {"ggh_t_lowmass", &mh_lowmass}, {"ggh_b_lowmass", &mh_lowmass}, {"ggh_i_lowmass", &mh_lowmass},
+    {"ggH_t_lowmass", &mH_lowmass}, {"ggH_b_lowmass", &mH_lowmass}, {"ggH_i_lowmass", &mH_lowmass},
+    {"ggA_t_lowmass", &mA_lowmass}, {"ggA_b_lowmass", &mA_lowmass}, {"ggA_i_lowmass", &mA_lowmass},
+    {"bbh", &mh}, {"bbh_lowmass", &mh_lowmass},
+    {"bbH", &mH}, {"bbH_lowmass", &mH_lowmass},
+    {"bbA", &mA}, {"bbA_lowmass", &mA_lowmass}
   };
 
   std::map<std::string, std::string> process_norm_map = {
     {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
     {"ggH_t", "prenorm"}, {"ggH_b", "prenorm"}, {"ggH_i", "prenorm"},
     {"ggA_t", "prenorm"}, {"ggA_b", "prenorm"}, {"ggA_i", "prenorm"},
-    {"bbh", "norm"},
-    {"bbH", "norm"},
-    {"bbA", "norm"}
+    {"ggh_t_lowmass", "prenorm"}, {"ggh_b_lowmass", "prenorm"}, {"ggh_i_lowmass", "prenorm"},
+    {"ggH_t_lowmass", "prenorm"}, {"ggH_b_lowmass", "prenorm"}, {"ggH_i_lowmass", "prenorm"},
+    {"ggA_t_lowmass", "prenorm"}, {"ggA_b_lowmass", "prenorm"}, {"ggA_i_lowmass", "prenorm"},
+    {"bbh", "norm"}, {"bbh_lowmass", "norm"},
+    {"bbH", "norm"}, {"bbH_lowmass", "norm"},
+    {"bbA", "norm"}, {"bbA_lowmass", "norm"}
   };
 
   // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
@@ -1794,18 +2014,24 @@ int main(int argc, char **argv) {
       {"ggH1_t", &mH1}, {"ggH1_b", &mH1}, {"ggH1_i", &mH1},
       {"ggH2_t", &mH2}, {"ggH2_b", &mH2}, {"ggH2_i", &mH2},
       {"ggH3_t", &mH3}, {"ggH3_b", &mH3}, {"ggH3_i", &mH3},
-      {"bbH1", &mH1},
-      {"bbH2", &mH2},
-      {"bbH3", &mH3}
+      {"ggH1_t_lowmass", &mH1_lowmass}, {"ggH1_b_lowmass", &mH1_lowmass}, {"ggH1_i_lowmass", &mH1_lowmass},
+      {"ggH2_t_lowmass", &mH2_lowmass}, {"ggH2_b_lowmass", &mH2_lowmass}, {"ggH2_i_lowmass", &mH2_lowmass},
+      {"ggH3_t_lowmass", &mH3_lowmass}, {"ggH3_b_lowmass", &mH3_lowmass}, {"ggH3_i_lowmass", &mH3_lowmass},
+      {"bbH1", &mH1}, {"bbH1_lowmass", &mH1_lowmass},
+      {"bbH2", &mH2}, {"bbH2_lowmass", &mH2_lowmass},
+      {"bbH3", &mH3}, {"bbH3_lowmass", &mH3_lowmass}
     };
 
     process_norm_map = {
       {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
       {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
       {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
-      {"bbH1", "norm"},
-      {"bbH2", "norm"},
-      {"bbH3", "norm"}
+      {"ggH1_t_lowmass", "prenorm"}, {"ggH1_b_lowmass", "prenorm"}, {"ggH1_i_lowmass", "prenorm"},
+      {"ggH2_t_lowmass", "prenorm"}, {"ggH2_b_lowmass", "prenorm"}, {"ggH2_i_lowmass", "prenorm"},
+      {"ggH3_t_lowmass", "prenorm"}, {"ggH3_b_lowmass", "prenorm"}, {"ggH3_i_lowmass", "prenorm"},
+      {"bbH1", "norm"}, {"bbH1_lowmass", "norm"},
+      {"bbH2", "norm"}, {"bbH2_lowmass", "norm"},
+      {"bbH3", "norm"}, {"bbH3_lowmass", "norm"}
     };
 
     // Avoid morphing for the SM-like 'bbphi' process in case it is using the 125 GeV template.
