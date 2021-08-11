@@ -5,6 +5,7 @@ TAG=$1
 MODE=$2
 MODEL=$3
 ANALYSISTYPE=$4
+GRIDUSER=$5
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-full"
@@ -296,14 +297,16 @@ elif [[ $MODE == "submit-gc" ]]; then
     ############
     # job submission
     ############
+    gcworkdir=${defaultdir}/limits_${MODEL}/gc_condor
+    mkdir -p ${gcworkdir}
     python scripts/build_gc_job.py \
         --combine-script ${defaultdir}/limits_${MODEL}/condor/condor_${taskname}.sh \
         --workspace ${datacarddir}/combined/cmb/${wsoutput} \
-        --workdir /work/sbrommer/workdirs/combine/${taskname} \
+        --workdir ${gcworkdir} \
         --tag ${taskname} \
-        --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}
+        --se-path /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}
 
-    ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}/${taskname}.conf -Gc -m 3
+    ${CMSSW_BASE}/src/grid-control/go.py ${gcworkdir}/${taskname}.conf -Gc -m 3
 
 elif [[ $MODE == "delete-crashed-jobs" ]]; then
     ############
@@ -320,8 +323,7 @@ elif [[ $MODE == "copy-results-gc" ]]; then
     ############
     # job submission
     ############
-    rsync -avhP /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
-
+    rsync -avhP /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
 
 elif [[ $MODE == "collect" ]]; then
     ############
