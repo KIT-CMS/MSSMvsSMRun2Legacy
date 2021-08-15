@@ -1510,7 +1510,7 @@ int main(int argc, char **argv) {
   if (((syst->type().find("shape") != std::string::npos)
        && (syst->ClonedShapeU()->Integral()==0. || syst->ClonedShapeD()->Integral() == 0.)
 
-       && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"
+       && (syst->process() == "bbH1" || syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbh" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH1_lowmass" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbh_lowmass" || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"
            || syst->process() == "ggH_i" || syst->process() == "ggh_i" || syst->process() == "ggA_i" || syst->process() == "ggH_i_lowmass" || syst->process() == "ggh_i_lowmass" || syst->process() == "ggA_i_lowmass"
            || syst->process() == "ggH1_i" || syst->process() == "ggH2_i" || syst->process() == "ggH3_i" || syst->process() == "ggH1_i_lowmass" || syst->process() == "ggH2_i_lowmass" || syst->process() == "ggH3_i_lowmass"))
 
@@ -1519,7 +1519,7 @@ int main(int argc, char **argv) {
 
           && syst->ClonedShapeU()->Integral()==0 && syst->ClonedShapeD()->Integral() == 0
 
-          && (syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"))){
+          && (syst->process() == "bbH1" || syst->process() == "bbH2" || syst->process() == "bbH3" || syst->process() == "bbh" || syst->process() == "bbH" || syst->process() == "bbA" || syst->process() == "bbH1_lowmass" || syst->process() == "bbH2_lowmass" || syst->process() == "bbH3_lowmass" || syst->process() == "bbh_lowmass"  || syst->process() == "bbH_lowmass" || syst->process() == "bbA_lowmass"))){
 
           std::cout << "Setting empty up and down templates to the nominal template \n";
           std::cout << ch::Systematic::PrintHeader << *syst << "\n";
