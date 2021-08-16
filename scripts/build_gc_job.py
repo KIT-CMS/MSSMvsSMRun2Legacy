@@ -64,9 +64,9 @@ def read_njobs(config):
     return njobs
 
 
-def upload_tarball(se_path, extra_files, outputpath):
+def upload_tarball(se_path, extra_files, outputpath, workdir):
     print("building tarball...")
-    outputfile = "cmssw.tar.gz"
+    outputfile = os.path.join(workdir, "cmssw.tar.gz")
     tar = tarfile.open(outputfile, "w:gz", dereference=True)
     tar.add(os.environ.get("CMSSW_BASE"),
             recursive=True,
@@ -133,7 +133,7 @@ def write_gc(script, workspace, workdir, tag, se_path):
         configfilepath, "{}/combine_fit.sh".format(workdir),
         "{}/ws.root".format(workdir)
     ]
-    tarballpath = upload_tarball(se_path, extra_files, outputpath)
+    tarballpath = upload_tarball(se_path, extra_files, outputpath, workdir)
     configfile = open(configfilepath, "a+")
 
     configfile.write("\n[constants]\n")
