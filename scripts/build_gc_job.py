@@ -78,7 +78,7 @@ def upload_tarball(se_path, extra_files, outputpath, workdir):
     print("finished building tarball...")
     print("upload tarball...")
     cmd = "xrdcp -fp {outputfile} {tarballpath}/{TARBALLNAME}".format(
-        outputfile=outputfile, tarballpath=se_path, TARBALLNAME=outputfile)
+        outputfile=outputfile, tarballpath=se_path, TARBALLNAME=os.path.basename(outputfile))
     print(cmd)
     os.system(cmd)
     print("finished uploading tarball...")
@@ -87,7 +87,7 @@ def upload_tarball(se_path, extra_files, outputpath, workdir):
         outputpath=outputpath.replace("root://cmsxrootd-kit.gridka.de/", ""))
     os.system(cmd)
     return "{tarballpath}/{TARBALLNAME}".format(tarballpath=se_path,
-                                                TARBALLNAME=outputfile)
+                                                TARBALLNAME=os.path.basename(outputfile))
 
 
 def modify_combine_script(workspace, script, workdir):
