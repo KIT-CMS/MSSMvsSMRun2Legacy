@@ -99,6 +99,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.smlike = "h"
         self.massparameter = "mA"
         self.replace_with_sm125 = True
+        self.use_hSM_difference = False
         self.cpv_template_pairs = {"H1" : "h", "H2" : "H", "H3" : "A"}
 
     def setPhysicsOptions(self,physOptions):
@@ -164,6 +165,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if po.startswith('scaleforh='):
                 self.scaleforh = float(po.replace('scaleforh=',''))
                 print "Additional scale for the light scalar h: {SCALE}".format(SCALE=self.scaleforh)
+
+            if po.startswith('hSM-treatment='):
+                hSM_treatment = po.replace('hSM-treatment=', '')
+                self.use_hSM_difference = hSM_treatment == "hSM-in-bg"
+                print "Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference
 
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
@@ -282,6 +288,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 value *= br_htautau / br_htautau_SM # (g_HVV)**2 * br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
+                if self.use_hSM_difference:
+                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
@@ -332,6 +340,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 value =  xs_ggh / xs_ggh_SM * br_htautau / br_htautau_SM # xs(mh) * BR(mh) / (xs_SM(mh) * BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
+                if self.use_hSM_difference:
+                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
@@ -378,6 +388,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 # xs(mh) * (xs_SM(125.4)/xs_SM(mh)) * BR(mh) * (BR_SM(125.4)/BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value =  xs_bbh * (xs_bbh_SM125 / xs_bbh_SM) * br_htautau * (br_htautau_SM125 / br_htautau_SM)
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
+                if self.use_hSM_difference:
+                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
