@@ -244,19 +244,35 @@ elif [[ $MODE == "ws" ]]; then
     # job setup creation
     ############
     cd ${defaultdir}/limits_${MODEL}/condor
-    combineTool.py -M AsymptoticGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
-    -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'condor' \
-    --task-name $taskname \
-    --dry-run \
-    --redefineSignalPOI x \
-    --setParameterRanges x=0,1 \
-    --setParameters r=1 \
-    --freezeParameters r -v1 \
-    --cminDefaultMinimizerStrategy 0 \
-    --X-rtd MINIMIZER_analytic \
-    --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}.txt
+    if [[ $HSMTREATMENT == "hSM-in-bg" ]]; then
+        combineTool.py -M AsymptoticGrid \
+        ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
+        -d ${datacarddir}/combined/cmb/${wsoutput} \
+        --job-mode 'condor' \
+        --task-name $taskname \
+        --dry-run \
+        --redefineSignalPOI r \
+        --setParameterRanges r=0,1 \
+        --setParameters r=1,x=1 \
+        --freezeParameters x -v1 \
+        --cminDefaultMinimizerStrategy 0 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}.txt
+    elif [[ $HSMTREATMENT == "no-hSM-in-bg" ]]; then
+        combineTool.py -M AsymptoticGrid \
+        ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
+        -d ${datacarddir}/combined/cmb/${wsoutput} \
+        --job-mode 'condor' \
+        --task-name $taskname \
+        --dry-run \
+        --redefineSignalPOI x \
+        --setParameterRanges x=0,1 \
+        --setParameters r=1 \
+        --freezeParameters r -v1 \
+        --cminDefaultMinimizerStrategy 0 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}.txt
+    fi
 
 elif [[ $MODE == "submit" ]]; then
     ############
