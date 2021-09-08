@@ -113,9 +113,10 @@ int main(int argc, char **argv) {
 
   string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
   std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"};
-  string sub_analysis = "hSM-in-bg"; // analysis = "bsm-model-indep": "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
-  std::vector<string> sub_analysis_choices_model_dep = {"sm-like-light", "sm-like-heavy", "cpv"};
-  std::vector<string> sub_analysis_choices_model_indep = {"hSM-in-bg", "no-hSM-in-bg"};
+  string sub_analysis = "sm-like-light"; // for analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
+  std::vector<string> sub_analysis_choices = {"sm-like-light", "sm-like-heavy", "cpv"};
+  string hSM_treatment = "hSM-in-bg"; // for analysis = "bsm-model-indep" and = "bsm-model-dep-full" : "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-additional": "hSM-in-bg"
+  std::vector<string> hSM_treatment_choices = {"hSM-in-bg", "no-hSM-in-bg"};
   string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
   std::vector<string> sm_like_hists_choices = {"sm125", "bsm"};
   string categorization = "classic"; // "with-sm-ml", "sm-ml-only", "classic"
@@ -143,6 +144,7 @@ int main(int argc, char **argv) {
       ("output_folder", po::value<string>(&output_folder)->default_value(output_folder))
       ("analysis", po::value<string>(&analysis)->default_value(analysis))
       ("sub-analysis", po::value<string>(&sub_analysis)->default_value(sub_analysis))
+      ("hSM-treatment", po::value<string>(&hSM_treatment)->default_value(hSM_treatment))
       ("sm-like-hists", po::value<string>(&sm_like_hists)->default_value(sm_like_hists))
       ("categorization", po::value<string>(&categorization)->default_value(categorization))
       ("era", po::value<int>(&era)->default_value(era))
@@ -178,21 +180,29 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
     exit(1);
   }
-  // sub_analysis option
-  if(analysis == "bsm-model-indep"){
-    if(std::find(sub_analysis_choices_model_indep.begin(), sub_analysis_choices_model_indep.end(), sub_analysis) == sub_analysis_choices_model_indep.end()){
-      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-independent analysis, please choose from:\n\t";
-      for(auto choice : sub_analysis_choices_model_indep){
+  // hSM_treatment option
+  if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-full"){
+    if(std::find(hSM_treatment_choices.begin(), hSM_treatment_choices.end(), hSM_treatment) == hSM_treatment_choices.end()){
+      std::cout << "ERROR: wrong choice of 'hSM_treatment' option. In case of analysis 'bsm-model-indep' or 'bsm-model-dep-full', please choose from:\n\t";
+      for(auto choice : hSM_treatment_choices){
         std::cout << choice << " ";
       }
       std::cout << std::endl;
       exit(1);
     }
   }
-  else if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional"){
-    if(std::find(sub_analysis_choices_model_dep.begin(), sub_analysis_choices_model_dep.end(), sub_analysis) == sub_analysis_choices_model_dep.end()){
+  else if(analysis == "bsm-model-dep-additional"){
+    if(hSM_treatment != "hSM-in-bg"){
+      std::cout << "ERROR: wrong choice of 'hSM_treatment' option. In case of analysis or 'bsm-model-dep-additional', please choose from:\n\thSM-in-bg" << std::endl;
+      exit(1);
+    }
+  }
+
+  // sub_analysis option
+  if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional"){
+    if(std::find(sub_analysis_choices.begin(), sub_analysis_choices.end(), sub_analysis) == sub_analysis_choices.end()){
       std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-dependent analysis, please choose from:\n\t";
-      for(auto choice : sub_analysis_choices_model_dep){
+      for(auto choice : sub_analysis_choices){
         std::cout << choice << " ";
       }
       std::cout << std::endl;
@@ -508,7 +518,7 @@ int main(int argc, char **argv) {
     bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
     bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
   }
-  else if((analysis == "bsm-model-indep" && sub_analysis == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  else if((analysis == "bsm-model-indep" && hSM_treatment == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -1050,8 +1060,8 @@ int main(int argc, char **argv) {
 
     cb.AddObservations({"*"}, {"htt"}, {era_tag}, {chn}, cats[chn]);
     // Adding background processes. This also contains SMH125 templates if configured in that way:
-    // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
-    // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // For bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125
+    // For bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125
     cb.AddProcesses({"*"}, {"htt"}, {era_tag}, {chn}, bkg_procs[chn], cats[chn], false);
     // Include QCD process in em channel for all categories except for CR
     if (chn == "em") {
@@ -1116,9 +1126,10 @@ int main(int argc, char **argv) {
           qq_gg_bb_phi_cats = sm_and_btag_cats;
         }
 
-        // Adding SM Higgs processes as signal for model-dependent analyses with full neutral Higgs modelling (since testing then against SM Higgs + BG hypothesis)
+        // Adding SM Higgs processes as signal or background depending on hSM treatment for model-dependent analyses with full neutral Higgs modelling
+        // (since testing then against SM Higgs + BG hypothesis)
         // These comprise: ggH125, qqH125, bbH125, and in case of sm categories WH125, ZH125
-        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), qq_gg_bb_phi_cats, true);
+        cb.AddProcesses({""}, {"htt"}, {era_tag}, {chn}, ch::JoinStr({main_sm_signals, sm_signals}), qq_gg_bb_phi_cats, hSM_treatment == "no-hSM-in-bg");
 
         // Adding the qqphi process for all bsm model-dependent analyses with full neutral Higgs modelling
         // sm-like-light: phi = h
@@ -1166,8 +1177,8 @@ int main(int argc, char **argv) {
     dout("[INFO] Extracting shapes from ", input_file_base);
 
     // Adding background templates to processes. This also involves (if configured) SMH125 processes.
-    // bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
-    // bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125 in sm categories
+    // bsm-model-indep analysis with Higgs boson in BG: ggH125, qqH125, bbH125, and WH125, ZH125
+    // bsm-model-dep-additional analysis: ggH125, qqH125, bbH125, and WH125, ZH125
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}, false).ExtractShapes(
       input_file_base, "$BIN/$PROCESS", "$BIN/$PROCESS_$SYSTEMATIC");
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
@@ -1297,10 +1308,12 @@ int main(int argc, char **argv) {
 
         // Adding SM125 signal templates for SM hypothesis of analysis bsm-model-dep-full
         // These comprise ggH125, qqH125, bbH125, and in SM categories WH125 and ZH125
-        cb.cp().channel({chn}).process(ch::JoinStr({sm_signals, main_sm_signals})).process({"bbH125"}, false).ExtractShapes(
-          input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
-        cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
-          input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // "bbH125" needs special treatment because of template name spelling
+        if(hSM_treatment == "no-hSM-in-bg"){
+          cb.cp().channel({chn}).process(ch::JoinStr({sm_signals, main_sm_signals})).process({"bbH125"}, false).ExtractShapes(
+            input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
+          cb.cp().channel({chn}).process({"bbH125"}).ExtractShapes(
+            input_file_base, "$BIN/bbH_125$MASS", "$BIN/bbH_125$MASS_$SYSTEMATIC"); // "bbH125" needs special treatment because of template name spelling
+        }
       }
     }
   }
@@ -1864,7 +1877,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG( + Higgs). Since H->tautau treated all as background( if required), so it is sufficient to consider the bg shape
-      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional"){
+      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || (analysis == "bsm-model-dep-full" && hSM_treatment == "hSM-in-bg")){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -1877,7 +1890,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG + Higgs. Since H->tautau treated all as signal (together with mssm !!!), need to retrieve the SM H->tautau shapes & add it to the asimov dataset
-      else if(analysis == "bsm-model-dep-full"){
+      else if(analysis == "bsm-model-dep-full" and hSM_treatment == "no-hSM-in-bg"){
         auto sm_signal_shape = cb.cp().bin({b}).process(ch::JoinStr({sm_signals, main_sm_signals})).GetShape();
         std::cout << "[INFO] Integral of SM HTT signal shape in bin " << b << ": " << sm_signal_shape.Integral()  << "\n";
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);

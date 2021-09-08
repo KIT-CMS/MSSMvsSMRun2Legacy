@@ -6,6 +6,7 @@ MODE=$2
 CHANNEL=$3
 ERA=$4
 MODEL=$5
+HSMTREATMENT=$6
 
 analysis="bsm-model-dep-full"
 sm_like_hists="sm125"
@@ -104,6 +105,7 @@ if [[ $MODE == "initial" ]]; then
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
         --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${HSMTREATMENT} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
@@ -116,6 +118,7 @@ if [[ $MODE == "initial" ]]; then
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
         --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${HSMTREATMENT} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
