@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser( description = "Compare Integrals of Processes 
 parser.add_argument('--output-folder', required = True, help = "Main folder, where the datacards should be created")
 parser.add_argument('--analysis', required = True, help = "Analysis to be prepared with morphing")
 parser.add_argument('--sub-analysis', required = True, help = "Sub-analysis to be prepared with morphing")
+parser.add_argument('--hSM-treatment', required = True, help = "hSM treatment to be used")
 parser.add_argument('--categorization', required = True, help = "Categorization type to be prepared with morphing")
 parser.add_argument('--sm-like-hists', required = True, help = "Templates type for SM like Higss boson to be prepared with morphing")
 parser.add_argument('--category-list', required = True, help = "Category list, which will be used for parallelization of morphing")
@@ -41,14 +42,14 @@ eras = args.eras.split(',')
 commands = []
 
 command_template = "MorphingMSSMvsSM --era={ERA} --category={CATEGORY} --output_folder={OUTPUT}" \
-                   " --analysis={ANALYSIS} --sub-analysis={SUB_ANALYSIS} --categorization={CATEGORIZATION} --sm-like-hists={SM_LIKE_HISTS}" \
+                   " --analysis={ANALYSIS} --sub-analysis={SUB_ANALYSIS} --hSM-treatment={HSM_TREATMENT} --categorization={CATEGORIZATION} --sm-like-hists={SM_LIKE_HISTS}" \
                    " --variable={VARIABLE} --sm_gg_fractions={SM_GG_FRACTIONS} {ADDITIONALARGS}"
 
 for era in eras:
     for category in categories:
         command = command_template.format(ERA=era, CATEGORY=category, ANALYSIS=args.analysis,
                                           ADDITIONALARGS=args.additional_arguments, OUTPUT=args.output_folder,
-                                          VARIABLE=args.variable, SM_GG_FRACTIONS=args.sm_gg_fractions,
+                                          VARIABLE=args.variable, SM_GG_FRACTIONS=args.sm_gg_fractions, HSM_TREATMENT=args.hSM_treatment,
                                           SUB_ANALYSIS=args.sub_analysis, CATEGORIZATION=args.categorization, SM_LIKE_HISTS=args.sm_like_hists)
         commands.append(command)
 

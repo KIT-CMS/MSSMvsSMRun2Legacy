@@ -10,7 +10,7 @@ fi
 
 defaultdir=analysis/$TAG
 analysis="sm"
-sub_analysis="no-hSM-in-bg"
+hSM_treatment="no-hSM-in-bg"
 categorization="with-sm-ml"
 sm_like_hists="sm125"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
@@ -25,7 +25,7 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${hSM_treatment} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} --sm \
         --eras 2016,2017,2018 \
@@ -37,7 +37,7 @@ if [[ $MODE == "initial" ]]; then
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${hSM_treatment} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \

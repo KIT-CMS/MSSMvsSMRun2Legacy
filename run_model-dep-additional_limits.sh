@@ -168,6 +168,7 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
@@ -180,6 +181,7 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
@@ -193,6 +195,7 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
