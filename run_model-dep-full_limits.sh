@@ -232,6 +232,7 @@ elif [[ $MODE == "ws" ]]; then
     -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
     --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
     --PO replace-with-SM125=${replace_with_sm125} \
+    --PO hSM-treatment=$HSMTREATMENT \
     --PO modelFile=${modelfile} \
     --PO minTemplateMass=60 \
     --PO maxTemplateMass=3500 \
