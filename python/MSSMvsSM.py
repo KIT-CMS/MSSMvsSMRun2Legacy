@@ -340,8 +340,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 value =  xs_ggh / xs_ggh_SM * br_htautau / br_htautau_SM # xs(mh) * BR(mh) / (xs_SM(mh) * BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
-                if self.use_hSM_difference:
-                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
@@ -388,8 +386,6 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 # xs(mh) * (xs_SM(125.4)/xs_SM(mh)) * BR(mh) * (BR_SM(125.4)/BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
                 value =  xs_bbh * (xs_bbh_SM125 / xs_bbh_SM) * br_htautau * (br_htautau_SM125 / br_htautau_SM)
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
-                if self.use_hSM_difference:
-                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
@@ -488,6 +484,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         for proc in self.PROC_SETS:
             terms = []
             X = proc.split('_')[0].replace('gg','').replace('bb','')
+            ggphi_smlike_match = re.match('gg{SMLIKE}$'.format(SMLIKE=self.smlike), proc)
+            bbphi_smlike_match = re.match('bb{SMLIKE}$'.format(SMLIKE=self.smlike), proc)
             if "H125" in proc: # cover SM H125 processes first
                 terms = [self.sigNorms[False]]
             elif re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
@@ -496,9 +494,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 terms += [self.sigNorms[True]]
             elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})$'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
-            elif re.match('gg{SMLIKE}$'.format(SMLIKE=self.smlike), proc): # always done
+            elif ggphi_smlike_match: # always done
                 terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
-            elif re.match('bb{SMLIKE}$'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the second 'if' case with bsm_proc_match
+            elif bbphi_smlike_match: # considered, in case it is not in the second 'if' case with bsm_proc_match
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
 
             if self.scenario == "mh1125_CPV" and X in ['H2', 'H3']:
@@ -512,7 +510,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 if term in self.SYST_DICT:
                     extra += self.SYST_DICT[term]
             terms += extra
-            self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
+            if ggphi_smlike_match and self.use_hSM_difference:
+                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
+                self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2)\", %s)'%(proc,','.join(["bsm_scaling_%s"%proc,"x","r"])))
+            elif bbphi_smlike_match and self.use_hSM_difference and self.replace_with_sm125:
+                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
+                self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2 * %s * %s)\", %s)'%(proc,str(self.sm_predictions["xs_bb_SMH125"]),str(self.sm_predictions["br_SMH125_tautau"]),','.join(["bsm_scaling_%s"%proc,"x","r"])))
+            else:
+                self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
             self.modelBuilder.out.function('scaling_%s'%proc).Print('')
 
     def getYieldScale(self,bin,process):
