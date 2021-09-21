@@ -511,7 +511,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     extra += self.SYST_DICT[term]
             terms += extra
             if ggphi_smlike_match and self.use_hSM_difference:
-                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
+                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms))) # Add scaling of BSM process: mu*SF = x*r*SF
                 self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2)\", %s)'%(proc,','.join(["bsm_scaling_%s"%proc,"x","r"])))
             elif bbphi_smlike_match and self.use_hSM_difference and self.replace_with_sm125:
                 self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
