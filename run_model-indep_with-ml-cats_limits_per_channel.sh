@@ -38,6 +38,7 @@ if [[ $MODE == "initial" ]]; then
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
         --hSM-treatment ${hSM_treatment} \
+        --sub-analysis "sm-like-light" \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
