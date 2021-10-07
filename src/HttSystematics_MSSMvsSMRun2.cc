@@ -96,6 +96,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
 
+  std::vector<std::string> vlq_signals = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"};
   std::vector<std::string> mssm_ggH_lowmass_signals;
   for(auto ggH : mssm_ggH_signals){
     mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
@@ -117,6 +118,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               signals,
               signals_HWW,
               mssm_signals,
+              vlq_signals,
               {"ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST"}
               });
 
@@ -131,6 +133,19 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<int> mssm_categories = {300,2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for
 
   std::vector<int> mssm_nobtag_categories = {32,33,34};
+
+  // Specific VLQ signal uncertainties
+   cb.cp().process(vlq_signals).AddSyst(cb, "pdf_uncert", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"et","mt","tt"}, {"2016","2017","2018"}, mssm_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
+
+   cb.cp().process(vlq_signals).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04)
+     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
+
+   cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "QCDScale", "shape", SystMap<>::init(1.00));
 
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.

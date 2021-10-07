@@ -112,9 +112,9 @@ int main(int argc, char **argv) {
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
   string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
-  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"};
+  std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional","vector_leptoquark"};
   string sub_analysis = "sm-like-light"; // for analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
-  std::vector<string> sub_analysis_choices = {"sm-like-light", "sm-like-heavy", "cpv"};
+  std::vector<string> sub_analysis_choices = {"sm-like-light", "sm-like-heavy", "cpv", "betaRd_0", "betaRd_minus1"};
   string hSM_treatment = "hSM-in-bg"; // for analysis = "bsm-model-indep" and = "bsm-model-dep-full" : "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-additional": "hSM-in-bg"
   std::vector<string> hSM_treatment_choices = {"hSM-in-bg", "no-hSM-in-bg"};
   string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
   VString mssm_ggH_lowmass_signals, mssm_ggH_lowmass_signals_additional, mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar;
   VString mssm_bbH_lowmass_signals, mssm_bbH_lowmass_signals_additional, mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar;
 
-  VString mssm_signals, mssm_lowmass_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
+  VString mssm_signals, mssm_lowmass_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals, vlq_signals;
 
   std::string smlike = "h";
   if(sub_analysis == "sm-like-light"){
@@ -415,9 +415,21 @@ int main(int argc, char **argv) {
     mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
     mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
-  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  mssm_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
+  else if(analysis == "vector_leptoquark")
+  {
+      vlq_signals = {"VLQ_" + sub_analysis + "_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"};
+  }
 
+  if(analysis != "vector_leptoquark")
+  {
+    mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+    mssm_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
+  }
+  else
+  {
+    mssm_signals = vlq_signals;
+    mssm_lowmass_signals = {};
+  }
 
   std::cout << "Used BSM signals: ";
   for(auto proc : mssm_signals){
@@ -463,6 +475,8 @@ int main(int argc, char **argv) {
   map<int, VString> SUSYggH_lowmasses;
   map<int, VString> SUSYbbH_lowmasses;
 
+  VString vlq_masses;
+
   if(do_morph) {
 
     // new DESY datacards should have all masses now?
@@ -480,6 +494,8 @@ int main(int argc, char **argv) {
     SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
     SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
     SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+
+    vlq_masses = {"500","1000","2000","3000","4000","5000"};
   } else {
     // dont use mass morphing - need to specify a mass here
     SUSYggH_masses[2016] = {non_morphed_mass};
@@ -518,7 +534,7 @@ int main(int argc, char **argv) {
     bkg_procs["et"] = JoinStr({bkg_procs["et"],bkgs_HWW});
     bkg_procs["em"] = JoinStr({bkg_procs["em"],bkgs_HWW});
   }
-  else if((analysis == "bsm-model-indep" && hSM_treatment == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
+  else if(((analysis == "bsm-model-indep" || analysis == "vector_leptoquark") && hSM_treatment == "hSM-in-bg") || analysis == "bsm-model-dep-additional"){
     bkg_procs["tt"] = JoinStr({bkg_procs["tt"],main_sm_signals,sm_signals});
     bkg_procs["mt"] = JoinStr({bkg_procs["mt"],main_sm_signals,sm_signals});
     bkg_procs["et"] = JoinStr({bkg_procs["et"],main_sm_signals,sm_signals});
@@ -605,6 +621,10 @@ int main(int argc, char **argv) {
   // Define MSSM model-independent mass parameter MH
   RooRealVar MH("MH", "MH", 125., 90., 4000.);
   MH.setConstant(true);
+
+  // Define vlq mass parameter
+  RooRealVar MU("MU", "MU", 1000., 500., 5000.);
+  MU.setConstant(true);
 
   // Define categories
   Categories sm_signal = {};
@@ -1078,6 +1098,9 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
     }
+    else if(analysis == "vector_leptoquark"){
+      cb.AddProcesses(vlq_masses, {"htt"}, {era_tag}, {chn}, vlq_signals, exclude_em_control, true);
+    }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
       Categories additional_higgses_cats;
@@ -1173,6 +1196,7 @@ int main(int argc, char **argv) {
 
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    string input_vlq_file_base = input_dir[chn] + "vlq.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
     dout("[INFO] Extracting shapes from ", input_file_base);
 
@@ -1197,6 +1221,10 @@ int main(int argc, char **argv) {
         input_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process(mssm_bbH_signals).ExtractShapes(
         input_file_base, "$BIN/bbH_$MASS", "$BIN/bbH_$MASS_$SYSTEMATIC");
+    }
+    else if(analysis == "vector_leptoquark"){
+      cb.cp().channel({chn}).process(vlq_signals).ExtractShapes(
+        input_vlq_file_base, "$BIN/$PROCESS_$MASS", "$BIN/$PROCESS_$MASS_$SYSTEMATIC");
     }
     // Adding templates for configured SUSY signals of model-dependent analyses
     // sm-like-light sub_analysis: H and A
@@ -1481,7 +1509,7 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -1494,7 +1522,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
@@ -1681,6 +1709,12 @@ int main(int argc, char **argv) {
     "CMS_scale_met_unclustered_2018",
   };
 
+  // Convert VLQ signal b efficiencies to lnN
+  if(analysis == "vector_leptoquarks"){
+    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_M"}), "CMS_htt_eff_b_2018");
+    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_M"}), "CMS_htt_mistag_b_$ERA");
+  }
+
   // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
   // These uncertainties affect MET for the ttbar and diboson so we need to include them as shapes (diboson is small enough to be converted to lnN, and is ttbar in the tt channel)
   // convert all processes except ttbar
@@ -1814,7 +1848,7 @@ int main(int argc, char **argv) {
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1824,7 +1858,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass"}, false).ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -1877,7 +1911,7 @@ int main(int argc, char **argv) {
         }
       }
       // Desired Asimov model: BG( + Higgs). Since H->tautau treated all as background( if required), so it is sufficient to consider the bg shape
-      else if(analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || (analysis == "bsm-model-dep-full" && hSM_treatment == "hSM-in-bg")){
+      else if(analysis == "bsm-model-indep" || analysis == "vector_leptoquark" || analysis == "bsm-model-dep-additional" || (analysis == "bsm-model-dep-full" && hSM_treatment == "hSM-in-bg")){
         bool no_background = (background_shape.GetNbinsX() == 1 && background_shape.Integral() == 0.0);
         if(no_background)
         {
@@ -2021,6 +2055,21 @@ int main(int argc, char **argv) {
     fractions_sm.Close();
   }
 
+  if(analysis == "vector_leptoquark")
+  {
+   // Make yield positive for ease in physics model
+    cb.cp().process({"VLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process * proc) {
+       proc->set_rate(proc->rate()*-1);
+    });
+    mass_var = {
+      {"VLQ_betaRd33_0_matched_interference_M", &MU}, {"VLQ_betaRd33_0_matched_interference_M", &MU}
+    };
+
+    process_norm_map = {
+      {"VLQ_betaRd33_0_matched_interference_M", "norm"}, {"VLQ_betaRd33_0_matched_interference_M", "norm"}
+    };
+  }
+
   if(sub_analysis == "cpv")
   {
     mass_var = {
@@ -2056,7 +2105,7 @@ int main(int argc, char **argv) {
   }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
+  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full" || analysis == "vector_leptoquark"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
