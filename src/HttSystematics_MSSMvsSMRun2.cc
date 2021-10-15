@@ -100,6 +100,14 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                           "VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M",
                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M",
                                           "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
+
+  std::vector<std::string> vlq_tchannel = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
+                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M"};
+
+  std::vector<std::string> vlq_interference = {"VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M",
+                                              "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
+
+
   std::vector<std::string> mssm_ggH_lowmass_signals;
   for(auto ggH : mssm_ggH_signals){
     mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
@@ -141,9 +149,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp().process(vlq_signals).AddSyst(cb, "pdf_uncert", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
      ({"et","mt","tt"}, {"2016","2017","2018"}, mssm_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
 
-   cb.cp().process(vlq_signals).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04)
-     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
+   cb.cp().process(vlq_tchannel).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.989,1.045)
+     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.038,0.887));
+
+   cb.cp().process(vlq_interference).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.985,1.048)
+     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.052,0.887));
 
    cb.cp()
         .channel({"et", "mt", "tt"})
@@ -153,7 +165,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp()
         .channel({"et", "mt", "tt"})
         .process(vlq_signals)
-        .AddSyst(cb, "betaL32Fit", "shape", SystMap<>::init(1.00));
+        .AddSyst(cb, "betaL23Fit", "shape", SystMap<>::init(1.00));
 
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.

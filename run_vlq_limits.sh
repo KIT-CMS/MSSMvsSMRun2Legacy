@@ -13,7 +13,7 @@ analysis="vector_leptoquark"
 hSM_treatment="hSM-in-bg"
 categorization="classic"
 sm_like_hists="bsm"
-sub_analysis="betaRd33_0"
+sub_analysis="betaRd33_0_offdiag0"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
