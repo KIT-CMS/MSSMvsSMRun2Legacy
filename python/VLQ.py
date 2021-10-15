@@ -9,14 +9,13 @@ class VLQ(PhysicsModel):
 
     def doParametersOfInterest(self):
         """Create POI and other parameters, and define the POI set."""
-        # --- POI and other parameters ----
-
         poiNames = []
 
         if self.interference:
           scale = 1
         else:
           scale = 0
+
 
         self.modelBuilder.doVar('gU[0,0,10]')
         poiNames.append('gU')
@@ -31,9 +30,9 @@ class VLQ(PhysicsModel):
 
         scalings = []
 
-        if 'VLQ_betaRd33_0_matched_M' in process or 'VLQ_betaRd33_minus1_matched_M' in process: 
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process: 
             scalings.append('gU4')
-        if 'VLQ_betaRd33_0_matched_interference_M' in process or 'VLQ_betaRd33_minus1_matched_interference_M' in process: 
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process:
             scalings.append('gU2')
 
         if scalings:

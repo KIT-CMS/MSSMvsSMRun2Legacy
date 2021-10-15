@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   string analysis = "bsm-model-indep"; // "sm",  "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional"
   std::vector<string> analysis_choices = {"sm", "bsm-model-indep", "bsm-model-dep-full", "bsm-model-dep-additional","vector_leptoquark"};
   string sub_analysis = "sm-like-light"; // for analysis = "bsm-model-dep-{full,additional}": "sm-like-light", "sm-like-heavy", "cpv"
-  std::vector<string> sub_analysis_choices = {"sm-like-light", "sm-like-heavy", "cpv", "betaRd_0", "betaRd_minus1"};
+  std::vector<string> sub_analysis_choices = {"sm-like-light", "sm-like-heavy", "cpv", "betaRd_0", "betaRd_minus1", "betaRd_0_offdiag0", "betaRd_minus1_offdiag0"};
   string hSM_treatment = "hSM-in-bg"; // for analysis = "bsm-model-indep" and = "bsm-model-dep-full" : "hSM-in-bg", "no-hSM-in-bg"; case with analysis = "bsm-model-dep-additional": "hSM-in-bg"
   std::vector<string> hSM_treatment_choices = {"hSM-in-bg", "no-hSM-in-bg"};
   string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
@@ -623,8 +623,12 @@ int main(int argc, char **argv) {
   MH.setConstant(true);
 
   // Define vlq mass parameter
-  RooRealVar MU("MU", "MU", 1000., 500., 5000.);
-  MU.setConstant(true);
+  if(analysis == "vector_leptoquark")
+  {
+    MH.setVal(1000.);
+    MH.setMin(500.);
+    MH.setMax(5000.);
+  }
 
   // Define categories
   Categories sm_signal = {};
@@ -1509,7 +1513,7 @@ int main(int argc, char **argv) {
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_"+sub_analysis+"_matched_interference_M"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -1522,7 +1526,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_"+sub_analysis+"_matched_interference_M"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
@@ -1711,8 +1715,8 @@ int main(int argc, char **argv) {
 
   // Convert VLQ signal b efficiencies to lnN
   if(analysis == "vector_leptoquarks"){
-    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_M"}), "CMS_htt_eff_b_2018");
-    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_M"}), "CMS_htt_mistag_b_$ERA");
+    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_2018");
+    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_$ERA");
   }
 
   // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels
@@ -1848,7 +1852,7 @@ int main(int argc, char **argv) {
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachProc([](ch::Process *p) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_"+sub_analysis+"_matched_interference_M"}, false).ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1858,7 +1862,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"}, false).ForEachSyst([](ch::Systematic *s) {
+  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","VLQ_"+sub_analysis+"_matched_interference_M"}, false).ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -1974,7 +1978,6 @@ int main(int argc, char **argv) {
   }
   // Setup morphed mssm signals for bsm analyses
   RooWorkspace ws("htt", "htt");
-
   std::map<std::string, RooAbsReal *> mass_var = {
     {"ggh_t", &mh}, {"ggh_b", &mh}, {"ggh_i", &mh},
     {"ggH_t", &mH}, {"ggH_b", &mH}, {"ggH_i", &mH},
@@ -2062,12 +2065,13 @@ int main(int argc, char **argv) {
        proc->set_rate(proc->rate()*-1);
     });
     mass_var = {
-      {"VLQ_betaRd33_0_matched_interference_M", &MU}, {"VLQ_betaRd33_0_matched_interference_M", &MU}
+      {"VLQ_"+sub_analysis+"_matched_M", &MH}, {"VLQ_"+sub_analysis+"_matched_interference_M", &MH}
+    };
+    process_norm_map = {
+      {"VLQ_"+sub_analysis+"_matched_M", "norm"}, {"VLQ_"+sub_analysis+"_matched_interference_M", "norm"}
     };
 
-    process_norm_map = {
-      {"VLQ_betaRd33_0_matched_interference_M", "norm"}, {"VLQ_betaRd33_0_matched_interference_M", "norm"}
-    };
+    ws.import(MH);
   }
 
   if(sub_analysis == "cpv")
@@ -2114,7 +2118,6 @@ int main(int argc, char **argv) {
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
     morphFactory.Run(cb, ws, process_norm_map);
-
     if(analysis == "bsm-model-indep"){
       // Adding 'norm' terms into workspace according to desired signals
       for (auto bin : cb.cp().bin_set())

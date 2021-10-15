@@ -4,6 +4,7 @@
 import ROOT
 import CombineHarvester.CombineTools.plotting as plot
 import argparse
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -22,7 +23,7 @@ parser.add_argument(
 parser.add_argument(
     '--y-axis-max', default=None, help="""Maximum for y-axis range""")
 parser.add_argument(
-    '--process', choices=['gg#phi','bb#phi'], help='The process on which a limit has been calculated.', default="gg#phi")
+    '--process', choices=['gg#phi','bb#phi','vector_leptoquark'], help='The process on which a limit has been calculated.', default="gg#phi")
 parser.add_argument(
     '--cms-sub', default='Internal', help="""Text below the CMS logo""")
 parser.add_argument(
@@ -90,8 +91,12 @@ for padx in pads:
 graphs = []
 graph_sets = []
 
-legend = plot.PositionedLegend(0.48, 0.25, 3, 0.015)
-legend.SetTextSize(0.03)
+if args.process == "vector_leptoquark":
+  legend = plot.PositionedLegend(0.28, 0.25, 1, 0.5)
+  legend.SetTextSize(0.03)
+else:
+  legend = plot.PositionedLegend(0.48, 0.25, 3, 0.015)
+  legend.SetTextSize(0.03)
 
 axis = None
 
@@ -115,6 +120,27 @@ has_band = False
 
 dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
 plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
+
+
+# For vector leptoquark change GeV to TeV
+if args.process == "vector_leptoquark":
+  new_input = []
+  for i in range(0,len(args.input)):
+    TeV_dict = {}
+    with open(args.input[i], "rb") as infile:
+      data = json.load(infile)
+
+    for mass, limits in data.items():
+      TeV_dict[unicode(float(mass)/1000)] = {}
+      for key, val in limits.items():
+        TeV_dict[unicode(float(mass)/1000)][key] = val
+
+    with open(args.input[i].replace(".json","_TeV.json"), 'w') as fp:
+      json.dump(TeV_dict, fp, indent=4, sort_keys=True)
+
+    new_input.append(args.input[i].replace(".json","_TeV.json"))
+
+  args.input = new_input
 
 for src in args.input:
     splitsrc = src.split(':')
@@ -164,9 +190,17 @@ for src in args.input:
 
 
 
-axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
-if args.process == "bb#phi":
+if args.process == "gg#phi":
+    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
+elif args.process == "bb#phi":
     axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
+elif args.process == "vector_leptoquark":
+    t = ROOT.TLatex()
+    t.SetTextColor(ROOT.kBlack)
+    t.SetTextFont(42)
+    t.SetTextSize(0.05)
+    t.DrawLatex(-0.2, 5.2, "g_{U}")
+    axis[0].SetNdivisions(8, "X")
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)

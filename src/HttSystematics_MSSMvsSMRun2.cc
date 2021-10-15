@@ -96,7 +96,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
 
-  std::vector<std::string> vlq_signals = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M","VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"};
+  std::vector<std::string> vlq_signals = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
+                                          "VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M",
+                                          "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M",
+                                          "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
   std::vector<std::string> mssm_ggH_lowmass_signals;
   for(auto ggH : mssm_ggH_signals){
     mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
@@ -146,6 +149,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"et", "mt", "tt"})
         .process(vlq_signals)
         .AddSyst(cb, "QCDScale", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+        .channel({"et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "betaL32Fit_", "shape", SystMap<>::init(1.00));
 
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.
@@ -2371,7 +2379,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   else{
     cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"})
+      .process(JoinStr({{"TT", "TTT", "TTL", "TTJ", "VV", "VVT", "VVL", "VVJ", "ST"}, vlq_signals}))
       .AddSyst(cb, "CMS_scale_met_unclustered_$ERA", "shape", SystMap<>::init(1.00));
   }
 
