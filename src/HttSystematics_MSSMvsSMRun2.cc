@@ -153,7 +153,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp()
         .channel({"et", "mt", "tt"})
         .process(vlq_signals)
-        .AddSyst(cb, "betaL32Fit_", "shape", SystMap<>::init(1.00));
+        .AddSyst(cb, "betaL32Fit", "shape", SystMap<>::init(1.00));
 
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.
