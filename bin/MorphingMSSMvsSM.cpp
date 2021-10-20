@@ -1051,6 +1051,40 @@ int main(int argc, char **argv) {
     binning_map["tt"][32] = {};
     binning_map["tt"][35] = {};
 
+    if(variable=="m_sv_VS_pt_tt") {
+      for(auto c : chns) {
+        for(auto b : cb.cp().channel({c}).bin_id_set()) {
+          binning_map[c][b][0]={0,4,4};
+          binning_map[c][b][1]={4,20,1};
+          binning_map[c][b][2]={20,26,2};
+          binning_map[c][b][3]={26,30, 4};
+          binning_map[c][b][4]={0+30,4+30,4};
+          binning_map[c][b][5]={4+30,20+30,1};
+          binning_map[c][b][6]={20+30,26+30,2};
+          binning_map[c][b][7]={26+30,30+30, 4};
+          binning_map[c][b][8]={0+60,4+60,4};
+          binning_map[c][b][9]={4+60,20+60,1};
+          binning_map[c][b][10]={20+60,26+60,2};
+          binning_map[c][b][11]={26+60,30+60, 4};
+          binning_map[c][b][12]={0+90,4+90,4};
+          binning_map[c][b][13]={4+90,20+90,1};
+          binning_map[c][b][14]={20+90,26+90,2};
+          binning_map[c][b][15]={26+90,30+90, 4};
+        }
+      }
+    }
+
+    if(variable=="m_sv_puppi") {
+      for(auto c : chns) {
+        for(auto b : cb.cp().channel({c}).bin_id_set()){
+          binning_map[c][b][0]={0,40,40};
+          binning_map[c][b][1]={40,200,5};
+          binning_map[c][b][2]={200,250,10};
+          binning_map[c][b][3]={250,300, 25};
+        }
+      }
+    }
+
     for(auto chn : chns)
     {
       for(auto b : cb.cp().channel({chn}).bin_id_set())
@@ -1625,7 +1659,15 @@ int main(int argc, char **argv) {
       t_frac->SetName("ggh_t_frac");
       b_frac->SetName("ggh_b_frac");
       i_frac->SetName("ggh_i_frac");
+
+      RooRealVar Yt("Yt_MSSM_h", "Yt_MSSM_h", 1., -1., 1.);
+      Yt.setConstant(true);
+      RooRealVar Yb("Yb_MSSM_h", "Yb_MSSM_h", 1., 0., 1.);
+      Yb.setConstant(true);
+
       ws.import(MH);
+      ws.import(Yt);
+      ws.import(Yb);
       ws.import(*t_frac, RooFit::RecycleConflictNodes());
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
