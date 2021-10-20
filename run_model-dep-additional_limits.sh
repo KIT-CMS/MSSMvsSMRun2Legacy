@@ -5,6 +5,7 @@ TAG=$1
 MODE=$2
 MODEL=$3
 ANALYSISTYPE=$4
+GRIDUSER=$5
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-additional"
@@ -167,9 +168,11 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
@@ -178,9 +181,11 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
@@ -190,9 +195,11 @@ if [[ $MODE == "initial" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
+            --hSM-treatment "hSM-in-bg" \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
@@ -293,14 +300,16 @@ elif [[ $MODE == "submit-gc" ]]; then
     ############
     # job submission
     ############
+    gcworkdir=${defaultdir}/limits_${MODEL}/gc_condor
+    mkdir -p ${gcworkdir}
     python scripts/build_gc_job.py \
         --combine-script ${defaultdir}/limits_${MODEL}/condor/condor_${taskname}.sh \
         --workspace ${datacarddir}/combined/cmb/${wsoutput} \
-        --workdir /work/sbrommer/workdirs/combine/${taskname} \
+        --workdir ${gcworkdir} \
         --tag ${taskname} \
-        --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}
+        --se-path /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}
 
-    ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}/${taskname}.conf -Gc -m 3
+    ${CMSSW_BASE}/src/grid-control/go.py ${gcworkdir}/${taskname}.conf -Gc -m 3
 
 elif [[ $MODE == "delete-crashed-jobs" ]]; then
     ############
@@ -317,7 +326,7 @@ elif [[ $MODE == "copy-results-gc" ]]; then
     ############
     # job submission
     ############
-    rsync -avhP /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
+    rsync -avhP /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
 
 
 elif [[ $MODE == "collect" ]]; then

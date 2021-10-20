@@ -8,10 +8,13 @@ INPUT=$2
 OUTPUT=$3  # Output directory the plots are written to.
 IFS="," read -a CHANNELS <<< $4
 MASS=$5
-XSEC=$6
+XSEC_GGH=$6
+XSEC_BBH=$7
 
 [[ -z $MASS ]] && MASS=1200
-[[ -z $XSEC ]] && XSEC=0.05
+[[ -z $XSEC_GGH ]] && XSEC_GGH=0.05
+[[ -z $XSEC_BBH && ! -z $6 ]] && XSEC_BBH=0.05
+[[ -z $XSEC_BBH ]] && XSEC_BBH=0.05
 
 
 if [[ ! -d "$OUTPUT" ]]
@@ -23,7 +26,8 @@ for FILE in $INPUT
 do
     for OPTION in "" "--png"
     do
-        ./plotting/plot_shapes_mssm.py -i $FILE \
+        ./plotting/plot_shapes_mssm.py \
+                                       -i $FILE \
                                        -c ${CHANNELS[@]} \
                                        -e $ERA \
                                        $OPTION \
@@ -34,6 +38,7 @@ do
                                        --model-independent \
                                        --blinded \
                                        --mass $MASS \
-                                       --x-sec $XSEC
+                                       --x-sec-ggh $XSEC_GGH \
+                                       --x-sec-bbh $XSEC_BBH \
     done
 done

@@ -19,7 +19,7 @@ fi
 
 defaultdir=analysis/$TAG
 analysis="bsm-model-indep"
-sub_analysis="hSM-in-bg"
+hSM_treatment="hSM-in-bg"
 categorization="with-sm-ml"
 sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
@@ -37,7 +37,8 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${hSM_treatment} \
+        --sub-analysis "sm-like-light" \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
@@ -49,7 +50,7 @@ if [[ $MODE == "initial" ]]; then
 
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --sub-analysis ${sub_analysis} \
+        --hSM-treatment ${hSM_treatment} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \

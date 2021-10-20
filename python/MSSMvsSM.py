@@ -99,6 +99,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.smlike = "h"
         self.massparameter = "mA"
         self.replace_with_sm125 = True
+        self.use_hSM_difference = False
         self.cpv_template_pairs = {"H1" : "h", "H2" : "H", "H3" : "A"}
 
     def setPhysicsOptions(self,physOptions):
@@ -164,6 +165,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             if po.startswith('scaleforh='):
                 self.scaleforh = float(po.replace('scaleforh=',''))
                 print "Additional scale for the light scalar h: {SCALE}".format(SCALE=self.scaleforh)
+
+            if po.startswith('hSM-treatment='):
+                hSM_treatment = po.replace('hSM-treatment=', '')
+                self.use_hSM_difference = hSM_treatment == "hSM-in-bg"
+                print "Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference
 
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
@@ -282,6 +288,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 value *= br_htautau / br_htautau_SM # (g_HVV)**2 * br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
+                if self.use_hSM_difference:
+                    value -= 1.0
                 hist.SetBinContent(i_x+1, i_y+1, value)
 
         return self.doHistFunc(name, hist, varlist)
@@ -314,9 +322,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
-                if xs_ggh_SM <= 0:
+                if xs_ggh <= 0 and xs_ggh_SM <= 0:
+                    print "[WARNING]: Both BSM and SM ggh xs predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    xs_ggh_SM = 1.
+                    xs_ggh = 1.
+                elif xs_ggh_SM <= 0:
                     print "[WARNING]: SM ggh xs prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     xs_ggh_SM = xs_ggh
+
                 if br_htautau <= 0 and br_htautau_SM <= 0:
                     print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = 1.
@@ -464,24 +477,26 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.modelBuilder.out.var(self.massparameter).setConstant(True) # either mA or mHp
         self.modelBuilder.out.var('tanb').setConstant(True)
 
-        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))"
+        bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|H|h|H3|H2|H1))(|_lowmass)"
         if self.replace_with_sm125:
-            bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
+            bsm_proc_match = "(gg(A|H|h|H3|H2|H1)_(t|i|b)|bb(A|{BSMSCALAR}|H3|H2))(|_lowmass)".format(BSMSCALAR=self.bsmscalar).replace("||","|") # need the last fix in case BSMSCALAR=""
 
         for proc in self.PROC_SETS:
             terms = []
             X = proc.split('_')[0].replace('gg','').replace('bb','')
+            ggphi_smlike_match = re.match('gg{SMLIKE}$'.format(SMLIKE=self.smlike), proc)
+            bbphi_smlike_match = re.match('bb{SMLIKE}$'.format(SMLIKE=self.smlike), proc)
             if "H125" in proc: # cover SM H125 processes first
                 terms = [self.sigNorms[False]]
             elif re.match(bsm_proc_match, proc): # not SM-like BSMSCALAR: either h or H
-                terms = ['xs_%s' %proc, 'br_%stautau'%X]
+                terms = ['xs_%s' %proc.replace("_lowmass",""), 'br_%stautau'%X]
                 terms += ['r']
                 terms += [self.sigNorms[True]]
             elif re.match('(qq{SMLIKE}|Z{SMLIKE}|W{SMLIKE})$'.format(SMLIKE=self.smlike), proc): # always done
                 terms = [self.sigNorms[True], 'r', 'sf_qqphi_MSSM']
-            elif re.match('gg{SMLIKE}$'.format(SMLIKE=self.smlike), proc): # always done
+            elif ggphi_smlike_match: # always done
                 terms = [self.sigNorms[True], 'r', 'sf_ggphi_MSSM']
-            elif re.match('bb{SMLIKE}$'.format(SMLIKE=self.smlike), proc): # considered, in case it is not in the second 'if' case with bsm_proc_match
+            elif bbphi_smlike_match: # considered, in case it is not in the second 'if' case with bsm_proc_match
                 terms = [self.sigNorms[True], 'r', 'sf_bbphi_MSSM']
 
             if self.scenario == "mh1125_CPV" and X in ['H2', 'H3']:
@@ -495,7 +510,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 if term in self.SYST_DICT:
                     extra += self.SYST_DICT[term]
             terms += extra
-            self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
+            if ggphi_smlike_match and self.use_hSM_difference:
+                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms))) # Add scaling of BSM process: mu*SF = x*r*SF
+                self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2)\", %s)'%(proc,','.join(["bsm_scaling_%s"%proc,"x","r"]))) # Add difference between BSM prediction and mu*SM prediction.
+            elif bbphi_smlike_match and self.use_hSM_difference and self.replace_with_sm125:
+                self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
+                self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2 * %s * %s)\", %s)'%(proc,str(self.sm_predictions["xs_bb_SMH125"]),str(self.sm_predictions["br_SMH125_tautau"]),','.join(["bsm_scaling_%s"%proc,"x","r"])))
+            else:
+                self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
             self.modelBuilder.out.function('scaling_%s'%proc).Print('')
 
     def getYieldScale(self,bin,process):
@@ -562,7 +584,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
             # Make a note of what we've built, will be used to create scaling expressions later
             self.PROC_SETS.append('bb%s'%X)
-            self.PROC_SETS.extend(['gg%s_t'%X, 'gg%s_b'%X, 'gg%s_i'%X])
+            if X != self.smlike:
+                self.PROC_SETS.append('bb%s_lowmass'%X)
+            self.PROC_SETS.extend(['gg%s_t'%X, 'gg%s_b'%X, 'gg%s_i'%X, 'gg%s_t_lowmass'%X, 'gg%s_b_lowmass'%X, 'gg%s_i_lowmass'%X])
 
         # Add BSM systematic also in case SM125 templates are used for ggphi and bbphi
         if self.replace_with_sm125:

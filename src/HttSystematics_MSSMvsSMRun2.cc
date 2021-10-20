@@ -21,7 +21,7 @@ using ch::syst::process;
 using ch::syst::bin;
 using ch::JoinStr;
 
-void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedding, bool regional_jec, bool ggh_wg1, bool qqh_wg1, int era, bool mva, bool sm) {
+void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedding, bool regional_jec, bool ggh_wg1, bool qqh_wg1, int era, bool mva, bool sm, std::string smlike) {
 
   // ##########################################################################
   // Define groups of signal processes
@@ -31,9 +31,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       // STXS stage 0
       "ggH_htt125",
       "ggH125",
-      "ggH",
-      "ggh",
-      "ggH1",
+      "gg" + smlike,
       "ggX",
       // STXS stage 1.1
       "ggH_FWDH_htt",
@@ -57,10 +55,8 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_qqH = {
       // STXS stage 0
       "qqH_htt125",
-      "qqH125", 
-      "qqH",
-      "qqh",
-      "qqH1",
+      "qqH125",
+      "qq" + smlike,
       "qqX",
       // STXS stage 1
       "qqH_FWDH_htt",
@@ -77,7 +73,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       };
   std::vector<std::string> signals_VH = {
       // STXS stage 0
-      "WH125", "Wh", "WH", "WH1", "ZH125", "Zh", "ZH", "ZH1", "ttH125"};
+      "WH125", "W" + smlike, "ZH125", "Z" + smlike, "ttH125"};
+  std::vector<std::string> signals_bbH = {
+      // STXS stage 0
+      "bbH125", "bb" + smlike};
   std::vector<std::string> signals_ggHToWW = {
      // STXS stage 0
      "ggHWW125"};
@@ -87,7 +86,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> signals_VHToWW = {
       // STXS stage 0
       "WHWW125", "ZHWW125"};
-  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH});
+  std::vector<std::string> signals = JoinStr({signals_ggH, signals_qqH, signals_VH, signals_bbH});
   std::vector<std::string> signals_HWW = JoinStr({signals_ggHToWW, signals_qqHToWW, signals_VHToWW});
 
   std::vector<std::string> mssm_ggH_signals = {"ggH_t", "ggH_b", "ggH_i",
@@ -96,8 +95,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                                "ggH2_t", "ggH2_b", "ggH2_i",
                                                "ggH1_t", "ggH1_b", "ggH1_i",
                                                "ggH3_t", "ggH3_b", "ggH3_i"};
-  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1", "bbH125"};
-  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals, {"qqX"}});
+
+  std::vector<std::string> mssm_ggH_lowmass_signals;
+  for(auto ggH : mssm_ggH_signals){
+    mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
+  }
+  std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1"};
+  std::vector<std::string> mssm_bbH_lowmass_signals;
+  for(auto bbH : mssm_bbH_signals){
+    mssm_bbH_lowmass_signals.push_back(bbH + "_lowmass");
+  }
+  std::vector<std::string> mssm_signals = JoinStr({mssm_ggH_signals, mssm_bbH_signals, mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals, {"qqX"}});
   std::vector<std::string> jetFakes = {"jetFakes"};
   if(sm == true){
     jetFakes = {"jetFakesSM"};
@@ -112,16 +120,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
               {"ZTT", "TT", "TTT", "TTL", "TTJ", "W", "ZJ", "ZL", "VV", "VVT", "VVL", "VVJ", "ST"}
               });
 
-  std::vector<int> nobtag_catagories = {3, 4, 5, 6, 7, 8, 9,10,
+  std::vector<int> nobtag_categories = {1, 3, 4, 5, 6, 7, 8, 9,10,
+                                    101,102,103,104,105,106,
                                     11,12,13,14,15,16,17,18,19,20,
                                     21,22,23,24,25,26,27,28,29,30,
                                     31,32,33,34}; // SM and MSSM no-btag categories
-  std::vector<int> btag_catagories = {2,35,36,37};
+  std::vector<int> btag_categories = {2,35,36,37};
   std::vector<int> btag_categories_forlnN = {35,36,37};
 
-  std::vector<int> mssm_categories = {300,2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for 
+  std::vector<int> mssm_categories = {300,2,32,33,34,35,36,37}; // Useful in we need to use different treatment of some uncertainties for
 
-  std::vector<int> mssm_nobtag_catagories = {32,33,34};
+  std::vector<int> mssm_nobtag_categories = {32,33,34};
 
    // ##########################################################################
    // Uncertainty: b tagging acceptance uncertainties for pdf and scale and hdamp variations.
@@ -132,398 +141,398 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    // Notes:
    // ##########################################################################
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"60"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 0.995)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 0.995)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"180"}, 0.995)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"200"}, 0.995)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"250"}, 0.994)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"300"}, 0.994)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"350"}, 0.993)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"400"}, 0.993)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"450"}, 0.993)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"500"}, 0.993)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"600"}, 0.993)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"700"}, 0.992)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"800"}, 0.990)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"900"}, 0.988)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1000"}, 0.987)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1200"}, 0.986)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1400"}, 0.985)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1600"}, 0.984)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1800"}, 0.984)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2000"}, 0.983)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2300"}, 0.982)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2600"}, 0.980)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2900"}, 0.979)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"3200"}, 0.976)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"3500"}, 0.974)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"60"}, 0.996)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 0.996)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 0.995)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 0.995)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 0.995)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 0.995)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 0.994)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"180"}, 0.994)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"200"}, 0.994)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"250"}, 0.994)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"300"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"350"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"400"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"450"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"500"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"600"}, 0.993)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"700"}, 0.992)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"800"}, 0.990)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"900"}, 0.988)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1000"}, 0.987)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1200"}, 0.986)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1400"}, 0.985)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1600"}, 0.984)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1800"}, 0.984)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2000"}, 0.983)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2300"}, 0.981)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2600"}, 0.980)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2900"}, 0.979)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"3200"}, 0.976)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"3500"}, 0.974)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"60"}, 0.996)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 0.996)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 0.994)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"180"}, 0.994)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"200"}, 0.994)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"250"}, 0.994)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"300"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"350"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"400"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"450"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"500"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"600"}, 0.993)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"700"}, 0.991)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"800"}, 0.990)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"900"}, 0.988)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1000"}, 0.986)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1200"}, 0.986)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1400"}, 0.985)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1600"}, 0.984)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1800"}, 0.984)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2000"}, 0.983)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2300"}, 0.981)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2600"}, 0.980)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2900"}, 0.978)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"3200"}, 0.976)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"3500"}, 0.973)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"60"}, 1.023)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"80"}, 1.020)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 1.017)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 1.015)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 1.015)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 1.015)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 1.016)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 1.017)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"180"}, 1.017)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"200"}, 1.016)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"250"}, 1.015)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"300"}, 1.014)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"350"}, 1.013)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"400"}, 1.012)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"450"}, 1.012)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"500"}, 1.011)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"600"}, 1.010)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"700"}, 1.012)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"800"}, 1.013)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"900"}, 1.014)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1000"}, 1.016)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1200"}, 1.017)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1400"}, 1.018)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1600"}, 1.018)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1800"}, 1.019)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2000"}, 1.019)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2300"}, 1.020)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2600"}, 1.022)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2900"}, 1.023)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"3200"}, 1.025)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"3500"}, 1.027)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"60"}, 1.023)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"80"}, 1.019)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 1.015)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"180"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"200"}, 1.015)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"250"}, 1.014)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"300"}, 1.013)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"350"}, 1.012)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"400"}, 1.011)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"450"}, 1.011)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"500"}, 1.010)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"600"}, 1.010)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"700"}, 1.011)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"800"}, 1.012)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"900"}, 1.014)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1000"}, 1.015)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1200"}, 1.015)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1400"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1600"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1800"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2000"}, 1.016)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2300"}, 1.018)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2600"}, 1.019)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2900"}, 1.020)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"3200"}, 1.022)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"3500"}, 1.024)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"60"}, 1.022)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"80"}, 1.018)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 1.015)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 1.015)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 1.014)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"180"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"200"}, 1.015)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"250"}, 1.014)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"300"}, 1.012)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"350"}, 1.011)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"400"}, 1.010)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"450"}, 1.010)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"500"}, 1.010)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"600"}, 1.009)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"700"}, 1.010)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"800"}, 1.012)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"900"}, 1.013)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1000"}, 1.015)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1200"}, 1.015)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1400"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1600"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1800"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2000"}, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2300"}, 1.018)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2600"}, 1.019)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2900"}, 1.020)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3200"}, 1.022)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3500"}, 1.024));
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"120"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"125"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"130"}, 0.996)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"140"}, 0.995)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"160"}, 0.995)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"180"}, 0.995)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"200"}, 0.995)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"250"}, 0.994)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"300"}, 0.994)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"350"}, 0.993)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"400"}, 0.993)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"450"}, 0.993)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"500"}, 0.993)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"600"}, 0.993)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"700"}, 0.992)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"800"}, 0.990)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"900"}, 0.988)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1000"}, 0.987)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1200"}, 0.986)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1400"}, 0.985)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1600"}, 0.984)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1800"}, 0.984)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2000"}, 0.983)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2300"}, 0.982)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2600"}, 0.980)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2900"}, 0.979)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3200"}, 0.976)
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3500"}, 0.974)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"60"}, 0.996)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"80"}, 0.996)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"100"}, 0.996)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"120"}, 0.995)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"125"}, 0.995)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"130"}, 0.995)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"140"}, 0.995)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"160"}, 0.994)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"180"}, 0.994)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"200"}, 0.994)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"250"}, 0.994)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"300"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"350"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"400"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"450"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"500"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"600"}, 0.993)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"700"}, 0.992)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"800"}, 0.990)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"900"}, 0.988)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1000"}, 0.987)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1200"}, 0.986)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1400"}, 0.985)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1600"}, 0.984)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1800"}, 0.984)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2000"}, 0.983)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2300"}, 0.981)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2600"}, 0.980)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2900"}, 0.979)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3200"}, 0.976)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3500"}, 0.974)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"60"}, 0.996)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"80"}, 0.996)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"100"}, 0.996)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"120"}, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"125"}, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"130"}, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"140"}, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"160"}, 0.994)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"180"}, 0.994)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"200"}, 0.994)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"250"}, 0.994)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"300"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"350"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"400"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"450"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"500"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"600"}, 0.993)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"700"}, 0.991)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"800"}, 0.990)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"900"}, 0.988)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1000"}, 0.986)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1200"}, 0.986)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1400"}, 0.985)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1600"}, 0.984)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1800"}, 0.984)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2000"}, 0.983)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2300"}, 0.981)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2600"}, 0.980)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2900"}, 0.978)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3200"}, 0.976)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3500"}, 0.973)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"60"}, 1.023)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"80"}, 1.020)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"100"}, 1.017)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"120"}, 1.015)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"125"}, 1.015)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"130"}, 1.015)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"140"}, 1.016)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"160"}, 1.017)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"180"}, 1.017)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"200"}, 1.016)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"250"}, 1.015)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"300"}, 1.014)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"350"}, 1.013)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"400"}, 1.012)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"450"}, 1.012)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"500"}, 1.011)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"600"}, 1.010)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"700"}, 1.012)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"800"}, 1.013)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"900"}, 1.014)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1000"}, 1.016)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1200"}, 1.017)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1400"}, 1.018)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1600"}, 1.018)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1800"}, 1.019)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2000"}, 1.019)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2300"}, 1.020)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2600"}, 1.022)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2900"}, 1.023)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3200"}, 1.025)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3500"}, 1.027)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"60"}, 1.023)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"80"}, 1.019)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"100"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"120"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"125"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"130"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"140"}, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"160"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"180"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"200"}, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"250"}, 1.014)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"300"}, 1.013)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"350"}, 1.012)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"400"}, 1.011)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"450"}, 1.011)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"500"}, 1.010)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"600"}, 1.010)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"700"}, 1.011)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"800"}, 1.012)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"900"}, 1.014)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1000"}, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1200"}, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1400"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1600"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1800"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2000"}, 1.016)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2300"}, 1.018)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2600"}, 1.019)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2900"}, 1.020)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3200"}, 1.022)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3500"}, 1.024)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"60"}, 1.022)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"80"}, 1.018)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"100"}, 1.015)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"120"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"125"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"130"}, 1.015)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"140"}, 1.014)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"160"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"180"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"200"}, 1.015)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"250"}, 1.014)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"300"}, 1.012)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"350"}, 1.011)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"400"}, 1.010)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"450"}, 1.010)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"500"}, 1.010)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"600"}, 1.009)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"700"}, 1.010)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"800"}, 1.012)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"900"}, 1.013)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1000"}, 1.015)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1200"}, 1.015)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1400"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1600"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1800"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2000"}, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2300"}, 1.018)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2600"}, 1.019)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2900"}, 1.020)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3200"}, 1.022)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3500"}, 1.024));
 
-   cb.cp().process({"bbH125"}).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id>::init
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, 0.996)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, 0.995)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, 0.995)
-     ({"et","mt","tt","em"}, {"2016"}, btag_catagories, 1.015)
-     ({"et","mt","tt","em"}, {"2017"}, btag_catagories, 1.016)
-     ({"et","mt","tt","em"}, {"2018"}, btag_catagories, 1.016));
+   cb.cp().process(signals_bbH).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id>::init
+     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, 0.996)
+     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, 0.995)
+     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, 0.995)
+     ({"et","mt","tt","em"}, {"2016"}, btag_categories, 1.015)
+     ({"et","mt","tt","em"}, {"2017"}, btag_categories, 1.016)
+     ({"et","mt","tt","em"}, {"2018"}, btag_categories, 1.016));
 
-   cb.cp().process(mssm_bbH_signals).process({"bbH125"}, false).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"60"}, 1.010, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"80"}, 1.013, 0.992)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"100"}, 1.016, 0.992)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"120"}, 1.009, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"125"}, 1.007, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"130"}, 1.009, 0.994)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"140"}, 1.012, 0.995)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"160"}, 1.013, 0.994)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"180"}, 1.013, 0.994)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"200"}, 1.013, 0.994)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"250"}, 1.013, 0.994)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"300"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"350"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"400"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"450"}, 1.014, 0.990)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"500"}, 1.013, 0.988)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"600"}, 1.012, 0.983)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"700"}, 1.016, 0.984)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"800"}, 1.020, 0.984)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"900"}, 1.024, 0.984)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1000"}, 1.028, 0.985)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1200"}, 1.027, 0.980)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1400"}, 1.027, 0.975)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1600"}, 1.031, 0.977)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"1800"}, 1.034, 0.979)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2000"}, 1.038, 0.981)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2300"}, 1.040, 0.979)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2600"}, 1.040, 0.970)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"2900"}, 1.041, 0.961)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"3200"}, 1.046, 0.962)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, {"3500"}, 1.051, 0.962)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"60"}, 1.010, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"80"}, 1.015, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"100"}, 1.020, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"120"}, 1.010, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"125"}, 1.008, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"130"}, 1.009, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"140"}, 1.012, 0.994)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"160"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"180"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"200"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"250"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"300"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"350"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"400"}, 1.014, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"450"}, 1.014, 0.990)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"500"}, 1.013, 0.988)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"600"}, 1.012, 0.982)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"700"}, 1.016, 0.983)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"800"}, 1.020, 0.984)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"900"}, 1.024, 0.984)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1000"}, 1.028, 0.985)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1200"}, 1.028, 0.980)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1400"}, 1.028, 0.975)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1600"}, 1.032, 0.977)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"1800"}, 1.036, 0.979)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2000"}, 1.040, 0.981)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2300"}, 1.040, 0.979)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2600"}, 1.040, 0.971)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"2900"}, 1.041, 0.964)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"3200"}, 1.046, 0.964)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, {"3500"}, 1.050, 0.963)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"60"}, 1.011, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"80"}, 1.016, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"100"}, 1.021, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"120"}, 1.011, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"125"}, 1.009, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"130"}, 1.010, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"140"}, 1.013, 0.994)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"160"}, 1.015, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"180"}, 1.015, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"200"}, 1.015, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"250"}, 1.015, 0.993)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"300"}, 1.014, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"350"}, 1.014, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"400"}, 1.014, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"450"}, 1.014, 0.989)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"500"}, 1.013, 0.986)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"600"}, 1.012, 0.981)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"700"}, 1.016, 0.982)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"800"}, 1.020, 0.982)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"900"}, 1.024, 0.983)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1000"}, 1.028, 0.984)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1200"}, 1.028, 0.978)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1400"}, 1.029, 0.973)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1600"}, 1.033, 0.975)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"1800"}, 1.036, 0.978)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2000"}, 1.040, 0.980)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2300"}, 1.042, 0.978)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2600"}, 1.042, 0.970)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"2900"}, 1.043, 0.962)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"3200"}, 1.048, 0.963)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, {"3500"}, 1.053, 0.964)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"60"}, 0.938, 1.042)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"80"}, 0.932, 1.038)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"100"}, 0.926, 1.035)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"120"}, 0.964, 1.028)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"125"}, 0.974, 1.026)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"130"}, 0.969, 1.024)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"140"}, 0.958, 1.019)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"160"}, 0.958, 1.021)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"180"}, 0.959, 1.020)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"200"}, 0.961, 1.020)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"250"}, 0.964, 1.018)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"300"}, 0.967, 1.017)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"350"}, 0.971, 1.015)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"400"}, 0.974, 1.014)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"450"}, 0.976, 1.017)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"500"}, 0.978, 1.019)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"600"}, 0.983, 1.025)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"700"}, 0.978, 1.023)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"800"}, 0.974, 1.022)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"900"}, 0.970, 1.020)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1000"}, 0.965, 1.019)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1200"}, 0.966, 1.024)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1400"}, 0.967, 1.030)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1600"}, 0.964, 1.027)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"1800"}, 0.960, 1.024)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2000"}, 0.957, 1.021)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2300"}, 0.957, 1.022)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2600"}, 0.956, 1.032)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"2900"}, 0.955, 1.042)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"3200"}, 0.950, 1.042)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, {"3500"}, 0.946, 1.041)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"60"}, 0.944, 1.043)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"80"}, 0.932, 1.036)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"100"}, 0.920, 1.029)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"120"}, 0.962, 1.026)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"125"}, 0.972, 1.025)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"130"}, 0.969, 1.023)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"140"}, 0.962, 1.018)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"160"}, 0.960, 1.019)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"180"}, 0.962, 1.018)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"200"}, 0.963, 1.018)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"250"}, 0.967, 1.016)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"300"}, 0.970, 1.015)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"350"}, 0.974, 1.013)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"400"}, 0.978, 1.012)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"450"}, 0.980, 1.015)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"500"}, 0.981, 1.018)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"600"}, 0.984, 1.023)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"700"}, 0.980, 1.021)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"800"}, 0.976, 1.020)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"900"}, 0.972, 1.018)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1000"}, 0.968, 1.017)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1200"}, 0.969, 1.022)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1400"}, 0.970, 1.027)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1600"}, 0.967, 1.024)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"1800"}, 0.964, 1.022)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2000"}, 0.961, 1.019)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2300"}, 0.962, 1.020)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2600"}, 0.961, 1.027)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"2900"}, 0.960, 1.035)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"3200"}, 0.956, 1.035)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, {"3500"}, 0.952, 1.035)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"60"}, 0.941, 1.042)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"80"}, 0.930, 1.034)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"100"}, 0.920, 1.027)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"120"}, 0.962, 1.026)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"125"}, 0.972, 1.026)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"130"}, 0.969, 1.023)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"140"}, 0.962, 1.017)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"160"}, 0.961, 1.019)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"180"}, 0.962, 1.018)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"200"}, 0.964, 1.018)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"250"}, 0.968, 1.016)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"300"}, 0.972, 1.015)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"350"}, 0.975, 1.013)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"400"}, 0.979, 1.012)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"450"}, 0.980, 1.015)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"500"}, 0.982, 1.018)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"600"}, 0.985, 1.024)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"700"}, 0.981, 1.022)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"800"}, 0.978, 1.020)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"900"}, 0.974, 1.019)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1000"}, 0.970, 1.017)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1200"}, 0.970, 1.022)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1400"}, 0.971, 1.027)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1600"}, 0.968, 1.024)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"1800"}, 0.965, 1.021)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2000"}, 0.962, 1.018)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2300"}, 0.962, 1.020)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2600"}, 0.962, 1.027)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"2900"}, 0.961, 1.034)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3200"}, 0.957, 1.033)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, {"3500"}, 0.953, 1.032));
+   cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 1.010, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 1.013, 0.992)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 1.016, 0.992)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"120"}, 1.009, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"125"}, 1.007, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"130"}, 1.009, 0.994)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"140"}, 1.012, 0.995)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"160"}, 1.013, 0.994)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"180"}, 1.013, 0.994)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"200"}, 1.013, 0.994)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"250"}, 1.013, 0.994)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"300"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"350"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"400"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"450"}, 1.014, 0.990)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"500"}, 1.013, 0.988)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"600"}, 1.012, 0.983)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"700"}, 1.016, 0.984)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"800"}, 1.020, 0.984)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"900"}, 1.024, 0.984)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1000"}, 1.028, 0.985)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1200"}, 1.027, 0.980)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1400"}, 1.027, 0.975)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1600"}, 1.031, 0.977)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"1800"}, 1.034, 0.979)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2000"}, 1.038, 0.981)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2300"}, 1.040, 0.979)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2600"}, 1.040, 0.970)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"2900"}, 1.041, 0.961)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3200"}, 1.046, 0.962)
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3500"}, 1.051, 0.962)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"60"}, 1.010, 0.992)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"80"}, 1.015, 0.992)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"100"}, 1.020, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"120"}, 1.010, 0.992)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"125"}, 1.008, 0.992)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"130"}, 1.009, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"140"}, 1.012, 0.994)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"160"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"180"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"200"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"250"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"300"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"350"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"400"}, 1.014, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"450"}, 1.014, 0.990)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"500"}, 1.013, 0.988)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"600"}, 1.012, 0.982)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"700"}, 1.016, 0.983)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"800"}, 1.020, 0.984)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"900"}, 1.024, 0.984)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1000"}, 1.028, 0.985)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1200"}, 1.028, 0.980)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1400"}, 1.028, 0.975)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1600"}, 1.032, 0.977)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"1800"}, 1.036, 0.979)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2000"}, 1.040, 0.981)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2300"}, 1.040, 0.979)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2600"}, 1.040, 0.971)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"2900"}, 1.041, 0.964)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3200"}, 1.046, 0.964)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3500"}, 1.050, 0.963)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"60"}, 1.011, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"80"}, 1.016, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"100"}, 1.021, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"120"}, 1.011, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"125"}, 1.009, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"130"}, 1.010, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"140"}, 1.013, 0.994)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"160"}, 1.015, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"180"}, 1.015, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"200"}, 1.015, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"250"}, 1.015, 0.993)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"300"}, 1.014, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"350"}, 1.014, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"400"}, 1.014, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"450"}, 1.014, 0.989)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"500"}, 1.013, 0.986)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"600"}, 1.012, 0.981)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"700"}, 1.016, 0.982)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"800"}, 1.020, 0.982)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"900"}, 1.024, 0.983)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1000"}, 1.028, 0.984)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1200"}, 1.028, 0.978)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1400"}, 1.029, 0.973)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1600"}, 1.033, 0.975)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"1800"}, 1.036, 0.978)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2000"}, 1.040, 0.980)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2300"}, 1.042, 0.978)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2600"}, 1.042, 0.970)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"2900"}, 1.043, 0.962)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3200"}, 1.048, 0.963)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3500"}, 1.053, 0.964)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"60"}, 0.938, 1.042)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"80"}, 0.932, 1.038)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"100"}, 0.926, 1.035)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"120"}, 0.964, 1.028)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"125"}, 0.974, 1.026)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"130"}, 0.969, 1.024)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"140"}, 0.958, 1.019)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"160"}, 0.958, 1.021)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"180"}, 0.959, 1.020)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"200"}, 0.961, 1.020)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"250"}, 0.964, 1.018)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"300"}, 0.967, 1.017)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"350"}, 0.971, 1.015)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"400"}, 0.974, 1.014)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"450"}, 0.976, 1.017)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"500"}, 0.978, 1.019)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"600"}, 0.983, 1.025)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"700"}, 0.978, 1.023)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"800"}, 0.974, 1.022)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"900"}, 0.970, 1.020)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1000"}, 0.965, 1.019)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1200"}, 0.966, 1.024)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1400"}, 0.967, 1.030)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1600"}, 0.964, 1.027)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"1800"}, 0.960, 1.024)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2000"}, 0.957, 1.021)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2300"}, 0.957, 1.022)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2600"}, 0.956, 1.032)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"2900"}, 0.955, 1.042)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3200"}, 0.950, 1.042)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3500"}, 0.946, 1.041)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"60"}, 0.944, 1.043)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"80"}, 0.932, 1.036)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"100"}, 0.920, 1.029)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"120"}, 0.962, 1.026)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"125"}, 0.972, 1.025)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"130"}, 0.969, 1.023)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"140"}, 0.962, 1.018)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"160"}, 0.960, 1.019)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"180"}, 0.962, 1.018)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"200"}, 0.963, 1.018)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"250"}, 0.967, 1.016)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"300"}, 0.970, 1.015)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"350"}, 0.974, 1.013)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"400"}, 0.978, 1.012)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"450"}, 0.980, 1.015)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"500"}, 0.981, 1.018)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"600"}, 0.984, 1.023)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"700"}, 0.980, 1.021)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"800"}, 0.976, 1.020)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"900"}, 0.972, 1.018)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1000"}, 0.968, 1.017)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1200"}, 0.969, 1.022)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1400"}, 0.970, 1.027)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1600"}, 0.967, 1.024)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"1800"}, 0.964, 1.022)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2000"}, 0.961, 1.019)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2300"}, 0.962, 1.020)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2600"}, 0.961, 1.027)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"2900"}, 0.960, 1.035)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3200"}, 0.956, 1.035)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3500"}, 0.952, 1.035)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"60"}, 0.941, 1.042)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"80"}, 0.930, 1.034)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"100"}, 0.920, 1.027)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"120"}, 0.962, 1.026)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"125"}, 0.972, 1.026)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"130"}, 0.969, 1.023)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"140"}, 0.962, 1.017)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"160"}, 0.961, 1.019)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"180"}, 0.962, 1.018)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"200"}, 0.964, 1.018)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"250"}, 0.968, 1.016)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"300"}, 0.972, 1.015)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"350"}, 0.975, 1.013)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"400"}, 0.979, 1.012)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"450"}, 0.980, 1.015)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"500"}, 0.982, 1.018)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"600"}, 0.985, 1.024)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"700"}, 0.981, 1.022)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"800"}, 0.978, 1.020)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"900"}, 0.974, 1.019)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1000"}, 0.970, 1.017)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1200"}, 0.970, 1.022)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1400"}, 0.971, 1.027)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1600"}, 0.968, 1.024)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"1800"}, 0.965, 1.021)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2000"}, 0.962, 1.018)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2300"}, 0.962, 1.020)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2600"}, 0.962, 1.027)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"2900"}, 0.961, 1.034)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3200"}, 0.957, 1.033)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"3500"}, 0.953, 1.032));
 
 
-   cb.cp().process({"bbH125"}).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_catagories, 1.007, 0.993)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_catagories, 1.008, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_catagories, 1.009, 0.992)
-    ({"et","mt","tt","em"}, {"2016"}, btag_catagories, 0.974, 1.026)
-    ({"et","mt","tt","em"}, {"2017"}, btag_catagories, 0.972, 1.025)
-    ({"et","mt","tt","em"}, {"2018"}, btag_catagories, 0.972, 1.026));
+   cb.cp().process(signals_bbH).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, 1.007, 0.993)
+    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, 1.008, 0.992)
+    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, 1.009, 0.992)
+    ({"et","mt","tt","em"}, {"2016"}, btag_categories, 0.974, 1.026)
+    ({"et","mt","tt","em"}, {"2017"}, btag_categories, 0.972, 1.025)
+    ({"et","mt","tt","em"}, {"2018"}, btag_categories, 0.972, 1.026));
 
   // ##########################################################################
   // Uncertainty: Lumi
@@ -531,7 +540,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - "CMS Luminosity Measurements for the 2016 Data Taking Period"
   //   (PAS, https://cds.cern.ch/record/2257069)
   // - Recommendation twiki
-  //    https://twiki.cern.ch/twiki/bin/view/CMS/TWikiLUM#LumiComb  
+  //    https://twiki.cern.ch/twiki/bin/view/CMS/TWikiLUM#LumiComb
   // Notes:
   // - FIXME: Adapt for fake factor and embedding
   // ##########################################################################
@@ -567,7 +576,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
   // Uncertainty: ggH Reweighting Hdamp uncertainty
   // References:
-  // - 
+  // -
   // Notes: for Hdamp scales t, b, and i components are decorrelated
   // ##########################################################################
 
@@ -589,14 +598,14 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ##########################################################################
   // Uncertainty: ggH Reweighting QCDscale uncertainty
   // References:
-  // - 
+  // -
   // Notes: t,b, and i are correlated in this case
   // ##########################################################################
 
 
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(mssm_ggH_signals)
+      .process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals}))
       .AddSyst(cb, "QCDscale_ggH_REWEIGHT", "shape", SystMap<>::init(1.00));
 
 
@@ -677,7 +686,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .channel({"mt", "et"})
           .process(mc_processes)
           .AddSyst(cb, "CMS_eff_xtrigger_t_$CHANNEL_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(1.00));
-          
+
       cb.cp()
           .channel({"mt", "et"})
           .process({"EMB"})
@@ -688,7 +697,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .channel({"mt", "et"})
           .process({"EMB"})
           .AddSyst(cb, "CMS_eff_xtrigger_t_$CHANNEL_dm"+tauTriggerbin+"_$ERA", "shape", SystMap<>::init(0.5));
-      
+
 
       // di-tau trigger
       cb.cp()
@@ -737,7 +746,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"mt", "et", "tt"})
       .process({"EMB"})
       .AddSyst(cb, "CMS_eff_trigger_single_t_emb_$ERA", "shape", SystMap<>::init(0.866));
-  
+
   // Correlated component acting on Embedded
   cb.cp()
       .channel({"mt", "et", "tt"})
@@ -758,7 +767,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .channel({"mt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
     .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
-  // tt with double genuine hadronic taus 
+  // tt with double genuine hadronic taus
   cb.cp()
     .channel({"tt"})
     .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
@@ -777,7 +786,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   }
   std::string tauIDdmbins[4] = {"0", "1", "10", "11"};
   // Common component acting on MC
-  
+
   // Electron ID
   cb.cp()
       .channel({"et", "em"})
@@ -930,7 +939,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // - FIXME: References?
   // ##########################################################################
 
-  // SM btag uncertainties uses shape systematic 
+  // SM btag uncertainties uses shape systematic
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .bin_id(mssm_categories, false)
@@ -970,7 +979,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0) // ttbar CR without b-tag requirement
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0) // ttbar CR without b-tag requirement
   );
-  
+
   cb.cp().process({"ZL"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 1.0, 1.0)
   ({"em"}, {"2017"}, {35}, 0.993, 1.0)
@@ -1027,7 +1036,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.003, 1.0)
   ({"tt"}, {"2018"}, {32}, 1.004, 0.997)
   );
-  
+
   cb.cp().process({"TTL"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.99, 1.009)
   ({"em"}, {"2017"}, {35}, 0.982, 1.016)
@@ -1084,7 +1093,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.061, 0.892)
   ({"tt"}, {"2018"}, {32}, 1.084, 0.936)
   );
-  
+
   cb.cp().process({"VVL"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.986, 1.01)
   ({"em"}, {"2017"}, {35}, 0.976, 1.019)
@@ -1255,7 +1264,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.005, 0.995)
   ({"tt"}, {"2018"}, {32}, 1.003, 0.997)
   );
- 
+
   cb.cp().process({"W"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 1.0, 1.076)
   ({"em"}, {"2017"}, {35}, 1.0, 1.039)
@@ -1282,7 +1291,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // ({"em"}, {"2017"}, {2}, 1.0, 1.0)
   // ({"em"}, {"2018"}, {2}, 1.0, 1.0)
   );
-  
+
   cb.cp().process({"ZL"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.855, 1.0)
   ({"em"}, {"2017"}, {35}, 1.0, 1.023)
@@ -1339,7 +1348,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.007, 0.999)
   ({"tt"}, {"2018"}, {32}, 1.01, 0.996)
   );
-  
+
   cb.cp().process({"TTL"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.999, 1.001)
   ({"em"}, {"2017"}, {35}, 0.998, 1.001)
@@ -1396,7 +1405,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.0, 1.0)
   ({"tt"}, {"2018"}, {32}, 1.011, 0.99)
   );
-  
+
   cb.cp().process({"VVL"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.993, 1.008)
   ({"em"}, {"2017"}, {35}, 0.99, 1.009)
@@ -1868,7 +1877,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.137, 0.889)
   ({"tt"}, {"2018"}, {32}, 1.076, 0.926)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.991, 1.009)
   ({"em"}, {"2017"}, {35}, 0.98, 1.023)
@@ -1976,7 +1985,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.004, 0.996)
   ({"tt"}, {"2018"}, {32}, 1.008, 0.994)
   );
-  
+
   cb.cp().process({"TTT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.999, 1.001)
   ({"em"}, {"2017"}, {35}, 1.0, 1.001)
@@ -2030,7 +2039,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   ({"tt"}, {"2017"}, {32}, 1.005, 0.995)
   ({"tt"}, {"2018"}, {32}, 1.009, 0.990)
   );
-  
+
   cb.cp().process({"VVT"}).AddSyst(cb, "CMS_htt_mistag_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
   ({"em"}, {"2016"}, {35}, 0.986, 1.015)
   ({"em"}, {"2017"}, {35}, 0.974, 1.011)
@@ -2099,49 +2108,49 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         for (auto c: channels) {
         for (auto yr: years) {
             for (auto m: masses) {
-            double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-            double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-            double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Up"].asDouble();
-            double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_catagories"][c][yr]["Down"].asDouble();
-            double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-            double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
-            double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Up"].asDouble();
-            double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_catagories"][c][yr]["Down"].asDouble();
+            double bbH_btag_up = js[s]["mssm_bbH_signals"][m]["btag_categories"][c][yr]["Up"].asDouble();
+            double bbH_btag_down = js[s]["mssm_bbH_signals"][m]["btag_categories"][c][yr]["Down"].asDouble();
+            double ggH_btag_up = js[s]["mssm_ggH_signals"][m]["btag_categories"][c][yr]["Up"].asDouble();
+            double ggH_btag_down = js[s]["mssm_ggH_signals"][m]["btag_categories"][c][yr]["Down"].asDouble();
+            double bbH_nobtag_up = js[s]["mssm_bbH_signals"][m]["nobtag_categories"][c][yr]["Up"].asDouble();
+            double bbH_nobtag_down = js[s]["mssm_bbH_signals"][m]["nobtag_categories"][c][yr]["Down"].asDouble();
+            double ggH_nobtag_up = js[s]["mssm_ggH_signals"][m]["nobtag_categories"][c][yr]["Up"].asDouble();
+            double ggH_nobtag_down = js[s]["mssm_ggH_signals"][m]["nobtag_categories"][c][yr]["Down"].asDouble();
             double bbH_ttbar_cr_up = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double bbH_ttbar_cr_down = js[s]["mssm_bbH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
             double ggH_ttbar_cr_up = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Up"].asDouble();
             double ggH_ttbar_cr_down = js[s]["mssm_ggH_signals"][m]["ttbar_cr"][c][yr]["Down"].asDouble();
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, btag_categories_forlnN,{m}, bbH_btag_down, bbH_btag_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, btag_categories_forlnN, bbH_btag_down, bbH_btag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, btag_categories_forlnN, {m}, ggH_btag_down, ggH_btag_up));
 
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-            ({c}, {yr}, nobtag_catagories, {m}, bbH_nobtag_down, bbH_nobtag_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, nobtag_categories, {m}, bbH_nobtag_down, bbH_nobtag_up));
 
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
-              ({c}, {yr}, nobtag_catagories, bbH_nobtag_down, bbH_nobtag_up));
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init
+              ({c}, {yr}, nobtag_categories, bbH_nobtag_down, bbH_nobtag_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-            ({c}, {yr}, nobtag_catagories, {m}, ggH_nobtag_down, ggH_nobtag_up));
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            ({c}, {yr}, nobtag_categories, {m}, ggH_nobtag_down, ggH_nobtag_up));
 
 
             // ttbar control region uncertainties
-            cb.cp().process(mssm_bbH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+            cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init({c}, {yr}, {2} ,{m}, bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             // Cover SM bbH125 case
             if(m == "125"){
-              cb.cp().process({"bbH125"}).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
+              cb.cp().process(signals_bbH).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init({c}, {yr}, {2} , bbH_ttbar_cr_down, bbH_ttbar_cr_up));
             }
 
-            cb.cp().process(mssm_ggH_signals).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+            cb.cp().process(JoinStr({mssm_ggH_signals,mssm_ggH_lowmass_signals})).AddSyst(cb, s, "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
             ({c}, {yr}, {2}, {m}, ggH_ttbar_cr_down, ggH_ttbar_cr_up));
             }
         }
@@ -2363,14 +2372,14 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // met uncertainty templates are included from taking 100% variation in the correction
   // these are scaled here to take the correct 1-sigma ranges
 
-  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections, enlarged to cover differences observed between corrections for et and mt channels 
+  // small uncertainty decorrelated by channel to account for statistical uncertainties on corrections, enlarged to cover differences observed between corrections for et and mt channels
   cb.cp()
       .process({"EMB"})
       .channel({"et", "mt", "tt"})
       .bin_id(mssm_categories)
-      .AddSyst(cb, "scale_embed_met_$CHANNEL_$ERA", "shape", SystMap<>::init(0.25)); 
+      .AddSyst(cb, "scale_embed_met_$CHANNEL_$ERA", "shape", SystMap<>::init(0.25));
 
-  // the other component of the uncertainty is systematic and correlated between channels (but decorrelated by era) 
+  // the other component of the uncertainty is systematic and correlated between channels (but decorrelated by era)
 
   cb.cp()
       .process({"EMB"})
@@ -2591,7 +2600,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "CMS_ZLShape_$CHANNEL_1prong1pizero_endcap_$ERA", "shape",
                SystMap<>::init(1.00));
 
-  //single eta bin for MSSM cats: 
+  //single eta bin for MSSM cats:
   cb.cp()
       .channel({"et"})
       .process({"ZL"})
@@ -2627,7 +2636,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"2016"}, 1.234)
     ({"2017"}, 1.202)
     ({"2018"}, 1.149));
-  
+
   cb.cp().channel({"et"}).process({"ZL"}).bin_id(mssm_categories).AddSyst(cb, "CMS_fake_e_EC_$ERA", "lnN", SystMap<ch::syst::era>::init
     ({"2016"}, 1.052)
     ({"2017"}, 1.084)
@@ -2669,22 +2678,22 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"2016"}, 1.042)
     ({"2017"}, 1.058)
     ({"2018"}, 1.045));
-  
+
   cb.cp().channel({"mt"}).process({"ZL"}).bin_id(mssm_categories).AddSyst(cb, "CMS_fake_m_WH2_$ERA", "lnN", SystMap<ch::syst::era>::init
     ({"2016"}, 1.033)
     ({"2017"}, 1.048)
     ({"2018"}, 1.039));
-  
+
   cb.cp().channel({"mt"}).process({"ZL"}).bin_id(mssm_categories).AddSyst(cb, "CMS_fake_m_WH3_$ERA", "lnN", SystMap<ch::syst::era>::init
     ({"2016"}, 1.029)
     ({"2017"}, 1.054)
     ({"2018"}, 1.038));
-  
+
   cb.cp().channel({"mt"}).process({"ZL"}).bin_id(mssm_categories).AddSyst(cb, "CMS_fake_m_WH4_$ERA", "lnN", SystMap<ch::syst::era>::init
     ({"2016"}, 1.054)
     ({"2017"}, 1.055)
     ({"2018"}, 1.047));
-  
+
   cb.cp().channel({"mt"}).process({"ZL"}).bin_id(mssm_categories).AddSyst(cb, "CMS_fake_m_WH5_$ERA", "lnN", SystMap<ch::syst::era>::init
     ({"2016"}, 1.016)
     ({"2017"}, 1.046)
@@ -2710,18 +2719,18 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Uncertainty on branching ratio for HTT at 125 GeV
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_THU", "lnN", SystMap<>::init(1.017));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_mq", "lnN", SystMap<>::init(1.0099));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process(JoinStr({signals, {"bbH125"}})).process({"qqX", "ggX"}, false)
+      .process(signals).process({"qqX", "ggX"}, false)
       .AddSyst(cb, "BR_htt_PU_alphas", "lnN", SystMap<>::init(1.0062));
 
-  // 95 GeV samples BR uncertainties 
+  // 95 GeV samples BR uncertainties
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"qqX", "ggX"})
@@ -2744,11 +2753,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // QCD scale (no ggH & qqH signals for tautau decay channel) for 125 GeV Higgs
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
+      .process({"ZH125", "Z" + smlike, "ZHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.009));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
+      .process({"WH125", "W" + smlike, "WHWW125"})
       .AddSyst(cb, "QCDScale_VH", "lnN", SystMap<>::init(1.008));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
@@ -2756,7 +2765,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .AddSyst(cb, "QCDScale_ttH", "lnN", SystMap<>::init(1.08));
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
-      .process({"bbH125"})
+      .process(signals_bbH)
       .AddSyst(cb, "QCDScale_bbH", "lnN", SystMap<>::init(1.22));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -2784,11 +2793,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"ZH125", "Zh", "ZH", "ZH1", "ZHWW125"})
+    .process({"ZH125", "Z" + smlike, "ZHWW125"})
     .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.013));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
-    .process({"WH125", "Wh", "WH", "WH1", "WHWW125"})
+    .process({"WH125", "W" + smlike, "WHWW125"})
     .AddSyst(cb, "pdf_Higgs_VH", "lnN", SystMap<>::init(1.018));
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -2884,6 +2893,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .process(signals_qqH).process({"qqX"}, false)
      .AddSyst(cb, "THU_qqH_JET01", "shape", SystMap<>::init(1.00));
   }
+  else {
+    cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({signals_ggH}).process({"ggX"}, false)
+      .AddSyst(cb, "QCDScale_ggH", "lnN", SystMap<>::init(1.039));
+    cb.cp()
+      .channel({"et", "mt", "tt", "em"})
+      .process({signals_qqH}).process({"qqX"}, false)
+      .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
+  }
   // ##########################################################################
   // Uncertainty: Embedded events
   // References:
@@ -2935,7 +2954,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     for (auto njet: jet_bins) {
         //only add njets0 uncerts for nobtag categories
         std::vector<int> bins = mssm_categories;
-        if(njet=="njet0") bins = mssm_nobtag_catagories;
+        if(njet=="njet0") bins = mssm_nobtag_categories;
         for (auto reg: unc_regions) {
             for (auto unc: qcd_tt_uncs) {
                 cb.cp()
@@ -2951,7 +2970,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     for (auto njet: jet_bins) {
         //only add njets0 uncerts for nobtag categories
         std::vector<int> bins = mssm_categories;
-        if(njet=="njet0") bins = mssm_nobtag_catagories;
+        if(njet=="njet0") bins = mssm_nobtag_categories;
         for (auto reg: unc_regions) {
             for (auto unc: wjets_uncs) {
                 cb.cp()
@@ -2977,7 +2996,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         for (auto njet: jet_bins_lt) {
           //only add njets0 uncerts for nobtag categories
           std::vector<int> bins = mssm_categories;
-          if(njet=="njet0") bins = mssm_nobtag_catagories;
+          if(njet=="njet0") bins = mssm_nobtag_categories;
             cb.cp()
                 .bin_id(bins)
                 .channel({"et", "mt"})
@@ -3191,7 +3210,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .channel({"et", "mt"})
         .process({"jetFakesSM"})
         .AddSyst(cb, "CMS_ffSM_tt_njet1_morphed_stat_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
-    
+
     // MC subtraction uncertainty
     // uncorrelated between eras
     cb.cp()
@@ -3207,7 +3226,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
         .process({"jetFakesSM"})
         .AddSyst(cb, "CMS_ffSM_frac_w_$CHANNEL_$ERA", "shape", SystMap<>::init(1.0));
 
-        
+
     // Shape syst. of different contributions (QCD/W/tt)
     // uncorrelated between eras
     cb.cp()
