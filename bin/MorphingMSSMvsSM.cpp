@@ -418,8 +418,8 @@ int main(int argc, char **argv) {
     mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
     mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
-  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
-  if (low_mass) mssm_qqH_signals = {"qqX"};
+  //if (low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") mssm_qqH_signals = {"qqX"};
+  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals, mssm_qqH_signals});
   mssm_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
 
 
@@ -476,7 +476,7 @@ int main(int argc, char **argv) {
       SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400"};
       SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
       SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400"};  // Missing 300,700,1000
-      SUSYggH_masses[2018] = {"60","80","95","100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYggH_masses[2018] = {"60","80"/*,"95"*/,"100","120","125","130","140","160","180","200","250","300","350","400"};
 
       SUSYggH_masses[2016] = SUSYggH_masses[2018];
       SUSYggH_masses[2017] = SUSYggH_masses[2018];
@@ -485,9 +485,13 @@ int main(int argc, char **argv) {
       SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
       SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400"};  // Missing 300,700
 
-      SUSYggH_lowmasses[2018] = {"60","80","95","100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYggH_lowmasses[2018] = {"60","80"/*,"95"*/,"100","120","125","130","140","160","180","200","250","300","350","400"};
       SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
       SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+
+      //SUSYqqH_masses[2018] = {"95"};
+      //SUSYqqH_masses[2017] = {"95"};
+      //SUSYqqH_masses[2016] = {"95"};
 
     } else {
 
@@ -643,7 +647,7 @@ int main(int argc, char **argv) {
   RooFormulaVar mH1_lowmass("mH1_lowmass", "mH1_lowmass", expression, mH1);
 
   // Define MSSM model-independent mass parameter MH
-  RooRealVar MH("MH", "MH", 125., 90., 4000.);
+  RooRealVar MH("MH", "MH", 125., 60., 4000.);
   if(low_mass) MH.setVal(95.);
   MH.setConstant(true);
 
@@ -1119,9 +1123,9 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
 
-      if(low_mass) {
-        cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
-      }
+      //if(low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+      //  cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
+      //}
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -1361,10 +1365,10 @@ int main(int argc, char **argv) {
         }
       }
     }
-    if(low_mass) {
-      cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
-          input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
-    }
+    //if(low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+    //  cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
+    //      input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
+    //}
   }
 
   // Rescale bbH125 to the right cross-section * BR (from 1pb to the value for 125.4 GeV)
