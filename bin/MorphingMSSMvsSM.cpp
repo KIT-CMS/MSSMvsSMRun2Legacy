@@ -1715,8 +1715,10 @@ int main(int argc, char **argv) {
 
   // Convert VLQ signal b efficiencies to lnN
   if(analysis == "vector_leptoquarks"){
-    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_2018");
-    ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_$ERA");
+    for (string y : {"2016","2017","2018"}) {
+      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
+      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+    }
   }
 
   // Convert all JES ,JER, and MET uncertainties to lnN except for the ttbar uncertainties in the em, et and mt channels

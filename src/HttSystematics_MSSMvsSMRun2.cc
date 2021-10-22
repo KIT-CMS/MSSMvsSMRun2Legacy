@@ -147,23 +147,33 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
   // Specific VLQ signal uncertainties
    cb.cp().process(vlq_signals).AddSyst(cb, "pdf_uncert", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-     ({"et","mt","tt"}, {"2016","2017","2018"}, mssm_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, mssm_categories, {"500","1000","2000","3000","4000","5000"}, 0.96,1.04));
 
    cb.cp().process(vlq_tchannel).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.989,1.045)
-     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.038,0.887));
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.989,1.045)
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.038,0.887));
 
    cb.cp().process(vlq_interference).AddSyst(cb, "matching_scale", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
-     ({"et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.985,1.048)
-     ({"et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.052,0.887));
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.985,1.048)
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.052,0.887));
 
    cb.cp()
-        .channel({"et", "mt", "tt"})
+        .channel({"em","et", "mt", "tt"})
         .process(vlq_signals)
         .AddSyst(cb, "QCDScale", "shape", SystMap<>::init(1.00));
 
    cb.cp()
-        .channel({"et", "mt", "tt"})
+        .channel({"em","et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+        .channel({"em","et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+        .channel({"em","et", "mt", "tt"})
         .process(vlq_signals)
         .AddSyst(cb, "betaL23Fit", "shape", SystMap<>::init(1.00));
 
@@ -800,12 +810,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // 3% in Tau ID SF with different anti-l fake WP
   cb.cp()
     .channel({"mt"})
-    .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+    .process(JoinStr({signals, vlq_signals, signals_HWW, mssm_signals, {"EMB", "ZTT", "TTT", "TTL", "VVT", "VVL"}}))
     .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.03));
   // tt with double genuine hadronic taus
   cb.cp()
     .channel({"tt"})
-    .process(JoinStr({signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
+    .process(JoinStr({signals, vlq_signals, signals_HWW, mssm_signals, {"EMB","ZTT","TTT","VVT"}}))
     .AddSyst(cb, "CMS_eff_t_wp_$ERA", "lnN", SystMap<>::init(1.06));
   // tt with single genuine hadronic tau
   cb.cp()
@@ -838,34 +848,34 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   for (auto tauIDbin : tauIDptbins){ //first part correlated between channels for IDvsJets
     cb.cp()
         .channel({"et", "mt"})
-        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp() //second part uncorrelated between channels for IDvsLep
       .channel({"et", "mt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.01));
 
   // Tau ID: tt with 2 real taus
   for (auto tauIDbin : tauIDdmbins){
     cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_dm"+tauIDbin+"_$ERA", "shape", SystMap<>::init(1.0));
   }
   if (!sm){
       cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_highpT_100-500_$ERA", "shape", SystMap<>::init(1.0));
       cb.cp()
         .channel({"tt"})
-        .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+        .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
         .AddSyst(cb, "CMS_eff_t_highpT_500-inf_$ERA", "shape", SystMap<>::init(1.0));
   }
   cb.cp()
       .channel({"tt"})
-      .process(JoinStr({signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
+      .process(JoinStr({signals, vlq_signals, mssm_signals, {"ZTT", "TTT", "TTL", "VVT", "VVL"}}))
       .AddSyst(cb, "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<>::init(1.014));
 
   // Component for EMB only
@@ -2236,10 +2246,10 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
 
   // Common component acting on MC
-  std::vector<std::string> tau_es_processes = JoinStr({{"ZTT", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals});
+  std::vector<std::string> tau_es_processes = JoinStr({{"ZTT", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, vlq_signals});
   std::vector<std::string> tau_es_processes_emb = {"EMB"};
   if (sm){
-      std::vector<std::string> tau_es_processes = JoinStr({{"ZTT", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, jetFakes});
+      std::vector<std::string> tau_es_processes = JoinStr({{"ZTT", "TTT", "TTL", "VVT", "VVL"}, signals, signals_HWW, mssm_signals, jetFakes, vlq_signals});
       std::vector<std::string> tau_es_processes_emb =  JoinStr({{"EMB"}, jetFakes});
   }
   cb.cp()

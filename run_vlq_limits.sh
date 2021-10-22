@@ -33,8 +33,8 @@ if [[ $MODE == "initial" ]]; then
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
         --eras 2016,2017,2018 \
-        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_fake_categories.txt \
-        --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
+        --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
+        --additional-arguments "--auto_rebin=1 --real_data=1" \
         --variable mt_tot_puppi \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_vlq_log.txt
 

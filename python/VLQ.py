@@ -5,7 +5,12 @@ import numpy as np
 class VLQ(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
-        self.interference = False
+        self.interference = True
+
+    def setPhysicsOptions(self, physOptions):
+        for po in physOptions:
+            if po.startswith("no_interference"):
+                self.interference = False
 
     def doParametersOfInterest(self):
         """Create POI and other parameters, and define the POI set."""
