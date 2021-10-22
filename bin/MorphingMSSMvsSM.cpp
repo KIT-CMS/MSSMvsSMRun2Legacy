@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
   bool split_sm_signal_cat = false;
   bool rebin_sm = true;
   bool no_shape_systs = false;
+  bool low_mass = false;
   bool enable_bsm_lowmass = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
@@ -160,6 +161,7 @@ int main(int argc, char **argv) {
       ("sm_signals", po::value<vector<string>>(&parser_sm_signals)->multitoken(), "sm_signals")
       ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
       ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
+      ("low_mass", po::value<bool>(&low_mass)->default_value(low_mass))
       ("enable_bsm_lowmass", po::value<bool>(&enable_bsm_lowmass)->default_value(enable_bsm_lowmass))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
@@ -286,6 +288,7 @@ int main(int argc, char **argv) {
 
   VString mssm_ggH_signals, mssm_ggH_signals_additional, mssm_ggH_signals_smlike, mssm_ggH_signals_scalar, mssm_ggH_signals_pseudoscalar;
   VString mssm_bbH_signals, mssm_bbH_signals_additional, mssm_bbH_signals_smlike, mssm_bbH_signals_scalar, mssm_bbH_signals_pseudoscalar;
+  VString mssm_qqH_signals;
 
   VString mssm_ggH_lowmass_signals, mssm_ggH_lowmass_signals_additional, mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar;
   VString mssm_bbH_lowmass_signals, mssm_bbH_lowmass_signals_additional, mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar;
@@ -415,7 +418,8 @@ int main(int argc, char **argv) {
     mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
     mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
-  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals});
+  //if (low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") mssm_qqH_signals = {"qqX"};
+  mssm_signals = ch::JoinStr({mssm_ggH_signals, mssm_bbH_signals, mssm_qqH_signals});
   mssm_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals, mssm_bbH_lowmass_signals});
 
 
@@ -459,27 +463,54 @@ int main(int argc, char **argv) {
   }
   map<int, VString> SUSYggH_masses;
   map<int, VString> SUSYbbH_masses;
+  map<int, VString> SUSYqqH_masses;
 
   map<int, VString> SUSYggH_lowmasses;
   map<int, VString> SUSYbbH_lowmasses;
 
   if(do_morph) {
 
-    // new DESY datacards should have all masses now?
-    SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-    SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
-    SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};  // Missing 300,700,1000
-    SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
-    SUSYggH_masses[2016] = SUSYggH_masses[2018];
-    SUSYggH_masses[2017] = SUSYggH_masses[2018];
+    // if doing the low mass m_sv fits we don't use the largest masses and we add the 95 GeV signal for the ggH
+    if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
 
-    SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
-    SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
-    SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
+      SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+      SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400"};  // Missing 300,700,1000
 
-    SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
-    SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
-    SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+      SUSYggH_masses[2018] = {"60","80"/*,"95"*/,"100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYggH_masses[2016] = SUSYggH_masses[2018];
+      SUSYggH_masses[2017] = SUSYggH_masses[2018];
+
+      SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
+      SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400"};  // Missing 300,700
+
+      SUSYggH_lowmasses[2018] = {"60","80"/*,"95"*/,"100","120","125","130","140","160","180","200","250","300","350","400"};
+      SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
+      SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+
+      //SUSYqqH_masses[2018] = {"95"};
+      //SUSYqqH_masses[2017] = {"95"};
+      //SUSYqqH_masses[2016] = {"95"};
+
+    } else {
+
+      SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+      SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+      SUSYbbH_masses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800","900","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};  // Missing 300,700,1000
+        
+      SUSYggH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200","3500"};
+      SUSYggH_masses[2016] = SUSYggH_masses[2018];
+      SUSYggH_masses[2017] = SUSYggH_masses[2018];
+
+      SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+      SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
+      SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
+
+      SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+      SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
+      SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+    }
   } else {
     // dont use mass morphing - need to specify a mass here
     SUSYggH_masses[2016] = {non_morphed_mass};
@@ -488,6 +519,19 @@ int main(int argc, char **argv) {
     SUSYbbH_masses[2016] = {non_morphed_mass};
     SUSYbbH_masses[2017] = {non_morphed_mass};
     SUSYbbH_masses[2018] = {non_morphed_mass};
+  }
+  if(low_mass) {
+    // if doing low mass analysis we use morphing to get M=95 mass point for bbH
+    // we take M=95 directly from template for both ggH and VBF 
+    SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200"};
+    SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+    SUSYbbH_masses[2016] = SUSYbbH_masses[2018];
+    SUSYggH_masses[2018] = {"95"}; 
+    SUSYggH_masses[2016] = SUSYggH_masses[2018];
+    SUSYggH_masses[2017] = SUSYggH_masses[2018];
+    SUSYqqH_masses[2018] = {"95"};
+    SUSYqqH_masses[2017] = {"95"};
+    SUSYqqH_masses[2016] = {"95"};
   }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -603,7 +647,8 @@ int main(int argc, char **argv) {
   RooFormulaVar mH1_lowmass("mH1_lowmass", "mH1_lowmass", expression, mH1);
 
   // Define MSSM model-independent mass parameter MH
-  RooRealVar MH("MH", "MH", 125., 90., 4000.);
+  RooRealVar MH("MH", "MH", 125., 60., 4000.);
+  if(low_mass) MH.setVal(95.);
   MH.setConstant(true);
 
   // Define categories
@@ -1077,6 +1122,10 @@ int main(int argc, char **argv) {
       // Adding configured SUSY signals in all categories but the em control region 2 for bsm model-independent analyses
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
+
+      //if(low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+      //  cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
+      //}
     }
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
@@ -1316,6 +1365,10 @@ int main(int argc, char **argv) {
         }
       }
     }
+    //if(low_mass || variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+    //  cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
+    //      input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
+    //}
   }
 
   // Rescale bbH125 to the right cross-section * BR (from 1pb to the value for 125.4 GeV)
@@ -1412,6 +1465,40 @@ int main(int argc, char **argv) {
 
     binning_map["tt"][32] = {};
     binning_map["tt"][35] = {};
+
+    if(variable=="m_sv_VS_pt_tt") {
+      for(auto c : chns) {
+        for(auto b : cb.cp().channel({c}).bin_id_set()) {
+          binning_map[c][b][0]={0,4,4};
+          binning_map[c][b][1]={4,20,1};
+          binning_map[c][b][2]={20,26,2};
+          binning_map[c][b][3]={26,30, 4};
+          binning_map[c][b][4]={0+30,4+30,4};
+          binning_map[c][b][5]={4+30,20+30,1};
+          binning_map[c][b][6]={20+30,26+30,2};
+          binning_map[c][b][7]={26+30,30+30, 4};
+          binning_map[c][b][8]={0+60,4+60,4};
+          binning_map[c][b][9]={4+60,20+60,1};
+          binning_map[c][b][10]={20+60,26+60,2};
+          binning_map[c][b][11]={26+60,30+60, 4};
+          binning_map[c][b][12]={0+90,4+90,4};
+          binning_map[c][b][13]={4+90,20+90,1};
+          binning_map[c][b][14]={20+90,26+90,2};
+          binning_map[c][b][15]={26+90,30+90, 4};
+        }
+      }
+    }
+
+    if(variable=="m_sv_puppi") {
+      for(auto c : chns) {
+        for(auto b : cb.cp().channel({c}).bin_id_set()){
+          binning_map[c][b][0]={0,40,40};
+          binning_map[c][b][1]={40,200,5};
+          binning_map[c][b][2]={200,250,10};
+          binning_map[c][b][3]={250,300, 25};
+        }
+      }
+    }
 
     for(auto chn : chns)
     {
@@ -2001,7 +2088,15 @@ int main(int argc, char **argv) {
       t_frac->SetName("ggh_t_frac");
       b_frac->SetName("ggh_b_frac");
       i_frac->SetName("ggh_i_frac");
+
+      RooRealVar Yt("Yt_MSSM_h", "Yt_MSSM_h", 1., -1., 1.);
+      Yt.setConstant(true);
+      RooRealVar Yb("Yb_MSSM_h", "Yb_MSSM_h", 1., 0., 1.);
+      Yb.setConstant(true);
+
       ws.import(MH);
+      ws.import(Yt);
+      ws.import(Yb);
       ws.import(*t_frac, RooFit::RecycleConflictNodes());
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
