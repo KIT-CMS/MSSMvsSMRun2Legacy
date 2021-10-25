@@ -7,6 +7,7 @@ MODEL=$3
 ANALYSISTYPE=$4
 HSMTREATMENT=$5
 GRIDUSER=$6
+CYCLES=$7
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-full"
@@ -289,30 +290,80 @@ elif [[ $MODE == "submit-local" ]]; then
     cd ${defaultdir}/limits_${MODEL}/condor
     python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
 
-elif [[ $MODE == "hybrid-gc" ]]; then
+elif [[ $MODE == "hybrid-lhc" ]]; then
 
-    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid/condor
-    cd ${defaultdir}/limits_${MODEL}_hybrid/condor
+    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+
+    jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
+    if [[ $HSMTREATMENT == "hSM-in-bg" ]]; then
+        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}_newsigmodel.json
+    elif [[ $HSMTREATMENT == "no-hSM-in-bg" ]]; then
+        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
+    fi
 
     combineTool.py -M HybridNewGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_${MODEL}.json \
-    --cycles 2 \
+    ${jsonfile} \
+    --cycles $CYCLES \
     -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'condor' \
-    --task-name ${taskname}_hybrid \
-    --dry-run | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid.txt
-    ############
-    # job submission
-    ############
+    --job-mode 'crab3' \
+    --task-name ${taskname}_hybrid_lhc \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
     cd -
-    # python scripts/build_gc_job.py \
-    #     --combine-script ${defaultdir}/limits_${MODEL}_hybrid/condor/condor_${taskname}_hybrid.sh \
-    #     --workspace ${datacarddir}/combined/cmb/${wsoutput} \
-    #     --workdir /work/sbrommer/workdirs/combine/${taskname}_hybrid \
-    #     --tag ${taskname}_hybrid \
-    #     --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}_hybrid
 
-    # ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}_hybrid/${taskname}_hybrid.conf -Gc -m 3
+elif [[ $MODE == "hybrid-tev" ]]; then
+
+    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_TEV_${MODEL}.json \
+    --cycles $CYCLES \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'crab3' \
+    --task-name ${taskname}_hybrid_tev \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
+    cd -
+
+elif [[ $MODE == "collect-hybrid-lhc" ]]; then
+
+    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
+    --cycles 0 \
+    --output \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'interactive' \
+    --task-name ${taskname}_hybrid_lhc_finished \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
+    cd -
+
+elif [[ $MODE == "collect-hybrid-tev" ]]; then
+
+    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
+    --cycles 0 \
+    --output \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'interactive' \
+    --task-name ${taskname}_hybrid_tev_finished \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
+    cd -
 
 elif [[ $MODE == "submit-gc" ]]; then
     ############
