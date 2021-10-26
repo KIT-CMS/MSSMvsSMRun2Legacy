@@ -32,7 +32,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       "ggH_htt125",
       "ggH125",
       "gg" + smlike,
-      "ggX",
       // STXS stage 1.1
       "ggH_FWDH_htt",
       "ggH_PTH_200_300_htt",
@@ -99,6 +98,9 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   for(auto ggH : mssm_ggH_signals){
     mssm_ggH_lowmass_signals.push_back(ggH + "_lowmass");
   }
+  mssm_ggH_signals.push_back("ggX_t");
+  mssm_ggH_signals.push_back("ggX_b");
+  mssm_ggH_signals.push_back("ggX_i");
   std::vector<std::string> mssm_bbH_signals = {"bbA", "bbH", "bbh", "bbH3", "bbH2", "bbH1"};
   std::vector<std::string> mssm_bbH_lowmass_signals;
   for(auto bbH : mssm_bbH_signals){
@@ -143,7 +145,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "pdf_bbH_ACCEPT", "lnN", SystMap<channel,ch::syst::era,bin_id,mass>::init
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"95"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"120"}, 0.996)
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"125"}, 0.996)
@@ -175,7 +176,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3500"}, 0.974)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"95"}, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"125"}, 0.995)
@@ -207,7 +207,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3500"}, 0.974)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"60"}, 0.996)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"80"}, 0.996)
-     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"95"}, 0.996)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"100"}, 0.996)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"120"}, 0.995)
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"125"}, 0.995)
@@ -239,7 +238,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3500"}, 0.973)
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"60"}, 1.023)
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"80"}, 1.020)
-     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"95"}, 1.017)
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"100"}, 1.017)
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"120"}, 1.015)
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"125"}, 1.015)
@@ -271,7 +269,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3500"}, 1.027)
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"60"}, 1.023)
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"80"}, 1.019)
-     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"95"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"100"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"125"}, 1.016)
@@ -303,7 +300,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3500"}, 1.024)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"60"}, 1.022)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"80"}, 1.018)
-     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"95"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"100"}, 1.015)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"120"}, 1.016)
      ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"125"}, 1.016)
@@ -345,7 +341,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp().process(JoinStr({mssm_bbH_signals,mssm_bbH_lowmass_signals})).AddSyst(cb, "QCDscaleAndHdamp_bbH_ACCEPT", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"60"}, 1.010, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"80"}, 1.013, 0.992)
-    ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"95"}, 1.016, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"100"}, 1.016, 0.992)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"120"}, 1.009, 0.993)
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"125"}, 1.007, 0.993)
@@ -377,7 +372,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2016"}, nobtag_categories, {"3500"}, 1.051, 0.962)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"60"}, 1.010, 0.992)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"80"}, 1.015, 0.992)
-    ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"95"}, 1.020, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"100"}, 1.020, 0.993)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"120"}, 1.010, 0.992)
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"125"}, 1.008, 0.992)
@@ -409,7 +403,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2017"}, nobtag_categories, {"3500"}, 1.050, 0.963)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"60"}, 1.011, 0.992)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"80"}, 1.016, 0.992)
-    ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"95"}, 1.021, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"100"}, 1.021, 0.993)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"120"}, 1.011, 0.992)
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"125"}, 1.009, 0.992)
@@ -441,7 +434,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"em","et","mt","tt"}, {"2018"}, nobtag_categories, {"3500"}, 1.053, 0.964)
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"60"}, 0.938, 1.042)
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"80"}, 0.932, 1.038)
-    ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"95"}, 0.926, 1.035)
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"100"}, 0.926, 1.035)
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"120"}, 0.964, 1.028)
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"125"}, 0.974, 1.026)
@@ -473,7 +465,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2016"}, btag_categories, {"3500"}, 0.946, 1.041)
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"60"}, 0.944, 1.043)
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"80"}, 0.932, 1.036)
-    ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"95"}, 0.920, 1.029)
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"100"}, 0.920, 1.029)
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"125"}, 0.972, 1.025)
@@ -505,7 +496,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     ({"et","mt","tt","em"}, {"2017"}, btag_categories, {"3500"}, 0.952, 1.035)
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"60"}, 0.941, 1.042)
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"80"}, 0.930, 1.034)
-    ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"95"}, 0.920, 1.027)
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"100"}, 0.920, 1.027)
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"120"}, 0.962, 1.026)
     ({"et","mt","tt","em"}, {"2018"}, btag_categories, {"125"}, 0.972, 1.026)
@@ -593,17 +583,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_i","ggH_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i"})
+       .process({"ggh_i","ggH_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggX_i"})
        .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t"})
+       .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t","ggX_t"})
        .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
-       .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b"})
+       .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b","ggX_b"})
        .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
@@ -2901,12 +2891,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .process({signals_qqHToWW})
     .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.005));
 
-  // this is the 95 GeV sample
-  cb.cp()
-    .channel({"et", "mt", "tt", "em"})
-    .process({"qqX"})
-    .AddSyst(cb, "QCDScale_qqH", "lnN", SystMap<>::init(1.004));
-
   // PDF for 125 GeV Higgs
   cb.cp()
     .channel({"et", "mt", "tt", "em"})
@@ -2930,12 +2914,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
     .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
 
   // No pdf uncertainty for bbH125 available from LHCHWG file
-
-  // 95 GeV sample (use same as 125 GeV for now but update later)
-  cb.cp()
-    .channel({"et", "mt", "tt", "em"})
-    .process({"qqX"})
-    .AddSyst(cb, "pdf_Higgs_qqbar", "lnN", SystMap<>::init(1.021));
 
   if (sm)
   {
