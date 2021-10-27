@@ -241,6 +241,8 @@ elif [[ $MODE == "ws" ]]; then
     --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
 
+elif [[ $MODE == "setup" ]]; then
+
     ############
     # job setup creation
     ############
