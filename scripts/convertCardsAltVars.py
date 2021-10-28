@@ -52,7 +52,7 @@ for key in original_file.GetListOfKeys():
         #directory = original_file.Get(dirname)
 
         new_out_name=None
-        new_out_name=None
+        new_dir_name=None
 
         if match_2 not in dirname and match_3 not in dirname:
           new_out_name = output_file_1
