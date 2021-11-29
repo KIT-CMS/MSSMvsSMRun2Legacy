@@ -312,6 +312,7 @@ def parse_arguments():
 def main(args):
 
     fitvars='m_sv_vs_pt_tt'
+    fitvars='m_sv'
 
     era = args.file_dir.split("_")[3]
     if era == "2016":
@@ -366,9 +367,30 @@ def main(args):
           if bin_number=="33": bin_label = "No B-tag Loose-m_{T}"
         if args.channel in ['em']:
           bin_label = "No B-tag"
-          if bin_number=="35": bin_label = "No B-tag High d_{#zeta}"
-          if bin_number=="36": bin_label = "No B-tag Medium d_{#zeta}"
-          if bin_number=="37": bin_label = "No B-tag Low d_{#zeta}"
+          if bin_number=="32": bin_label = "No B-tag High d_{#zeta}"
+          if bin_number=="33": bin_label = "No B-tag Medium d_{#zeta}"
+          if bin_number=="34": bin_label = "No B-tag Low d_{#zeta}"
+
+    if bin_number in ["132","232","332","432","133","233","333","433"]:
+        if args.ratio_range=="":
+          args.ratio_range = "0.7,1.3"
+        if args.channel=='tt': bin_label = "No B-tag"
+        if args.channel in ['mt','et']:
+          bin_label = "No B-tag"
+          if bin_number[1:]=="32": bin_label = "No B-tag Tight-m_{T}"
+          if bin_number[1:]=="33": bin_label = "No B-tag Loose-m_{T}"
+        if args.channel in ['em']:
+          bin_label = "No B-tag"
+          if bin_number[1:]=="32": bin_label = "No B-tag High d_{#zeta}"
+          if bin_number[1:]=="33": bin_label = "No B-tag Medium d_{#zeta}"
+          if bin_number[1:]=="34": bin_label = "No B-tag Low d_{#zeta}"
+
+        if bin_number[0] == '1': bin_label+=', p_{T}<50 GeV'
+        if bin_number[0] == '2': bin_label+=', 50#leq p_{T}<100 GeV'
+        if bin_number[0] == '3': bin_label+=', 100#leq p_{T}<200 GeV'
+        if bin_number[0] == '4': bin_label+=', p_{T}#geq 200 GeV'
+        plot.ModTDRStyle(r=0.04, l=0.18)
+
     ## Add bin labels
     bin_labels = {}
     with open("scripts/bin_labels.json") as jsonfile:
@@ -380,10 +402,11 @@ def main(args):
 
     is2D=False
 
-    if fitvars=='m_sv' or bin_number in ["2","35","36","37"]:
+    print fitvars, bin_number
+    if fitvars=='m_sv' or bin_number in ["2","35","36","37","132","232","332","432","133","233","333","433"]:
         x_title = "m_{#tau#tau} (GeV)"
-        x_bins = re.split("\[|\]",bin_labels)[1].split(",")
-        Nxbins = len(x_bins) - 1
+        #x_bins = re.split("\[|\]",bin_labels)[1].split(",")
+        #Nxbins = len(x_bins) - 1
     else:
         is2D=True 
         x_title = "Bin number"
@@ -397,6 +420,7 @@ def main(args):
         y_bin_var = ""
         y_bin_labels = ""
 
+    is2D = False # we now split 2D histograms into 1D
 
     file_dir = args.file_dir
     mode = args.mode
@@ -470,20 +494,17 @@ def main(args):
     sighists = []
 
     #signal_names = 'TotalSig'
-    signal_names = ['qqX']
+    signal_names = ['ggh_t','ggh_i','ggh_b']
+    if args.no_signal:  signal_names = []
 
     file_dir_list = []
     file_dir_list = [file_dir]
 
-    [sighist,binname] = getHistogram(histo_file,signal_names, file_dir_list, mode, args.no_signal, log_x)
-    sighists.append(sighist)
-    for shist in sighists:
-        for i in range(0,shist.GetNbinsX()):
-            if shist.GetBinContent(i) < y_axis_min: 
-                shist.SetBinContent(i,y_axis_min)
+    if not args.no_signal: 
+      [sighist,binname] = getHistogram(histo_file,signal_names, file_dir_list, mode, args.no_signal, log_x)
+      sighists.append(sighist)
     bkghist = getHistogram(histo_file,'TotalBkg',file_dir, mode, logx=log_x)[0]
     sbhist = bkghist.Clone()
-    sbhist.Add(sighist)
     # can use this one for showing ggX as well as qqX
     sbhist_alt = bkghist.Clone()
     
@@ -501,6 +522,14 @@ def main(args):
     blind_datahist.SetMarkerStyle(20)
     blind_datahist.SetLineColor(1)
 
+    total_bkg = getHistogram(histo_file,"TotalBkg",file_dir, mode, logx=log_x)[0].Clone()
+    azimov_datahist = blind_datahist.Clone()
+    for i in range(0, azimov_datahist.GetNbinsX()+1):
+      azimov_datahist.SetBinContent(i,-0.1)
+      azimov_datahist.SetBinError(i,0)
+
+    azimov_datahist.SetLineColor(ROOT.kRed)
+    azimov_datahist.SetMarkerColor(ROOT.kRed)
 
     #Blinding by hand using requested range, set to 70-110 by default
     # for 0jet category
@@ -512,6 +541,9 @@ def main(args):
                     or (high_edge > float(x_blind_min) and high_edge<float(x_blind_max))):
                 blind_datahist.SetBinContent(i+1, -0.1)
                 blind_datahist.SetBinError(i+1,0)
+                c = total_bkg.GetBinContent(i+1)
+                azimov_datahist.SetBinContent(i+1,c)
+                azimov_datahist.SetBinError(i+1,c**.5)
     # for boosted category:
     if is2D and manual_blind:
         x_blind_ind = [ind for ind, x in enumerate(x_bins) if 120 >= int(x) >= 70]
@@ -524,6 +556,10 @@ def main(args):
             if i in x_blind_ind or i in x_blind_ind1:
                 blind_datahist.SetBinContent(i+1,-0.1)
                 blind_datahist.SetBinError(i+1,0)
+                c = total_bkg.GetBinContent(i+1)
+                azimov_datahist.SetBinContent(i+1,c)
+                azimov_datahist.SetBinError(i+1,c**.5)
+
 
     #Set bin errors for empty bins if required:
     if empty_bin_error:
@@ -544,19 +580,23 @@ def main(args):
     #Normalise by bin width 
     scale=1.0
     if is2D: scale=1./10. # if we have an unrolled plot then we need to account for the bins being in 10 GeV units
+    bkghist.Scale(scale,"width")
+    sbhist.Scale(scale,"width")
+
+    for shist in sighists:
+        shist.Scale(5.4*scale,"width") # can scale up signals here if desired
+        sbhist.Add(shist)
+    #sbhist.Scale(scale,"width")
+    #sbhist_alt.Scale(scale,"width")
     for shist in sighists:
         shist.Scale(scale,"width")
-    for shist in sighists:
-        shist.Scale(1.) # can scale up signals here if desired
-    sbhist.Scale(scale,"width")
-    sbhist_alt.Scale(scale,"width")
-    bkghist.Scale(scale,"width")
     blind_datahist.Scale(scale,"width")
+    azimov_datahist.Scale(scale,"width")
 
     blind_datagraph = ROOT.TGraphAsymmErrors(blind_datahist)
+    azimov_datagraph = ROOT.TGraphAsymmErrors(azimov_datahist)
 
     channel = args.channel
-    if channel == '':  channel=binname[4:6]
     
     #Create stacked plot for the backgrounds
     bkg_histos = []
@@ -633,8 +673,8 @@ def main(args):
         axish[1].GetXaxis().SetTitleOffset(0.85)
 
         if not is2D:
-            axish[0].GetXaxis().SetRangeUser(50.,bkghist.GetXaxis().GetXmax()-0.01)
-            axish[1].GetXaxis().SetRangeUser(50.,bkghist.GetXaxis().GetXmax()-0.01)
+            axish[0].GetXaxis().SetRangeUser(0.,bkghist.GetXaxis().GetXmax()-0.01)
+            axish[1].GetXaxis().SetRangeUser(0.,bkghist.GetXaxis().GetXmax()-0.01)
  
         if custom_x_range:
             axish[0].GetXaxis().SetRangeUser(x_axis_min,x_axis_max-0.01)
@@ -696,6 +736,12 @@ def main(args):
         blind_datagraph_extra.Draw("P Z 0 same")
         blind_datagraph.SetMarkerSize(0.)
         blind_datagraph.Draw("P Z 0 same")
+
+        azimov_datagraph_extra = azimov_datagraph.Clone()
+        azimov_datagraph_extra.Draw("P Z 0 same")
+        azimov_datagraph.SetMarkerSize(0.)
+        azimov_datagraph.Draw("P Z 0 same")
+
         axish[i].Draw("axissame")
     
     pads[0].cd()
@@ -724,12 +770,12 @@ def main(args):
     legend.AddEntry(bkghist,"Bkg. Uncertainty","f")
     if is2D:
         if not mode == 'prefit':
-          legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
         else:
-          legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
 
     else:
-        legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+        if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()
@@ -774,8 +820,10 @@ def main(args):
         for i in range(1,bkghist_errors.GetNbinsX()+1): bkghist_errors.SetBinContent(i,1.)
         ratio_sighist = plot.MakeRatioHist(sbhist,bkghist,True,False)
         ratio_datahist_ = plot.MakeRatioHist(blind_datahist,bkghist,True,False)
+        azimov_ratio_datahist_ = plot.MakeRatioHist(azimov_datahist,bkghist,True,False)
 
         ratio_datahist = ROOT.TGraphAsymmErrors(ratio_datahist_)
+        azimov_ratio_datahist = ROOT.TGraphAsymmErrors(azimov_ratio_datahist_)
 
         pads[1].cd()
         pads[1].SetGrid(0,1)
@@ -786,6 +834,8 @@ def main(args):
 
         ratio_bkghist.Draw("e2same")
         ratio_datahist.Draw("P Z 0 same")
+        ratio_sighist.Draw('histsame')
+        if args.manual_blind: azimov_ratio_datahist.Draw("P Z 0 same")
         pads[1].RedrawAxis("G")
         if is2D:
             rlegend = ROOT.TLegend(0.85, 0.27, 0.98, 0.16, '', 'NBNDC')
@@ -813,26 +863,29 @@ def main(args):
     pads[0].GetFrame().Draw()
     pads[0].RedrawAxis()
 
-    # Add lines after every Nxbins 
-    line = ROOT.TLine()
-    line.SetLineWidth(2)
-    line.SetLineStyle(3)
-    line.SetLineColor(1)
-    x = bkghist.GetNbinsX()/Nxbins
-    x_min=bkghist.GetXaxis().GetBinLowEdge(1)
-    x_max=bkghist.GetXaxis().GetBinLowEdge(bkghist.GetNbinsX()+1)
-    x_range=x_max-x_min
-    if is2D:
-        for l in range(1,x):
-            pads[0].cd()
-            ymax = axish[0].GetMaximum()
-            ymin = axish[0].GetMinimum()
-            line.DrawLine(l*x_range/x,ymin,l*x_range/x,ymax)
-            if args.ratio:
-                pads[1].cd()
-                ymax = axish[1].GetMaximum()
-                ymin = axish[1].GetMinimum()
-                line.DrawLine(l*x_range/x,ymin,l*x_range/x,ymax)
+    ## Add lines after every Nxbins 
+    #line = ROOT.TLine()
+    #line.SetLineWidth(2)
+    #line.SetLineStyle(3)
+    #line.SetLineColor(1)
+    #x = bkghist.GetNbinsX()/Nxbins
+    #x_min=bkghist.GetXaxis().GetBinLowEdge(1)
+    #x_max=bkghist.GetXaxis().GetBinLowEdge(bkghist.GetNbinsX()+1)
+    #x_range=x_max-x_min
+
+    ## for now we have to hard code x=4 otherwise we have issues when the auto rebinning has been used
+    #x=4
+    #if is2D:
+    #    for l in range(1,x):
+    #        pads[0].cd()
+    #        ymax = axish[0].GetMaximum()
+    #        ymin = axish[0].GetMinimum()
+    #        line.DrawLine(l*x_range/x,ymin,l*x_range/x,ymax)
+    #        if args.ratio:
+    #            pads[1].cd()
+    #            ymax = axish[1].GetMaximum()
+    #            ymin = axish[1].GetMinimum()
+    #            line.DrawLine(l*x_range/x,ymin,l*x_range/x,ymax)
     
     ## Add bin labels between lines
     pads[0].cd()
@@ -850,10 +903,14 @@ def main(args):
             y_bin_label = "{} #leq {} < {} {}".format(y_bin_labels[i],y_bin_var,y_bin_labels[i+1],"GeV")
             l = ROOT.gPad.GetLeftMargin()
             r = ROOT.gPad.GetRightMargin()
-            xshift = ((1-r-l)/(axish[0].GetNbinsX()/Nxbins))*i + l
+            #xshift = ((1-r-l)/(axish[0].GetNbinsX()/Nxbins))*i + l
+            # have to hard code 4 here other wise we have problems when the autorebinning has been used
+            xshift = ((1-r-l)/(4))*i + l
             latex_bin.DrawLatex(xshift+0.02,0.82,y_bin_label)
         else:
-            xshift = ((1-r-l)/(axish[0].GetNbinsX()/Nxbins))*i + l
+            #xshift = ((1-r-l)/(axish[0].GetNbinsX()/Nxbins))*i + l
+            # have to hard code 4 here other wise we have problems when the autorebinning has been used
+            xshift = ((1-r-l)/(4))*i + l
             y_bin_label = "{} > {} {}".format(y_bin_var,y_bin_labels[i],"GeV")
             latex_bin.DrawLatex(xshift+0.02,0.82,y_bin_label)
     
@@ -863,7 +920,7 @@ def main(args):
     outname += shape_file_name+"_"+file_dir.strip("htt").strip("_")
     if(log_x): 
         outname+="_logx"
-    c2.SaveAs("%(outname)s.pdf"%vars())
+    c2.SaveAs("plots/%(outname)s.pdf"%vars())
 
     del c2
     histo_file.Close()
