@@ -101,6 +101,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M",
                                           "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
 
+
+  std::vector<std::string> vlq_signals_offdiag = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
+                                                  "VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"};
+
+
   std::vector<std::string> vlq_tchannel = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
                                            "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M"};
 
@@ -160,21 +165,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
    cb.cp()
         .channel({"em","et", "mt", "tt"})
         .process(vlq_signals)
-        .AddSyst(cb, "QCDScale", "shape", SystMap<>::init(1.00));
+        .AddSyst(cb, "QCDScale_VLQ", "shape", SystMap<>::init(1.00));
 
    cb.cp()
         .channel({"em","et", "mt", "tt"})
-        .process(vlq_signals)
-        .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
-
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_signals)
-        .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
-
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_signals)
+        .process(vlq_signals_offdiag)
         .AddSyst(cb, "betaL23Fit", "shape", SystMap<>::init(1.00));
 
    // ##########################################################################
@@ -996,6 +991,16 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .bin_id(mssm_categories, false)
       .process(mc_processes)
       .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+        .channel({"em","et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "CMS_htt_eff_b_$ERA", "shape", SystMap<>::init(1.00));
+
+   cb.cp()
+        .channel({"em","et", "mt", "tt"})
+        .process(vlq_signals)
+        .AddSyst(cb, "CMS_htt_mistag_b_$ERA", "shape", SystMap<>::init(1.00));
 
   // Classic MSSM categories btag uncertainties will be lnN
   cb.cp().process({"W"}).AddSyst(cb, "CMS_htt_eff_b_$ERA", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id>::init

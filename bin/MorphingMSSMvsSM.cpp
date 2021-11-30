@@ -1714,10 +1714,11 @@ int main(int argc, char **argv) {
   };
 
   // Convert VLQ signal b efficiencies to lnN
-  if(analysis == "vector_leptoquarks"){
+  if(analysis == "vector_leptoquark"){
     for (string y : {"2016","2017","2018"}) {
-      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
-      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt","mt","et"}).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+      std::cout << "Converting VLQ systematics to lnN" << std::endl;
+      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
+      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
     }
   }
 
@@ -2180,6 +2181,8 @@ int main(int argc, char **argv) {
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
   cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
 
+  cb.AddDatacardLineAtEnd("lumi_scale rateParam * *  1. [0,20]");
+  cb.AddDatacardLineAtEnd("nuisance edit freeze lumi_scale");
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {

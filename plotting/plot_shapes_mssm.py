@@ -71,6 +71,11 @@ def parse_arguments():
         default=None,
         help="Higgs boson mass displayed in the legend.")
     parser.add_argument(
+        "--vlq_process",
+        type=str,
+        default=None,
+        help="Vector leptoquark process")
+    parser.add_argument(
         "--cross-section-ggh", "--x-sec-ggh",
         default=None,
         type=str,
@@ -81,6 +86,11 @@ def parse_arguments():
         type=str,
         help="Cross sections displayed in the legend.")
     parser.add_argument(
+        "--gU",
+        default=None,
+        type=str,
+        help="gU displayed in the legend if --vector_leptoquark.")
+    parser.add_argument(
         "--tanbeta",
         default=None,
         type=str,
@@ -89,6 +99,8 @@ def parse_arguments():
                         help="Skip signal categories")
     parser.add_argument("--model-independent", action="store_true",
                         help="Plot shapes from model independent analysis.")
+    parser.add_argument("--vector-leptoquark", action="store_true",
+                        help="Plot shapes from vector leptoquark signal.")
     parser.add_argument("--blinded",
                         action="store_true",
                         help="Do not draw data.")
@@ -308,17 +320,23 @@ def main(args):
                 plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
                 for i in plot_idx_to_add_signal:
                     if args.model_independent:
-                        ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
-                        ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
-                        ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
-                        plot.subplot(i).add_hist(
-                            ggH_hist, "ggH")
-                        plot.subplot(i).add_hist(
-                            ggH_hist, "ggH_top")
-                        plot.subplot(i).add_hist(
-                            rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH")
-                        plot.subplot(i).add_hist(
-                            rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH_top")
+                        if args.vector_leptoquark:
+                          vlq_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VLQ_"+args.vlq_process+"_matched_M"), xlow=30.).Clone()
+                          vlq_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VLQ_"+args.vlq_process+"_matched_interference_M"), xlow=30.))
+                          plot.subplot(i).add_hist(
+                              vlq_hist, "VLQ")
+                        else:
+                          ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
+                          ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
+                          ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
+                          plot.subplot(i).add_hist(
+                              ggH_hist, "ggH")
+                          plot.subplot(i).add_hist(
+                              ggH_hist, "ggH_top")
+                          plot.subplot(i).add_hist(
+                              rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH")
+                          plot.subplot(i).add_hist(
+                              rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.), "bbH_top")
                     else:
                         plot.subplot(i).add_hist(
                             rebin_hist_for_logX(rootfile.get(era, channel, category, "TotalSig"), xlow=30.), "mssm_sig")
@@ -334,14 +352,18 @@ def main(args):
             plot.subplot(0).setGraphStyle("data_obs", "e0")
             if args.model_independent:
                 if int(category) > 30:
-                    plot.subplot(0 if args.linear else 1).setGraphStyle(
-                        "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
-                    plot.subplot(0 if args.linear else 1).setGraphStyle(
-                        "ggH_top", "hist", linecolor=0)
-                    plot.subplot(0 if args.linear else 1).setGraphStyle(
-                        "bbH", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
-                    plot.subplot(0 if args.linear else 1).setGraphStyle(
-                        "bbH_top", "hist", linecolor=0)
+                    if args.vector_leptoquark:
+                      plot.subplot(0 if args.linear else 1).setGraphStyle(
+                          "VLQ", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
+                    else:
+                      plot.subplot(0 if args.linear else 1).setGraphStyle(
+                          "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
+                      plot.subplot(0 if args.linear else 1).setGraphStyle(
+                          "ggH_top", "hist", linecolor=0)
+                      plot.subplot(0 if args.linear else 1).setGraphStyle(
+                          "bbH", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
+                      plot.subplot(0 if args.linear else 1).setGraphStyle(
+                          "bbH_top", "hist", linecolor=0)
             else:
                 plot.subplot(0 if args.linear else 1).setGraphStyle(
                     "mssm_sig", "hist", linecolor=styles.color_dict["bbH"], linewidth=3)
@@ -357,36 +379,49 @@ def main(args):
             # assemble ratio
             if args.model_independent:
                 if int(category) > 30:
-                    bkg_ggH = plot.subplot(2).get_hist("ggH")
-                    bkg_bbH = plot.subplot(2).get_hist("bbH")
-                    bkg_ggH.Add(plot.subplot(2).get_hist("total_bkg"))
-                    bkg_bbH.Add(plot.subplot(2).get_hist("total_bkg"))
-                    plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH")
-                    plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH_top")
-                    plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH")
-                    plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH_top")
-                    plot.subplot(2).setGraphStyle(
-                        "bkg_ggH",
-                        "hist",
-                        linecolor=styles.color_dict["ggH"],
-                        linewidth=3)
-                    plot.subplot(2).setGraphStyle(
-                        "bkg_ggH_top",
-                        "hist",
-                        linecolor=0)
-                    plot.subplot(2).setGraphStyle(
-                        "bkg_bbH",
-                        "hist",
-                        linecolor=styles.color_dict["bbH"],
-                        linewidth=3)
-                    plot.subplot(2).setGraphStyle(
-                        "bkg_bbH_top",
-                        "hist",
-                        linecolor=0)
-                    plot.subplot(2).normalize([
-                        "total_bkg", "bkg_ggH", "bkg_ggH_top", "bkg_bbH",
-                        "bkg_bbH_top", "data_obs"
-                    ], "total_bkg")
+                    if args.vector_leptoquark:
+                      bkg_vlq = plot.subplot(2).get_hist("VLQ")
+                      bkg_vlq.Add(plot.subplot(2).get_hist("total_bkg"))
+                      plot.subplot(2).add_hist(bkg_vlq, "bkg_vlq")
+                      plot.subplot(2).setGraphStyle(
+                          "bkg_vlq",
+                          "hist",
+                          linecolor=styles.color_dict["ggH"],
+                          linewidth=3)
+                      plot.subplot(2).normalize([
+                          "total_bkg", "bkg_vlq", "data_obs"
+                      ], "total_bkg")
+                    else:
+                      bkg_ggH = plot.subplot(2).get_hist("ggH")
+                      bkg_bbH = plot.subplot(2).get_hist("bbH")
+                      bkg_ggH.Add(plot.subplot(2).get_hist("total_bkg"))
+                      bkg_bbH.Add(plot.subplot(2).get_hist("total_bkg"))
+                      plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH")
+                      plot.subplot(2).add_hist(bkg_ggH, "bkg_ggH_top")
+                      plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH")
+                      plot.subplot(2).add_hist(bkg_bbH, "bkg_bbH_top")
+                      plot.subplot(2).setGraphStyle(
+                          "bkg_ggH",
+                          "hist",
+                          linecolor=styles.color_dict["ggH"],
+                          linewidth=3)
+                      plot.subplot(2).setGraphStyle(
+                          "bkg_ggH_top",
+                          "hist",
+                          linecolor=0)
+                      plot.subplot(2).setGraphStyle(
+                          "bkg_bbH",
+                          "hist",
+                          linecolor=styles.color_dict["bbH"],
+                          linewidth=3)
+                      plot.subplot(2).setGraphStyle(
+                          "bkg_bbH_top",
+                          "hist",
+                          linecolor=0)
+                      plot.subplot(2).normalize([
+                          "total_bkg", "bkg_ggH", "bkg_ggH_top", "bkg_bbH",
+                          "bkg_bbH_top", "data_obs"
+                      ], "total_bkg")
                 else:
                     plot.subplot(2).normalize([
                         "total_bkg", "data_obs"
@@ -492,11 +527,14 @@ def main(args):
 
             # draw subplots. Argument contains names of objects to be drawn in corresponding order.
             # procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "bbH", "bbH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
-            if category == "2" and args.control_region:
+            if category == "2" or args.control_region:
                 procs_to_draw = ["stack", "total_bkg", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
             else:
                 if args.model_independent:
-                    procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "bbH", "bbH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
+                    if args.vector_leptoquark:
+                      procs_to_draw = ["stack", "total_bkg", "VLQ", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
+                    else:
+                      procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "bbH", "bbH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
                 else:
                     procs_to_draw = ["stack", "total_bkg", "mssm_sig", "mssm_sig_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
                 if args.blinded:
@@ -508,20 +546,23 @@ def main(args):
                 #     "ggH_top", "bbH_top",
                 #     "data_obs"
                 # ])
-                if category == "2" and args.control_region:
+                if category == "2" or args.control_region:
                     plot.subplot(1).Draw([
                         "stack", "total_bkg",
                         "data_obs"
                     ])
                 else:
                     if args.model_independent:
+                      if args.vector_leptoquark:
+                        procs_to_draw = ["stack", "total_bkg", "VLQ", "data_obs"]
+                      else:
                         procs_to_draw = ["stack", "total_bkg", "ggH", "bbH", "ggH_top", "bbH_top", "data_obs"]
                     else:
                         procs_to_draw = ["stack", "total_bkg", "mssm_sig", "mssm_sig_top", "data_obs"]
                     if args.blinded:
                         procs_to_draw.remove("data_obs")
                     plot.subplot(1).Draw(procs_to_draw)
-            if category == "2" and args.control_region:
+            if category == "2" or args.control_region:
                 plot.subplot(2).Draw([
                     "total_bkg",
                     "data_obs"
@@ -529,6 +570,9 @@ def main(args):
             else:
                 if args.model_independent:
                     if int(category) > 30:
+                      if args.vector_leptoquark:
+                        procs_to_draw = ["total_bkg", "bkg_vlq", "data_obs"]
+                      else:
                         procs_to_draw = ["total_bkg", "bkg_ggH", "bkg_bbH", "bkg_ggH_top", "bkg_bbH_top", "data_obs"]
                     else:
                         procs_to_draw = ["total_bkg", "data_obs"]
@@ -551,14 +595,17 @@ def main(args):
                     plot.legend(i).add_entry(
                         0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV")], 'f')
                 plot.legend(i).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
-                if args.control_region and category == "2":
+                if args.control_region or category == "2":
                     # plot.legend(i).add_entry(0 if args.linear else 1, "mssm_sig%s" % suffix[i], "#splitline{H #rightarrow #tau#tau}{(m_{H}=1200 GeV)}", 'l')
                     pass
                 else:
                     if args.model_independent:
                         if int(category) > 30:
-                            plot.legend(i).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i], "#splitline{ggH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section_ggh, args.mass), 'l')
-                            plot.legend(i).add_entry(0 if args.linear else 1, "bbH%s" % suffix[i], "#splitline{bbH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section_bbh, args.mass), 'l')
+                          if args.vector_leptoquark:
+                              plot.legend(i).add_entry(0 if args.linear else 1, "VLQ", "#splitline{VLQ @ g_{U}=%s}{(m_{U} = %s GeV)}" % (args.gU, args.mass), 'l')
+                          else:
+                              plot.legend(i).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i], "#splitline{ggH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section_ggh, args.mass), 'l')
+                              plot.legend(i).add_entry(0 if args.linear else 1, "bbH%s" % suffix[i], "#splitline{bbH @ %s pb}{(m_{H} = %s GeV)}" % (args.cross_section_bbh, args.mass), 'l')
                     else:
                         plot.legend(i).add_entry(0 if args.linear else 1, "mssm_sig%s" % suffix[i], "#splitline{H #rightarrow #tau#tau}{#splitline{(m_{A}= %s GeV,}{ tan #beta = %s)}}" %(args.mass, args.tanbeta), 'l')
                 if not args.blinded:
@@ -586,10 +633,14 @@ def main(args):
                     reference_subplot=2, pos=1, width=0.5, height=0.06)
                 if not args.blinded:
                     plot.legend(i + 2).add_entry(0, "data_obs", "Data", 'PE')
-                if args.control_region and category == "2":
+                if args.control_region or category == "2":
                     pass
                 else:
-                    if args.model_independent:
+                    if args.model_independent: 
+                      if args.vector_leptoquark:
+                        plot.legend(i + 2).add_entry(0 if args.linear else 1, "VLQ",
+                                             "VLQ+bkg.", 'l')
+                      else:
                         plot.legend(i + 2).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i],
                                              "ggH+bkg.", 'l')
                         plot.legend(i + 2).add_entry(0 if args.linear else 1, "bbH%s" % suffix[i],

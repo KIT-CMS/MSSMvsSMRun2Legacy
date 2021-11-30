@@ -98,7 +98,7 @@ def main(args):
     globalFitLine.Draw("same")
     points.Draw("P SAME")
 
-    legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
+    legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
     legend.AddEntry(globalFitLine, "Global Best Fit", "l")
     legend.AddEntry(globalFitBand, "Global Best Fit #pm 1 #sigma", "f")
     legend.Draw()
