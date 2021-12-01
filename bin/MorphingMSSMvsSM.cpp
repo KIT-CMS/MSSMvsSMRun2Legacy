@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
   using ch::syst::bin_id;
+  using ch::syst::bin;
   using ch::syst::mass;
   using ch::JoinStr;
   using ch::syst::SystMap;
@@ -1324,6 +1325,13 @@ int main(int argc, char **argv) {
     .process({"jetFakes"})
     .AddSyst(cb, "CMS_ff_total_syst_pt_tt_bin_$BIN_$ERA", "lnN", SystMap<>::init(1.05));
   }
+  if(prop_plot){
+    // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
+    auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
+    cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+      syst->set_type("shape");
+    });
+  }
 
   dout("[INFO] Systematics added");
   // Define restriction to the desired category
@@ -1691,8 +1699,34 @@ int main(int argc, char **argv) {
 
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
+  // Unless we use the prop_plot option in which case we just set the inteference to 0 if it goes negative 
+
+  ch::CombineHarvester procs_no_i;
+  if(prop_plot) procs_no_i = cb.cp();
+  else procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false);
+
+  if(prop_plot){
+     // for prop_plot option if the inteference is negative we scale it positive and then add a rate parameter which will scale it negative again in the end 
+
+
+     cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}).ForEachProc([&](ch::Process *p) {
+       if(p->rate() <= 0.0){
+         std::cout << "[WARNING] Setting mssm inteference signal with negative yield to positive: \n ";
+         std::cout << ch::Process::PrintHeader << *p << "\n";
+         p->set_rate(p->rate()*-1.);
+
+         cb.cp()
+           .process({p->process()})
+           .bin({p->bin()})
+           .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
+         cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
+       }
+     });
+  }
+
+
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+  procs_no_i.ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -1705,7 +1739,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+  procs_no_i.ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
@@ -2026,10 +2060,6 @@ int main(int argc, char **argv) {
   // We don't want to do this for the ggH i component since this can have negative bins
   // Unless we use the prop_plot option in which case we just set the inteference to 0 if it goes negative 
 
-  ch::CombineHarvester procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false);
-  if(prop_plot) procs_no_i = cb.cp();
-
-
   std::cout << "[INFO] Fixing negative bins.\n";
   procs_no_i.ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
@@ -2149,7 +2179,7 @@ int main(int argc, char **argv) {
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
   ch::CombineHarvester cb_obs = cb.deep().backgrounds();
-  ch::CombineHarvester cb_cp = cb.deep();
+  //ch::CombineHarvester cb_cp = cb.deep();
 
   // Adding bin-by-bin uncertainties
   if (use_automc) {
@@ -2216,7 +2246,7 @@ int main(int argc, char **argv) {
     TFile fractions_sm(sm_gg_fractions.c_str());
     std::cout << "[INFO] --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
-    if(do_morph) {
+    if(do_morph && !prop_plot) {
       //w_sm->var("Yb_MSSM_h")->setVal(0.); // un-comment to remove bottom and top-bottom contirbutions (top only)
       //w_sm->var("Yt_MSSM_h")->setVal(0.); // un-comment to remove top and top-bottom contirbutions (bottom only)
       w_sm->var("mh")->SetName("MH");
@@ -2235,6 +2265,18 @@ int main(int argc, char **argv) {
       ws.import(MH);
       ws.import(Yt);
       ws.import(Yb);
+      ws.import(*t_frac, RooFit::RecycleConflictNodes());
+      ws.import(*b_frac, RooFit::RecycleConflictNodes());
+      ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    }
+    else if (prop_plot) {
+      w_sm->var("mh")->setVal(100.);
+      RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+      RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+      RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+      t_frac->SetName("ggh_t_frac");
+      b_frac->SetName("ggh_b_frac");
+      i_frac->SetName("ggh_i_frac");
       ws.import(*t_frac, RooFit::RecycleConflictNodes());
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
@@ -2289,7 +2331,7 @@ int main(int argc, char **argv) {
   }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
+  if(do_morph && !prop_plot && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -2320,11 +2362,12 @@ int main(int argc, char **argv) {
     //ws.Write();
     //morphing_demo.Close();
     cb.AddWorkspace(ws);
+    //cb_cp.AddWorkspace(ws);
     cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-  else if(!do_morph && analysis == "bsm-model-indep"){
+  else if(!do_morph && analysis == "bsm-model-indep" && !prop_plot){
 
    // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
    //double Tfrac = ws.function("ggh_t_frac")->getVal();
@@ -2353,17 +2396,42 @@ int main(int argc, char **argv) {
      proc->set_rate(proc->rate()*Ifrac);
     });
   }
+  else if(prop_plot){
 
+   // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
+   double Tfrac = ws.function("ggh_t_frac")->getVal();
+   double Bfrac = ws.function("ggh_b_frac")->getVal();
+   double Ifrac = ws.function("ggh_i_frac")->getVal();
+   if (Ifrac<0.) {
+     Ifrac=fabs(Ifrac);
+     // set a constant rate parameter = -1 for the interference
+     cb.cp()
+      .process({"ggh_i"})
+      .AddSyst(cb, "rate_minus_overall","rateParam",SystMap<>::init(-1.0));
+     cb.GetParameter("rate_minus_overall")->set_range(-1.0,-1.0);
+   }
+   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl;
+
+   cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Tfrac);
+    });
+
+   cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Bfrac);
+    });
+
+   cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Ifrac);
+    });
+  }
+  ch::CombineHarvester cb_cp = cb.deep();
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
-  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
-
-  if(cb.GetParameter("CMS_htt_ttbarShape_emOnly")) { 
-    cb.GetParameter("CMS_htt_ttbarShape_emOnly")->set_err_d(-1.);
-    cb.GetParameter("CMS_htt_ttbarShape_emOnly")->set_err_u(1.);
-  }
+  if(!prop_plot){
+    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+  } 
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
@@ -2439,28 +2507,43 @@ int main(int argc, char **argv) {
     for (auto const& bin : bin_set) {
       ch::CombineHarvester cmb_bin = std::move(cb_cp.cp().bin({bin}));
       TH1F bkg = cmb_bin.cp().backgrounds().GetShape();
-      TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b","ggh_i"}).GetShape();
-      std::cout <<"!!!!  " <<  bin << "  " << bkg.Integral() << "    " << sig.Integral() << "  " << sig.GetMean() << std::endl;  
+      TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
+      TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
+       
+      std::cout <<"!!!!  " <<  bin << "  " << bkg.Integral() << "    " << sig.Integral() << "  " << sig_i.Integral() << std::endl;  
       double sig_scale=5.4; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
+      sig_i.Scale(sig_scale);
+
       // calculate S/(S+B) between 70-150 GeV
       double s_sb = 0.;
-      double i_sig = sig.Integral(2,9);
-      double i_bkg = bkg.Integral(2,9);
+      int bin_lo = sig.FindBin(70.);
+      int bin_hi = sig.FindBin(150.) -1;
+      double i_sig_i = sig_i.Integral(bin_lo,bin_hi);
+      if(cmb_bin.GetParameter("rate_minus_overall")!=nullptr) i_sig_i*=-1.;
+      if(cmb_bin.GetParameter("rate_minus")!=nullptr) i_sig_i*=-1.;
+      //double i_sig = sig.Integral(bin_lo,bin_hi)/1.0807788; // the factor scales down by t fraction as we base weights on t-only
+      double i_sig = sig.Integral(bin_lo,bin_hi)+i_sig_i;
+      double i_bkg = bkg.Integral(bin_lo,bin_hi);
+      std::cout <<"----  " <<  bin << "  " << bin_lo << "    " << bin_hi << "  " << bkg.Integral(bin_lo,bin_hi) << "    " << sig.Integral(bin_lo,bin_hi) << "  " << i_sig_i << std::endl;  
       if(i_sig>0. || i_bkg>0.) s_sb = i_sig/(i_sig+i_bkg);
+      std::cout << "weight = " << s_sb << std::endl;
 
       cmb_bin.ForEachObs([&](ch::Observation *e) {
         TH1 const * old_h = e->shape();
-        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(TH1F(proto));
+        TH1F * new_h_ = (TH1F*)old_h->Clone();
+        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        double wt = s_sb;
+        new_h_->Scale(wt);
+        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
+        
+        std::cout << "old" << std::endl;
         for (int b = 1; b <= old_h->GetNbinsX(); ++b) {
-          int new_bin = new_h->FindBin(old_h->GetBinCenter(b));
-          double wt = s_sb;
-          new_h->SetBinContent(
-              new_bin,
-              new_h->GetBinContent(new_bin) + wt*old_h->GetBinContent(b));
-          new_h->SetBinError(
-              new_bin,
-              sqrt(pow(new_h->GetBinError(new_bin),2) + pow(wt*old_h->GetBinError(b),2)));
+          std::cout << b << "  " << old_h->GetBinContent(b) << "  " << old_h->GetBinError(b) << std::endl;
+        }
+        std::cout << "new" << std::endl;
+        for (int b = 1; b <= new_h->GetNbinsX(); ++b) {
+          std::cout << b << "  " << new_h->GetBinContent(b) << "  " << new_h->GetBinError(b) << std::endl; 
         }
         new_h->Scale(e->rate());
         e->set_shape(std::move(new_h), true);
@@ -2468,17 +2551,11 @@ int main(int argc, char **argv) {
 
       cmb_bin.ForEachProc([&](ch::Process *e) {
         TH1 const * old_h = e->shape();
-        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(TH1F(proto));
-        for (int b = 1; b <= old_h->GetNbinsX(); ++b) {
-          int new_bin = new_h->FindBin(old_h->GetBinCenter(b));
-          double wt = s_sb;
-          new_h->SetBinContent(
-              new_bin,
-              new_h->GetBinContent(new_bin) + wt*old_h->GetBinContent(b));
-          new_h->SetBinError(
-              new_bin,
-              sqrt(pow(new_h->GetBinError(new_bin),2) + pow(wt*old_h->GetBinError(b),2)));
-        }
+        TH1F * new_h_ = (TH1F*)old_h->Clone();
+        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        double wt = s_sb;
+        new_h_->Scale(wt);
+        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
         new_h->Scale(e->rate());
         e->set_shape(std::move(new_h), true);
       });
@@ -2491,21 +2568,18 @@ int main(int argc, char **argv) {
 
         float val_u = e->value_u(); 
         float val_d = e->value_d();
+        double wt = s_sb;
 
-        std::unique_ptr<TH1> new_hd = ch::make_unique<TH1F>(TH1F(proto));
-        std::unique_ptr<TH1> new_hu = ch::make_unique<TH1F>(TH1F(proto));
+        TH1F * new_hu_ = (TH1F*)old_hu->Clone();
+        new_hu_ = (TH1F*)new_hu_->Rebin(18,"",new_bins);
+        new_hu_->Scale(wt*val_u);
+        std::unique_ptr<TH1> new_hu = ch::make_unique<TH1F>(*(new_hu_));
 
-        for (int b = 1; b <= old_hd->GetNbinsX(); ++b) {
-          int new_bin = new_hu->FindBin(old_hu->GetBinCenter(b));
-          double wt = s_sb;
-  
-          new_hd->SetBinContent(
-              new_bin,
-              new_hd->GetBinContent(new_bin) + val_d*wt*old_hd->GetBinContent(b));
-          new_hu->SetBinContent(
-              new_bin,
-              new_hu->GetBinContent(new_bin) + val_u*wt*old_hu->GetBinContent(b));
-        }
+        TH1F * new_hd_ = (TH1F*)old_hd->Clone();
+        new_hd_ = (TH1F*)new_hd_->Rebin(18,"",new_bins);
+        new_hd_->Scale(wt*val_d);
+        std::unique_ptr<TH1> new_hd = ch::make_unique<TH1F>(*(new_hd_));
+
         e->set_shapes(std::move(new_hu), std::move(new_hd), nullptr);
       });
 
