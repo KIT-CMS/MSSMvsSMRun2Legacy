@@ -2,7 +2,7 @@
 
 ### Setup of CMSSW release
 NUM_CORES=10
-CMSSW=CMSSW_10_2_25
+CMSSW=CMSSW_10_2_27
 
 export SCRAM_ARCH=slc7_amd64_gcc700
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
@@ -33,12 +33,12 @@ git clone git@github.com:KIT-CMS/SMRun2Legacy.git CombineHarvester/SMRun2Legacy
 git clone git://github.com/harrypuuter/grid-control.git
 
 # Install LHCHWGMSSMNeutral packages
-wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mssm_xs_tools.py_v2.4
+wget -O CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py https://gitlab.cern.ch/LHCHIGGSXS/LHCHXSWG3/MSSM/-/raw/develop/NeutralHiggs/machineryfrom2018/ROOTfilegeneration/mssm_xs_tools.py
 sed -i "s!./mssm_xs_tools_C.so!${CMSSW_BASE}/lib/${SCRAM_ARCH}/libCombineHarvesterMSSMvsSMRun2Legacy.so!g" CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py
 sed -i "s!root_files/mh125_13.root!${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/mh125_13.root!g" CombineHarvester/MSSMvsSMRun2Legacy/python/mssm_xs_tools.py
-wget -O CombineHarvester/MSSMvsSMRun2Legacy/src/mssm_xs_tools.cc https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mssm_xs_tools.C_v2.4
+wget -O CombineHarvester/MSSMvsSMRun2Legacy/src/mssm_xs_tools.cc https://gitlab.cern.ch/LHCHIGGSXS/LHCHXSWG3/MSSM/-/raw/develop/NeutralHiggs/machineryfrom2018/ROOTfilegeneration/mssm_xs_tools.C
 sed -i 's!mssm_xs_tools.h!CombineHarvester/MSSMvsSMRun2Legacy/interface/mssm_xs_tools.h!g' CombineHarvester/MSSMvsSMRun2Legacy/src/mssm_xs_tools.cc
-wget -O CombineHarvester/MSSMvsSMRun2Legacy/interface/mssm_xs_tools.h https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mssm_xs_tools.h_v2.4
+wget -O CombineHarvester/MSSMvsSMRun2Legacy/interface/mssm_xs_tools.h https://gitlab.cern.ch/LHCHIGGSXS/LHCHXSWG3/MSSM/-/raw/develop/NeutralHiggs/machineryfrom2018/ROOTfilegeneration/mssm_xs_tools.h
 
 # Compile everything
 scramv1 b clean; scramv1 b -j $NUM_CORES
