@@ -79,27 +79,6 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   });
 }
 
-bool HasZeroOrNegativeBins(TH1 const* h) {
-  bool has_negative = false;
-  for (int i = 1; i <= h->GetNbinsX(); ++i) {
-    if (h->GetBinContent(i) <= 0.) {
-      has_negative = true;
-    }
-  }
-  return has_negative;
-}
-
-void FixZeroOrNegativeBins(TH1 *h) {
-  // this fix is intended for QCD templates in the em channel
-  // any empty or negative bins are set to a small positive value and the bbb error is equal to 1 as a minimum
-  for (int i = 1; i <= h->GetNbinsX(); ++i) {
-    if (h->GetBinContent(i) <= 0.) {
-      h->SetBinContent(i, 0.00001);
-      h->SetBinError(i,std::max(1.,h->GetBinError(i)));
-    }
-  }
-}
-
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -1325,6 +1304,21 @@ int main(int argc, char **argv) {
     .process({"jetFakes"})
     .AddSyst(cb, "CMS_ff_total_syst_pt_tt_bin_$BIN_$ERA", "lnN", SystMap<>::init(1.05));
   }
+  if(variable=="m_sv_puppi") {
+    // for btag categories we also use additional uncertainties to account for non-closures in m_sv distributions
+    cb.cp()
+    .channel({"et", "mt"})
+    .bin_id({35})
+    .process({"jetFakes"})
+    .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTtight_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+    .channel({"et", "mt"})
+    .bin_id({36})
+    .process({"jetFakes"})
+    .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTloose_$ERA", "shape", SystMap<>::init(1.00));
+
+  }
   if(prop_plot){
     // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
     auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
@@ -1946,6 +1940,14 @@ int main(int argc, char **argv) {
 
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
   for (string y : {"2016","2017","2018"}) {
+
+    if(variable=="m_sv_puppi") {
+      cb.cp().channel({"et"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_"+y,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_et_"+y);
+      cb.cp().channel({"et"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTloose_"+y,"CMS_ff_total_ttbar_msv_shape_mTloose_et_"+y);
+      cb.cp().channel({"mt"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_"+y,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_mt_"+y);
+      cb.cp().channel({"mt"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTloose_"+y,"CMS_ff_total_ttbar_msv_shape_mTloose_mt_"+y);
+    }
+
     for (string u : {"unc1", "unc2"}) {
 
       cb.cp().bin_id({32,132,232,332,432}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_Nbtag0_"+y);
@@ -2179,7 +2181,6 @@ int main(int argc, char **argv) {
   // the form: {analysis}_{channel}_{bin_id}_{era}
   ch::SetStandardBinNames(cb, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
   ch::CombineHarvester cb_obs = cb.deep().backgrounds();
-  //ch::CombineHarvester cb_cp = cb.deep();
 
   // Adding bin-by-bin uncertainties
   if (use_automc) {
@@ -2362,7 +2363,6 @@ int main(int argc, char **argv) {
     //ws.Write();
     //morphing_demo.Close();
     cb.AddWorkspace(ws);
-    //cb_cp.AddWorkspace(ws);
     cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
@@ -2424,7 +2424,8 @@ int main(int argc, char **argv) {
      proc->set_rate(proc->rate()*Ifrac);
     });
   }
-  ch::CombineHarvester cb_cp = cb.deep();
+  ch::CombineHarvester cb_cp;
+  if(prop_plot) cb_cp = cb.deep();
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
@@ -2510,7 +2511,6 @@ int main(int argc, char **argv) {
       TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
       TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
        
-      std::cout <<"!!!!  " <<  bin << "  " << bkg.Integral() << "    " << sig.Integral() << "  " << sig_i.Integral() << std::endl;  
       double sig_scale=5.4; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
       sig_i.Scale(sig_scale);
@@ -2525,9 +2525,9 @@ int main(int argc, char **argv) {
       //double i_sig = sig.Integral(bin_lo,bin_hi)/1.0807788; // the factor scales down by t fraction as we base weights on t-only
       double i_sig = sig.Integral(bin_lo,bin_hi)+i_sig_i;
       double i_bkg = bkg.Integral(bin_lo,bin_hi);
-      std::cout <<"----  " <<  bin << "  " << bin_lo << "    " << bin_hi << "  " << bkg.Integral(bin_lo,bin_hi) << "    " << sig.Integral(bin_lo,bin_hi) << "  " << i_sig_i << std::endl;  
+      //std::cout <<"----  " <<  bin << "  " << bin_lo << "    " << bin_hi << "  " << bkg.Integral(bin_lo,bin_hi) << "    " << sig.Integral(bin_lo,bin_hi) << "  " << i_sig_i << std::endl;  
       if(i_sig>0. || i_bkg>0.) s_sb = i_sig/(i_sig+i_bkg);
-      std::cout << "weight = " << s_sb << std::endl;
+      //std::cout << "weight = " << s_sb << std::endl;
 
       cmb_bin.ForEachObs([&](ch::Observation *e) {
         TH1 const * old_h = e->shape();
@@ -2537,14 +2537,6 @@ int main(int argc, char **argv) {
         new_h_->Scale(wt);
         std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
         
-        std::cout << "old" << std::endl;
-        for (int b = 1; b <= old_h->GetNbinsX(); ++b) {
-          std::cout << b << "  " << old_h->GetBinContent(b) << "  " << old_h->GetBinError(b) << std::endl;
-        }
-        std::cout << "new" << std::endl;
-        for (int b = 1; b <= new_h->GetNbinsX(); ++b) {
-          std::cout << b << "  " << new_h->GetBinContent(b) << "  " << new_h->GetBinError(b) << std::endl; 
-        }
         new_h->Scale(e->rate());
         e->set_shape(std::move(new_h), true);
       });

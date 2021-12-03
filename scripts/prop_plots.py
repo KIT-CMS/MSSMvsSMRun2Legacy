@@ -530,7 +530,7 @@ def HTTMassPlot(cats=[432],
     for legi,hists in enumerate(bkg_histos):
         legend.AddEntry(hists,background_schemes[legi]['leg_text'],"f")
     total_bkg.SetLineWidth(0)
-    legend.AddEntry(total_bkg,"Bkg. Uncertainty","f")
+    legend.AddEntry(error_hist,"Bkg. Uncertainty","f")
     legend.AddEntry(total_sig,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
     legend.Draw("same")
 
