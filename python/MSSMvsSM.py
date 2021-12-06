@@ -29,11 +29,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.quantity_map = {
             "mass"             : {"method" :     "mass", "name" : "m{HIGGS}",                 "access" : "{HIGGS}"},
             "width"            : {"method" :    "width", "name" : "w{HIGGS}",                 "access" : "{HIGGS}"},
-            "width_SM"         : {"method" :    "width", "name" : "w{HIGGS}_SM",              "access" : "{HIGGS}_SM"},
+            "width_SM"         : {"method" :    "width", "name" : "w{HIGGS}_SM",              "access" : "HSM"},
             "br"               : {"method" :       "br", "name" : "br_{HIGGS}tautau",         "access" : "{HIGGS}->tautau"},
-            "br_SM"            : {"method" :       "br", "name" : "br_{HIGGS}tautau_SM",      "access" : "{HIGGS}->tautau_SM"},
+            "br_SM"            : {"method" :       "br", "name" : "br_{HIGGS}tautau_SM",      "access" : "HSM->tautau"},
             "xsec"             : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}",         "access" : "{PROD}->{HIGGS}"},
-            "xsec_SM"          : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}_SM",      "access" : "{PROD}->{HIGGS}_SM"},
+            "xsec_SM"          : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}_SM",      "access" : "{PROD}->{ADD}HSM"},
             "interference"     : {"method" :     "xsec", "name" : "int_{PROD}{HIGGS}_tautau", "access" : "int_{PROD}_tautau_{HIGGS}"},
             "yukawa_top"       : {"method" : "coupling", "name" : "Yt_MSSM_{HIGGS}",          "access" : "gt_{HIGGS}"},
             "yukawa_bottom"    : {"method" : "coupling", "name" : "Yb_MSSM_{HIGGS}",          "access" : "gb_{HIGGS}"},
@@ -46,25 +46,29 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             "bbtotal" : "::{VAR}",
         }
         self.binning =  {
+            "hMSSM": {
+                "tanb" : np.concatenate((np.arange(0.5, 6.0, 0.1), np.arange(6.0, 61.0, 1.0))),
+                "mA" :   np.arange(130.0, 2605.0, 5.0),
+            },
             "mh125": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mh125EFT": {
                 "tanb" : np.arange(1.0, 10.25, 0.25),
-                "mA" :   np.concatenate((np.arange(92.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0),np.arange(200.0, 320.0, 5.0),np.arange(320.0, 370.0, 1.0), np.arange(370.0, 3005.0, 5.0))),
             },
             "mh125_lc": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mh125EFT_lc": {
                 "tanb" : np.arange(1.0, 10.25, 0.25),
-                "mA" :   np.concatenate((np.arange(92.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0),np.arange(200.0, 320.0, 5.0),np.arange(320.0, 370.0, 1.0), np.arange(370.0, 3005.0, 5.0))),
             },
             "mh125_ls": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mh125_align": {
                 "tanb" : np.arange(1.0, 20.25, 0.25),
@@ -72,15 +76,15 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             },
             "mh125_muneg_1": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mh125_muneg_2": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mh125_muneg_3": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
-                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 2605.0, 5.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
             "mHH125": {
                 "tanb" : np.arange(5.0, 6.01, 0.01),
@@ -88,7 +92,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             },
             "mh1125_CPV": {
                 "tanb" : np.arange(1.0, 20.25, 0.25),
-                "mHp" :   np.concatenate((np.arange(130.0, 370.0, 1.0), np.arange(370.0, 1505.0, 5.0))),
+                "mHp" :   np.concatenate((np.arange(130.0, 200.0, 1.0),np.arange(200.0, 320.0, 5.0),np.arange(320.0, 370.0, 1.0), np.arange(370.0, 1505.0, 5.0))),
             },
         }
         self.PROC_SETS = []
@@ -241,11 +245,14 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         # Assuming qqphi is already scaled to an appropriate SM 125.4 cross-section
         name  = "sf_qqphi_MSSM"
 
-        accesskey = None
-        if self.scenario != "mh1125_CPV":
-            accesskey = self.quantity_map['yukawa_top']['access'].format(HIGGS='H')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access']
+        accesskey_vbf = self.quantity_map['xsec']['access'].format(PROD="vbf",HIGGS=self.smlike)
+        accesskey_vbf_SM = self.quantity_map['xsec_SM']['access'].format(PROD="vbf", ADD="")
+        accesskey_Wh = self.quantity_map['xsec']['access'].format(PROD="hs",HIGGS="W"+self.smlike)
+        accesskey_Wh_SM = self.quantity_map['xsec_SM']['access'].format(PROD="hs",ADD="W")
+        accesskey_Zh = self.quantity_map['xsec']['access'].format(PROD="hs",HIGGS="Z"+self.smlike)
+        accesskey_Zh_SM = self.quantity_map['xsec_SM']['access'].format(PROD="hs",ADD="Z")
 
         print "Computing 'qqphi' scaling function from xsec tools"
 
@@ -259,13 +266,17 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         for i_x, x in enumerate(x_binning):
             for i_y, y in enumerate(y_binning):
 
-                beta = np.arctan(y)
-
-                g_Htt = 1.0 # No Yukawa scale factors for H1 in mh1125_CPV scenario
-                value = 1.0 # Initial value
-
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
+                xsec_vbf = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_vbf, x, y)
+                xsec_vbf_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_vbf_SM, x, y)
+                xsec_Wh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Wh, x, y)
+                xsec_Wh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Wh_SM, x, y)
+                xsec_Zh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Zh, x, y)
+                xsec_Zh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Zh_SM, x, y)
+
+                xsec = xsec_vbf + xsec_Wh + xsec_Zh
+                xsec_SM = xsec_vbf_SM + xsec_Wh_SM + xsec_Zh_SM
 
                 if br_htautau <= 0 and br_htautau_SM <= 0:
                     print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
@@ -275,18 +286,16 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = br_htautau
 
-                if accesskey:
-                    g_Htt = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])(accesskey, x, y)
-                    sin_alpha = g_Htt * np.sin(beta)
-                    if abs(sin_alpha) > 1:
-                        sin_alpha  = np.sign(sin_alpha)
-                    alpha = np.arcsin(sin_alpha)
-                    if self.smlike == 'h':
-                        value = np.sin(beta-alpha)**2
-                    elif self.smlike == 'H':
-                        value = np.cos(beta-alpha)**2
+                if xsec <= 0 and xsec_SM <= 0:
+                    print "[WARNING]: Both BSM and SM xsec predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    xsec_SM = 1.
+                    xsec = 1.
+                elif br_htautau_SM <= 0:
+                    print "[WARNING]: SM xsec prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    xsec_SM = xsec
 
-                value *= br_htautau / br_htautau_SM # (g_HVV)**2 * br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
+                value = xsec / xsec_SM # xsec(mh) / xsec_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
+                value *= br_htautau / br_htautau_SM # br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 if self.use_hSM_difference:
                     value -= 1.0
@@ -300,9 +309,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = "sf_ggphi_MSSM"
 
         accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='gg')
-        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='gg')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(ADD="",PROD='gg')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access']
 
         print "Computing 'ggphi' scaling function from xsec tools"
 
@@ -350,9 +359,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = "sf_bbphi_MSSM"
 
         accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='bb')
-        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='bb')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(ADD="",PROD='bb')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
+        accesskey_br_SM = self.quantity_map['br_SM']['access']
 
         xs_bbh_SM125 = self.sm_predictions["xs_bb_SMH125"]
         br_htautau_SM125 = self.sm_predictions["br_SMH125_tautau"]
