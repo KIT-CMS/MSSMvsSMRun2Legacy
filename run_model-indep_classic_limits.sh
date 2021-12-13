@@ -1,3 +1,4 @@
+#!/bin/bash
 # based on https://github.com/KIT-CMS/MSSMvsSMRun2Legacy/tree/ntuple_processor
 ulimit -s unlimited
 
@@ -35,7 +36,7 @@ if [[ $MODE == "initial" ]]; then
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
         --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
         --variable mt_tot_puppi \
-        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
