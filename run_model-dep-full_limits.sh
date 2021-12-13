@@ -66,8 +66,8 @@ elif [[ $MODEL == "mh125_align" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
-    y_max=20.0
+    y_min=3.0
+    y_max=12.0
 elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
@@ -97,7 +97,7 @@ elif [[ $MODEL == "mh125_muneg_1" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=4.0
     y_max=56.0
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
@@ -107,7 +107,7 @@ elif [[ $MODEL == "mh125_muneg_2" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=5.0
     y_max=30.0
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
@@ -117,7 +117,7 @@ elif [[ $MODEL == "mh125_muneg_3" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=6.0
     y_max=20.0
 ### EFT scenarios #####
 elif [[ $MODEL == "mh125EFT" ]]; then
