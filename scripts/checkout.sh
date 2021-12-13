@@ -44,17 +44,10 @@ wget -O CombineHarvester/MSSMvsSMRun2Legacy/interface/mssm_xs_tools.h https://gi
 scramv1 b clean; scramv1 b -j $NUM_CORES
 
 # Download root files for latest MSSM benchmark scenarios
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_ls_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_lc_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_align_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mHH125_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh1125_CPV_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_muneg_1_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_muneg_2_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125_muneg_3_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125EFT_13.root
-wget -P CombineHarvester/MSSMvsSMRun2Legacy/data https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/mh125EFT_lc_13.root
+for model in hMSSM mHH125 mh1125_CPV mh125EFT mh125EFT_lc mh125 mh125_align mh125_lc mh125_ls mh125_muneg_1 mh125_muneg_2 mh125_muneg_3;
+do
+    wget -O CombineHarvester/MSSMvsSMRun2Legacy/data/${model}_13.root https://zenodo.org/record/5730271/files/${model}_13.root?download=1;
+done;
 
 # Download ggH NLO reweighting inputs
 wget https://github.com/danielwinterbottom/ggh-mssm/raw/master/workspace/higgs_pt_v2.root -O CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root
