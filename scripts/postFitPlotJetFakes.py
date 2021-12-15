@@ -371,7 +371,7 @@ def main(args):
           if bin_number=="33": bin_label = "No B-tag Medium d_{#zeta}"
           if bin_number=="34": bin_label = "No B-tag Low d_{#zeta}"
 
-    if bin_number in ["132","232","332","432","133","233","333","433"]:
+    if bin_number in ["132","232","332","432","133","233","333","433","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.7,1.3"
         if args.channel=='tt': bin_label = "No B-tag"
@@ -770,12 +770,12 @@ def main(args):
     legend.AddEntry(bkghist,"Bkg. Uncertainty","f")
     if is2D:
         if not mode == 'prefit':
-          if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
         else:
-          if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
 
     else:
-        if not args.no_signal: legend.AddEntry(sighist,"qqH(95 GeV) @ 1 pb"%vars(),"l")
+        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()

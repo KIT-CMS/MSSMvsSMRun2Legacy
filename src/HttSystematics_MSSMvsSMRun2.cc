@@ -2654,6 +2654,11 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .AddSyst(cb, "CMS_htt_dyShape", "shape", SystMap<>::init(0.10));
   }
 
+  cb.cp()
+      .process({"EMB"})
+      .bin_id(mssm_categories)
+      .AddSyst(cb, "embed_zpt_mass_shape", "shape", SystMap<>::init(1.00));
+
   // ##########################################################################
   // Uncertainty: TT shape reweighting
   // References:
@@ -2665,7 +2670,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
       .AddSyst(cb, "CMS_htt_ttbarShape", "shapeU", SystMap<>::init(1.00));
-  cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
+  //cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
 
   // ##########################################################################
   // Uncertainty: Electron/muon to tau fakes and ZL energy scale

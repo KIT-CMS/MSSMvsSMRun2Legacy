@@ -1319,6 +1319,30 @@ int main(int argc, char **argv) {
     .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTloose_$ERA", "shape", SystMap<>::init(1.00));
 
   }
+  // additional embedded scale factor for btag categories to account for non-closure in Z->mumu data
+  // the size of the non-closure is also taken as an uncertainty
+  //cb.cp().process({"EMB"}).era({"2016"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.98061); });
+  //cb.cp().process({"EMB"}).era({"2017"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.99168); });
+  //cb.cp().process({"EMB"}).era({"2018"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.90215); });
+
+  cb.cp()
+    .bin_id({35,36,37})
+    .process({"EMB"})
+    .era({"2016"})
+    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.019));
+
+  cb.cp()
+    .bin_id({35,36,37})
+    .process({"EMB"})
+    .era({"2017"})
+    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.008));
+
+  cb.cp()
+    .bin_id({35,36,37})
+    .process({"EMB"})
+    .era({"2018"})
+    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.098));
+
   if(prop_plot){
     // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
     auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
@@ -1938,6 +1962,9 @@ int main(int argc, char **argv) {
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
   }
 
+  //// temp - decorrelate embed pT vs mass systematic to see effect
+  //for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"embed_zpt_mass_shape","embed_zpt_mass_shape_"+y);
+
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
   for (string y : {"2016","2017","2018"}) {
 
@@ -2511,7 +2538,7 @@ int main(int argc, char **argv) {
       TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
       TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
        
-      double sig_scale=5.4; // set to best fit value of signal strength for ggH
+      double sig_scale=5.32; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
       sig_i.Scale(sig_scale);
 

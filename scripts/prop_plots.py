@@ -401,7 +401,7 @@ def ModTDRStyle(width=600, height=600, t=0.06, b=0.12, l=0.16, r=0.04):
     ROOT.gROOT.ForceStyle()
 
 def HTTMassPlot(cats=[432],
-            infile=None,
+            infile=None, infile2=None
             ):
 
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -422,6 +422,7 @@ def HTTMassPlot(cats=[432],
     total_datahist = infile.Get('postfit/data_obs').Clone()
     total_bkg = infile.Get('postfit/TotalBkg').Clone()
     total_sig = infile.Get('postfit/TotalSig').Clone()
+    if infile2: bkgonly = infile2.Get('postfit/TotalBkg').Clone()
 
     total_datahist.Scale(1.0,"width")
     total_bkg.Scale(1.0,"width")
@@ -560,6 +561,9 @@ def HTTMassPlot(cats=[432],
 
     bkg_sub = SubtractData(error_hist, error_hist)
     data_sub = SubtractData(error_hist, total_datahist)
+    if infile2:
+      bkgonly.Scale(1.0,"width") 
+      bkgonly_sub = SubtractData(error_hist, bkgonly)
     pads[1].cd()
     pads[1].SetGrid(0,1)
     maxy = 0
@@ -577,11 +581,30 @@ def HTTMassPlot(cats=[432],
     axish[1].SetMinimum(miny)
     axish[1].SetMaximum(maxy)
     axish[1].Draw("axis")
+
+    if infile2:
+      bkgonly_sub.SetLineWidth(2)
+      bkgonly_sub.SetLineColor(ROOT.kBlue)
+      bkgonly_sub.SetMarkerSize(0)
+      bkgonly_sub.SetLineStyle(2)
+      bkgonly_sub.Draw("histsame")
+
+      #Setup legend
+      legend2 = plot.PositionedLegend(0.25,0.10,3,0.01)
+      legend2.SetTextSize(0.025)
+      legend2.SetTextFont(42)
+      legend2.SetFillStyle(0)
+  
+      legend2.AddEntry(bkgonly_sub,"Bkg. only fit","l")
+      legend2.AddEntry(total_sig,"Sig+Bkg. fit","l")
+      legend2.Draw("same")
+
     total_sig.Draw("histsame")
     data_sub.DrawCopy("e0same")
     bkg_sub.SetMarkerSize(0)
     bkg_sub.SetLineColor(ROOT.kBlack)
     bkg_sub.Draw("e2samehist")
+
     pads[1].RedrawAxis()
 
 
@@ -597,8 +620,8 @@ def HTTMassPlot(cats=[432],
     elif cats[0] == 132: plot_name+='_0to50'
     c1.SaveAs('prop_plots/%(plot_name)s.pdf' % vars())
 
-HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_GT200_v4.root'))
-HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_100to200_v4.root'))
-HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_50to100_v4.root'))
-HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_0to50_v4.root'))
-HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_v4.root'))
+HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_GT200_v5.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_GT200_v5.root'))
+HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_100to200_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_100to200_v5.root'))
+HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_50to100_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_50to100_v5.root'))
+HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_0to50_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_0to50_v5.root'))
+HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_cmb_v5.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_cmb_v5.root'))
