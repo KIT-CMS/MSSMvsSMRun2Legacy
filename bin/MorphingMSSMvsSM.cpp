@@ -1840,8 +1840,6 @@ int main(int argc, char **argv) {
   // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
   if (rebin_sm && sm) {
     // Rebin background categories
-    // for(auto chn : chns)
-    // {
       for(auto b : cb.cp().bin_id_set())
       {
         TString bstr = b;
@@ -1868,8 +1866,7 @@ int main(int argc, char **argv) {
           std::cout << "\n";
           cb.cp().bin_id({b}).VariableRebin(sm_binning);
         }
-      // }
-    }
+      }
   }
 
   std::vector<int> mssm_bins = {2,32,33,34,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437,132,232,332,432,133,233,333,433,134,234,334,434};
@@ -1946,9 +1943,6 @@ int main(int argc, char **argv) {
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_med_unc1_tt_"+y);
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
   }
-
-  //// temp - decorrelate embed pT vs mass systematic to see effect
-  //for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"embed_zpt_mass_shape","embed_zpt_mass_shape_"+y);
 
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
   for (string y : {"2016","2017","2018"}) {
@@ -2051,17 +2045,34 @@ int main(int argc, char **argv) {
     }
   }
 
+  //  ConvertShapesToLnN(cb.cp().channel({"em"}), "subtrMC");
+  ConvertShapesToLnN(cb.cp().channel({"em"}), "htt_em_QFlip");
+  //ConvertShapesToLnN(cb.cp().channel({"em"}), "htt_em_MuToEFakes_SS"); // very small so removed
+  ConvertShapesToLnN(cb.cp().channel({"em"}).bin_id({33,133},false), "htt_em_MuToEFakes_OS"); // shape only in cateogory with large ZL
+  ConvertShapesToLnN(cb.cp().channel({"em"}).process({"TTL","VVL","QCD"}), "htt_em_JToMuFakes");
+  ConvertShapesToLnN(cb.cp().channel({"em"}).process({"ZL"},false), "htt_em_JToEFakes"); // To lnN for all processes except ZL in largest category
+  ConvertShapesToLnN(cb.cp().channel({"em"}).bin_id({33,133},false), "htt_em_JToEFakes");
+  ConvertShapesToLnN(cb.cp().channel({"em"}), "CMS_htt_qcd_iso");
+  for (std::string y: {"2016", "2017", "2018"}) {
+    for (std::string jetbin: {"0jet","1jet","2jet"}) {
+      for (std::string shapebin: {"rate","shape","shape2"}) {
+	ConvertShapesToLnN(cb.cp().channel({"em"}), "CMS_htt_qcd_"+jetbin+"_"+shapebin+"_"+y);
+      }
+    }
+  }
 
-  // rename MC subtraction uncertainty in the em channel to decorrelate between years and ttbar fraction.
+  cb.cp().channel({"em"}).era({"2016"}).RenameSystematic(cb, "htt_em_QFlip", "htt_em_QFlip_2016"); // this uncertainty is systematics limited but correction for 2016 has different magnitude to 2017 and 2018 so decorrelate 
+
   for (std::string y: {"2016", "2017", "2018"}) {
       cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "CMS_htt_qcd_iso", "CMS_htt_qcd_iso_"+y);
-
+      cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "htt_em_MuToEFakes_OS", "htt_em_MuToEFakes_OS_"+y);
+      //cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "htt_em_MuToEFakes_SS", "htt_em_MuToEFakes_SS_"+y); // very small so removed
 //      cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
 //      cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+  }
 
-
-  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar");
-  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar");
+//  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar");
+//  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar");
 
   std::vector<std::string> met_uncerts = {
     "CMS_htt_boson_scale_met_2016",

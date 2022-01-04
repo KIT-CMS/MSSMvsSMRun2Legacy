@@ -2649,20 +2649,45 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"QCD"})
       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
               ({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}, 1.05));
-    cb.cp()
-       .channel({"em"})
-       .process({"QCD"})
-       .AddSyst(cb, "subtrMC", "shape", SystMap<>::init(1.00));
-  }
-  cb.cp()
-      .channel({"em"})
-      .process({"W"})
-      .AddSyst(cb, "CMS_htt_fake_em_$ERA", "lnN", SystMap<>::init(1.15));
 
-  cb.cp()
+    //    cb.cp()
+    //       .channel({"em"})
+    //       .process({"QCD"})
+    //       .AddSyst(cb, "subtrMC", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+      .channel({"em"})
+      .process({"QCD","TTL","VVL","ZL","W"})
+      .AddSyst(cb, "htt_em_JToEFakes", "shape", SystMap<>::init(0.50));
+    cb.cp()
+      .channel({"em"})
+      .process({"QCD","TTL","VVL","ZL","W"})
+      .AddSyst(cb, "htt_em_JToMuFakes", "shape", SystMap<>::init(0.60));
+    cb.cp()
       .channel({"em"})
       .process({"ZL"})
-      .AddSyst(cb, "CMS_htt_ZL_fake_em_$ERA", "lnN", SystMap<>::init(1.2));
+      .AddSyst(cb, "htt_em_MuToEFakes_OS", "shape", SystMap<>::init(1.00));    
+    //cb.cp()
+    //  .channel({"em"})
+    //  .process({"QCD"})
+    //  .AddSyst(cb, "htt_em_MuToEFakes_SS", "shape", SystMap<>::init(1.00)); // very small so has been removed   
+    cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "htt_em_QFlip", "shape", SystMap<>::init(1.00));
+
+
+  }
+  /*
+  cb.cp()
+    .channel({"em"})
+    .process({"W"})
+    .AddSyst(cb, "CMS_htt_fake_em_$ERA", "lnN", SystMap<>::init(1.15));
+  cb.cp()
+    .channel({"em"})
+    .process({"ZL"})
+    .AddSyst(cb, "CMS_htt_ZL_fake_em_$ERA", "lnN", SystMap<>::init(1.2));
+  */
 
   // ##########################################################################
   // Uncertainty: Drell-Yan LO->NLO reweighting
