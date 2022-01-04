@@ -1,3 +1,4 @@
+<bin file="PlotNuisances.cpp" name="PlotNuisances"></bin>
 <bin file="MorphingMSSMvsSM.cpp" name="MorphingMSSMvsSM"></bin>
 <bin file="MorphingCatVariables.cpp" name="MorphingCatVariables"></bin>
 <bin file="PreFitSignalShapes.cpp" name="PreFitSignalShapes"></bin>
