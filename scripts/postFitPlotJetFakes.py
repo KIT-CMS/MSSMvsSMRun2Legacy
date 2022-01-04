@@ -385,10 +385,10 @@ def main(args):
           if bin_number[1:]=="33": bin_label = "No B-tag Medium d_{#zeta}"
           if bin_number[1:]=="34": bin_label = "No B-tag Low d_{#zeta}"
 
-        if bin_number[0] == '1': bin_label+=', p_{T}<50 GeV'
-        if bin_number[0] == '2': bin_label+=', 50#leq p_{T}<100 GeV'
-        if bin_number[0] == '3': bin_label+=', 100#leq p_{T}<200 GeV'
-        if bin_number[0] == '4': bin_label+=', p_{T}#geq 200 GeV'
+        if bin_number[0] == '1': bin_label+=', p_{T}^{#tau#tau}<50 GeV'
+        if bin_number[0] == '2': bin_label+=', 50#leq p_{T}^{#tau#tau}<100 GeV'
+        if bin_number[0] == '3': bin_label+=', 100#leq p_{T}^{#tau#tau}<200 GeV'
+        if bin_number[0] == '4': bin_label+=', p_{T}^{#tau#tau}#geq 200 GeV'
         plot.ModTDRStyle(r=0.04, l=0.18)
 
     ## Add bin labels
@@ -584,7 +584,8 @@ def main(args):
     sbhist.Scale(scale,"width")
 
     for shist in sighists:
-        shist.Scale(5.4*scale,"width") # can scale up signals here if desired
+        if mode == 'prefit': shist.Scale(5.7*scale,"width") # can scale up signals here if desired
+        else: shist.Scale(scale,"width") # can scale up signals here if desired
         sbhist.Add(shist)
     #sbhist.Scale(scale,"width")
     #sbhist_alt.Scale(scale,"width")
@@ -749,7 +750,7 @@ def main(args):
     pads[1].SetTicks(1)
     #Setup legend
     if not is2D:
-        legend = plot.PositionedLegend(0.35,0.30,3,0.03)
+        legend = plot.PositionedLegend(0.35,0.30,3,0.07,0.01)
         legend.SetTextSize(0.025)
     else:
         legend = PositionedLegendUnrolled(0.13,0.5,7,0.02)
@@ -770,12 +771,12 @@ def main(args):
     legend.AddEntry(bkghist,"Bkg. Uncertainty","f")
     if is2D:
         if not mode == 'prefit':
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
         else:
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
 
     else:
-        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.4 pb"%vars(),"l")
+        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()
@@ -785,14 +786,21 @@ def main(args):
     latex2.SetTextFont(42)
     if not is2D:
         latex2.SetTextSize(0.032)
-        latex2.DrawLatex(0.21,0.89,"{}, {}".format(bin_label, channel_label))
+        latex2.DrawLatex(0.21,0.89,"{}, {}".format(bin_label.split(',')[0], channel_label))
+        latex3 = ROOT.TLatex()
+        latex3.SetNDC()
+        latex3.SetTextSize(0.032)
+        latex3.SetTextAngle(0)
+        latex3.SetTextColor(ROOT.kBlack)
+        latex3.SetTextFont(42)
+        latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
     else:
         latex2.SetTextAlign(23)
         latex2.SetTextSize(0.05)
         latex2.DrawLatex(0.46,0.955,"{}, {}".format(bin_label, channel_label))
 
     #CMS and lumi labels
-    plot.FixTopRange(pads[0], plot.GetPadYMax(pads[0]), extra_pad if extra_pad>0 else 0.15)
+    plot.FixTopRange(pads[0], plot.GetPadYMax(pads[0]), extra_pad if extra_pad>0 else 0.3)
     extra=''
     extra='Preliminary'
     if 'htt_tt_2018_6_' in file_dir: extra=''

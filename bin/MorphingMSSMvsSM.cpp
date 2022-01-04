@@ -2059,19 +2059,9 @@ int main(int argc, char **argv) {
 //      cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
 //      cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
 
-//      if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
-//        cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_lowttbar_"+y);
-//        cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_highttbar_"+y);
-//      }
-  }
 
   cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar");
   cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar");
-
-  //if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
-  //  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_lowttbar");
-  //  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_highttbar");
-  //}
 
   std::vector<std::string> met_uncerts = {
     "CMS_htt_boson_scale_met_2016",
@@ -2456,6 +2446,7 @@ int main(int argc, char **argv) {
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
   if(!prop_plot){
+    cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
     cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
     cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
   } 

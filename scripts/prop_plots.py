@@ -409,7 +409,7 @@ def HTTMassPlot(cats=[432],
 
     ModTDRStyle(r=0.04, l=0.14,height=700)
 
-    sig_schemes = ("ggH(100 GeV)#rightarrow#tau#tau @ 5.4 pb", ["TotalSig"])
+    sig_schemes = ("ggH(100 GeV)#rightarrow#tau#tau @ 5.7 pb", ["TotalSig"])
 
     background_schemes = [
                 backgroundComp("H(125 GeV)",["qqH125","bbH125","ggH125","ggHWW125", "qqHWW125", "WHWW125", "ZHWW125"],ROOT.TColor.GetColor(51,51,230)),
@@ -620,8 +620,8 @@ def HTTMassPlot(cats=[432],
     elif cats[0] == 132: plot_name+='_0to50'
     c1.SaveAs('prop_plots/%(plot_name)s.pdf' % vars())
 
-HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_GT200_v5.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_GT200_v5.root'))
-HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_100to200_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_100to200_v5.root'))
-HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_50to100_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_50to100_v5.root'))
-HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_0to50_v5.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_0to50_v5.root'))
-HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_cmb_v5.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_cmb_v5.root'))
+HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_0to50_dec20.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_0to50_dec20.root'))
+HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_50to100_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_50to100_dec20.root'))
+HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_100to200_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_100to200_dec20.root'))
+HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_GT200_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_GT200_dec20.root'))
+#HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_cmb_dec20.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_cmb_dec20.root'))

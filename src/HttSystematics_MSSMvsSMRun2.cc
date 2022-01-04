@@ -2706,7 +2706,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
       .AddSyst(cb, "CMS_htt_ttbarShape", "shapeU", SystMap<>::init(1.00));
-  //cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
 
   // ##########################################################################
   // Uncertainty: Electron/muon to tau fakes and ZL energy scale
