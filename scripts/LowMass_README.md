@@ -169,7 +169,15 @@ combineTool.py -m "100" -M GoodnessOfFit --algorithm ${algo} --boundlist input/m
 ## run scan of a parameter
 
 ```bash
-
+# run scans
 combineTool.py -m "100" -M MultiDimFit --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0,CMS_res_t=0 --redefineSignalPOIs CMS_res_t --setParameterRanges CMS_res_t=-2,2  -d model_independent_limits/Dec31_newsysts_tresonly_all_all_bsm-model-indep/combined/cmb/ws.root --there -n ".ggH.tres" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01  --job-mode 'SGE' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" --split-points 1 --points 41 --algo grid --saveNLL
+
+# hadd outputs
+
+hadd -f model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.POINTS.*.root
+
+# make plots
+
+python scripts/plot1DScan.py --obs model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --POI CMS_res_t --exp model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --y-max=20 --y-cut=20 --output scan_tres 
 
 ```
