@@ -49,6 +49,7 @@ else:
   dc_creation_cmd_3 = 'morph_parallel.py --output model_independent_limits/%(output)s_all_all --analysis "%(analysis)s" --eras %(year_text)s --category-list input/%(cat_file_cr)s --variable "mt_tot_puppi" --sm-gg-fractions data/higgs_pt_reweighting_fullRun2_v2.root --parallel 5 --additional-arguments="--auto_rebin=1 --manual_rebin=1 --real_data=1 " --sub-analysis "sm-like-light" --hSM-treatment "hSM-in-bg" --categorization="lowmass" --sm-like-hists="sm125" ' % vars()
   os.system(dc_creation_cmd_3)
 
+
 for year in year_perm:
   for channel in channel_perm:
     ### Set up channel input ###
@@ -94,6 +95,7 @@ for year in year_perm:
 
 
     os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/%(year_str)s/%(channel_str)s -m 95 --parallel 8' % vars())
+
 
     os.system('combineTool.py -m "60,65,70,75,80,85,90,95,100,105,110,120,125,130,140,160,180,200,250" -M Significance --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".ggH.v2" --task-name ggH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s_pvalue --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0"' % vars())
 

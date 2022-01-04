@@ -2384,6 +2384,35 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"EMB"})
       .AddSyst(cb, "CMS_scale_t_3prong1pizero_$ERA", "shape", SystMap<>::init(0.5));
 
+  
+  // ##########################################################################
+  // Additional uncertainties for embedding for muon energy scale, and electron, muon, and tau energy resolutions
+  // These uncertainties were only used to determine their would-be impact on the results
+  // ##########################################################################
+  
+  //cb.cp()
+  //    .channel({"em", "mt"})
+  //    .process({"EMB"})
+  //    .bin_id({2},false)
+  //    .AddSyst(cb, "CMS_scale_mu", "shape", SystMap<>::init(1.0));
+
+  //cb.cp()
+  //    .channel({"em", "mt"})
+  //    .process({"EMB"})
+  //    .bin_id({2},false)
+  //    .AddSyst(cb, "CMS_res_mu", "shape", SystMap<>::init(1.0));
+
+  //cb.cp()
+  //    .channel({"em", "et"})
+  //    .process({"EMB"})
+  //    .bin_id({2},false)
+  //    .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.0));
+
+  //cb.cp()
+  //    .channel({"et", "mt", "tt"})
+  //    .process({"EMB"})
+  //    .AddSyst(cb, "CMS_res_t", "shape", SystMap<>::init(1.0));
+
   // ##########################################################################
   // Uncertainty: Jet energy scale
   // References:
@@ -2654,10 +2683,17 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
           .AddSyst(cb, "CMS_htt_dyShape", "shape", SystMap<>::init(0.10));
   }
 
+  // uncertainty from Z->mumu non-closures in bins of mass and pT
   cb.cp()
       .process({"EMB"})
       .bin_id(mssm_categories)
       .AddSyst(cb, "embed_zpt_mass_shape", "shape", SystMap<>::init(1.00));
+
+  // uncertainty on yield in btag region from closure tests with Z->mumu embedded events
+  cb.cp()
+    .bin_id(btag_categories)
+    .process({"EMB"})
+    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.02));
 
   // ##########################################################################
   // Uncertainty: TT shape reweighting

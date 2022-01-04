@@ -1319,29 +1319,14 @@ int main(int argc, char **argv) {
     .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTloose_$ERA", "shape", SystMap<>::init(1.00));
 
   }
-  // additional embedded scale factor for btag categories to account for non-closure in Z->mumu data
-  // the size of the non-closure is also taken as an uncertainty
-  //cb.cp().process({"EMB"}).era({"2016"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.98061); });
-  //cb.cp().process({"EMB"}).era({"2017"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.99168); });
-  //cb.cp().process({"EMB"}).era({"2018"}).bin_id({35,36,37}).ForEachProc([&](ch::Process * proc) { proc->set_rate(proc->rate()*0.90215); });
 
-  cb.cp()
-    .bin_id({35,36,37})
-    .process({"EMB"})
-    .era({"2016"})
-    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.019));
-
-  cb.cp()
-    .bin_id({35,36,37})
-    .process({"EMB"})
-    .era({"2017"})
-    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.008));
-
-  cb.cp()
-    .bin_id({35,36,37})
-    .process({"EMB"})
-    .era({"2018"})
-    .AddSyst(cb, "embed_btag_yield_$ERA", "lnN", SystMap<>::init(1.098));
+  //// when fitting m_sv add additional uncertainty for non-closure of m_sv distribution in anti-isolated data
+  //if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
+  //    cb.cp()
+  //    .bin_id({2}, false)
+  //    .process({"QCD"})
+  //    .AddSyst(cb, "CMS_qcd_relaxediso_nonClosure", "shape", SystMap<>::init(1.00));
+  //}
 
   if(prop_plot){
     // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
@@ -1642,7 +1627,7 @@ int main(int argc, char **argv) {
         for(auto b : cb.cp().channel({c}).bin_id({mssm_nobtag_categories},false).bin_id_set()){
           binning_map[c][b][0]={0,60,60};
           binning_map[c][b][1]={60,80,20};
-          binning_map[c][b][2]={40,120,10};
+          binning_map[c][b][2]={80,120,10};
           binning_map[c][b][3]={120,200,20};
           binning_map[c][b][4]={200,240,40};
           binning_map[c][b][5]={240,300,60};
@@ -2066,13 +2051,27 @@ int main(int argc, char **argv) {
     }
   }
 
+
   // rename MC subtraction uncertainty in the em channel to decorrelate between years and ttbar fraction.
   for (std::string y: {"2016", "2017", "2018"}) {
       cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "CMS_htt_qcd_iso", "CMS_htt_qcd_iso_"+y);
 
-      cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
-      cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+//      cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
+//      cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+
+//      if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
+//        cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_lowttbar_"+y);
+//        cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_highttbar_"+y);
+//      }
   }
+
+  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar");
+  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar");
+
+  //if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
+  //  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_lowttbar");
+  //  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "CMS_qcd_relaxediso_nonClosure", "CMS_qcd_relaxediso_nonClosure_highttbar");
+  //}
 
   std::vector<std::string> met_uncerts = {
     "CMS_htt_boson_scale_met_2016",
@@ -2538,7 +2537,7 @@ int main(int argc, char **argv) {
       TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
       TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
        
-      double sig_scale=5.32; // set to best fit value of signal strength for ggH
+      double sig_scale=5.686; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
       sig_i.Scale(sig_scale);
 
