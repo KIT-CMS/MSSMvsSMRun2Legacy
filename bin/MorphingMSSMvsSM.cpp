@@ -1320,14 +1320,6 @@ int main(int argc, char **argv) {
 
   }
 
-  //// when fitting m_sv add additional uncertainty for non-closure of m_sv distribution in anti-isolated data
-  //if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") {
-  //    cb.cp()
-  //    .bin_id({2}, false)
-  //    .process({"QCD"})
-  //    .AddSyst(cb, "CMS_qcd_relaxediso_nonClosure", "shape", SystMap<>::init(1.00));
-  //}
-
   if(prop_plot){
     // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
     auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
@@ -2084,6 +2076,10 @@ int main(int argc, char **argv) {
   };
 
   for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
+
+  //// split TER uncertainty by era:
+  //for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"CMS_res_t","CMS_res_t_"+y);
+
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins

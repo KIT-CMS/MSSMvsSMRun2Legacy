@@ -88,6 +88,30 @@ combineTool.py -M Impacts --approx robust -m 100  --freezeParameters r_qqX,r_ggX
 plotImpacts.py -i impacts_bbH_dec20.json -o impacts_bbH_dec20 
 ```
 
+# full impacts
+
+```bash
+
+# run initial fit
+
+combineTool.py -M Impacts  --doInitialFit --robustFit=1 -m 100  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/ws.root  -n ".ggH.impacts_full.jan03"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01
+
+# run seperate fits
+
+combineTool.py -M Impacts  --doFits --robustFit=1 -m 100  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/ws.root  -n ".ggH.impacts_full.jan03"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --named CMS_res_t > impacts_full_fits.out
+
+# to run all parameters remove --named option
+
+# collect results into json
+
+combineTool.py -M Impacts   --robustFit=1 -m 100  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/ws.root  -n ".ggH.impacts_full.jan03"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -o impacts_full.json
+
+# make plot
+
+plotImpacts.py -i impacts_full.json -o impacts_full
+
+```
+
 ## Channel compatability checks:
 
 **By channel:**
@@ -151,7 +175,7 @@ python plotting/plot_ccc.py higgsCombine.CCC.year.ChannelCompatibilityCheck.mH${
 # b-only (corresponds to M=95 below)
 # and S+B fit with M=100 GeV (M=100 below)
 
-DIR="Dec20_2D_all_all_bsm-model-indep"
+DIR="Jan04_newemQCD_all_all_bsm-model-indep"
 
 algo="saturated"
 
@@ -165,12 +189,16 @@ combineTool.py -m "100" -M GoodnessOfFit --algorithm ${algo} --boundlist input/m
 
 # collect results
 
+for m in 95 100; do combineTool.py -M CollectGoodnessOfFit --input model_independent_limits/${DIR}/combined/cmb/higgsCombine.${algo}.GoodnessOfFit.mH${m}.root model_independent_limits/${DIR}/combined/cmb/higgsCombine.${algo}.toys.GoodnessOfFit.mH${m}.*.root --there -o model_independent_limits/${DIR}/combined/cmb/gof_${algo}_m${m}.json; done
+
+# make plots
+
 ```
 ## run scan of a parameter
 
 ```bash
 # run scans
-combineTool.py -m "100" -M MultiDimFit --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0,CMS_res_t=0 --redefineSignalPOIs CMS_res_t --setParameterRanges CMS_res_t=-2,2  -d model_independent_limits/Dec31_newsysts_tresonly_all_all_bsm-model-indep/combined/cmb/ws.root --there -n ".ggH.tres" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01  --job-mode 'SGE' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" --split-points 1 --points 41 --algo grid --saveNLL
+combineTool.py -m "100" -M MultiDimFit --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0,CMS_res_t=0 --redefineSignalPOIs CMS_res_t --setParameterRanges CMS_res_t=-2,2  -d model_independent_limits/Dec31_newsysts_tresonly_all_all_bsm-model-indep/combined/cmb/ws.root --there -n ".ggH.tres" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01  --job-mode 'SGE' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" --split-points 1 --points 41 --algo grid --saveNLL --alignEdges=1
 
 # hadd outputs
 

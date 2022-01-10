@@ -63,7 +63,7 @@ for year in year_perm:
       year_list = year.split(",")
 
     #if year == channel: continue # skip full combination - temp, remove after!!
-    if not (year == 'all' or channel == 'all'): continue # don't run very fine breakdown by both channel and year for now 
+    #if not (year == 'all' or channel == 'all'): continue # don't run very fine breakdown by both channel and year for now 
     #if year == 'all': continue
     #if channel != 'mt': continue
 
