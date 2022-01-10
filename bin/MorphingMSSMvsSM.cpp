@@ -83,6 +83,8 @@ int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
   using ch::syst::bin_id;
+  using ch::syst::bin;
+  using ch::syst::mass;
   using ch::JoinStr;
   using ch::syst::SystMap;
 
@@ -108,6 +110,8 @@ int main(int argc, char **argv) {
   bool rebin_sm = true;
   bool no_shape_systs = false;
   bool enable_bsm_lowmass = false;
+  bool lowmass = false;
+  bool prop_plot = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -120,7 +124,7 @@ int main(int argc, char **argv) {
   string sm_like_hists = "sm125"; // used in analysis = "bsm-model-dep-full": "sm125", "bsm"
   std::vector<string> sm_like_hists_choices = {"sm125", "bsm"};
   string categorization = "classic"; // "with-sm-ml", "sm-ml-only", "classic"
-  std::vector<string> categorization_choices = {"with-sm-ml", "sm-ml-only", "classic"};
+  std::vector<string> categorization_choices = {"with-sm-ml", "sm-ml-only", "classic", "lowmass"};
 
   int era = 2016; // 2016, 2017 or 2018
   std::vector<int> era_choices = {2016, 2017, 2018};
@@ -161,6 +165,7 @@ int main(int argc, char **argv) {
       ("main_sm_signals", po::value<vector<string>>(&parser_main_sm_signals)->multitoken(), "main_sm_signals")
       ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
       ("enable_bsm_lowmass", po::value<bool>(&enable_bsm_lowmass)->default_value(enable_bsm_lowmass))
+      ("prop_plot", po::value<bool>(&prop_plot)->default_value(false))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -169,6 +174,8 @@ int main(int argc, char **argv) {
       cout << config << "\n";
       return 0;
   }
+
+  lowmass = (categorization == "lowmass");
 
   // Sanity check for options with choices
   // analysis option
@@ -417,7 +424,7 @@ int main(int argc, char **argv) {
     mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
     mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
-  if (variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+  if (variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
     mssm_qqH_signals = {"qqX"};
     ggX_signals = {"ggX_t","ggX_b","ggX_i"};
   }
@@ -473,7 +480,17 @@ int main(int argc, char **argv) {
 
   if(do_morph) {
 
-    if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+    if(lowmass) {
+      SUSYqqH_masses[2018] = {"95"};
+      SUSYqqH_masses[2017] = {"95"};
+      SUSYqqH_masses[2016] = {"95"};
+
+      ggX_masses[2018] = {"95"};
+      ggX_masses[2017] = {"95"};
+      ggX_masses[2016] = {"95"};
+    }
+
+    if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT") {
 
       SUSYbbH_masses[2018] = {"60","80","100","120","125","130","140","160","180","200","250"};
       SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
@@ -527,6 +544,23 @@ int main(int argc, char **argv) {
       SUSYbbH_masses[2017] = {non_morphed_mass};
       SUSYbbH_masses[2018] = {non_morphed_mass};
     }
+  }
+
+  if(prop_plot) {
+    SUSYggH_masses[2016] = {"100"};
+    SUSYggH_masses[2017] = {"100"};
+    SUSYggH_masses[2018] = {"100"};
+    SUSYbbH_masses[2016] = {"100"};
+    SUSYbbH_masses[2017] = {"100"};
+    SUSYbbH_masses[2018] = {"100"};
+
+    SUSYqqH_masses[2018] = {};
+    SUSYqqH_masses[2017] = {};
+    SUSYqqH_masses[2016] = {};
+    
+    ggX_masses[2018] = {};
+    ggX_masses[2017] = {};
+    ggX_masses[2016] = {};
   }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
@@ -674,6 +708,64 @@ int main(int argc, char **argv) {
         { 35, "em_NbtagGt1_DZetaGt30"},
         { 36, "em_NbtagGt1_DZetam10To30"},
         { 37, "em_NbtagGt1_DZetam35Tom10"},
+    };
+  } else if(categorization == "lowmass"){
+    cats["et"] = {
+        { 32, "et_Nbtag0_MTLt40"},
+        { 33, "et_Nbtag0_MT40To70"},
+        { 35, "et_NbtagGt1_MTLt40"},
+        { 36, "et_NbtagGt1_MT40To70"},
+        { 132, "et_Nbtag0_MTLt40_pT_0To50"},
+        { 133, "et_Nbtag0_MT40To70_pT_0To50"},
+        { 232, "et_Nbtag0_MTLt40_pT_50To100"},
+        { 233, "et_Nbtag0_MT40To70_pT_50To100"},
+        { 332, "et_Nbtag0_MTLt40_pT_100To200"},
+        { 333, "et_Nbtag0_MT40To70_pT_100To200"},
+        { 432, "et_Nbtag0_MTLt40_pT_GT200"},
+        { 433, "et_Nbtag0_MT40To70_pT_GT200"},
+    };
+    cats["mt"] = {
+        { 32, "mt_Nbtag0_MTLt40"},
+        { 33, "mt_Nbtag0_MT40To70"},
+        { 35, "mt_NbtagGt1_MTLt40"},
+        { 36, "mt_NbtagGt1_MT40To70"},
+        { 132, "mt_Nbtag0_MTLt40_pT_0To50"},
+        { 133, "mt_Nbtag0_MT40To70_pT_0To50"},
+        { 232, "mt_Nbtag0_MTLt40_pT_50To100"},
+        { 233, "mt_Nbtag0_MT40To70_pT_50To100"},
+        { 332, "mt_Nbtag0_MTLt40_pT_100To200"},
+        { 333, "mt_Nbtag0_MT40To70_pT_100To200"},
+        { 432, "mt_Nbtag0_MTLt40_pT_GT200"},
+        { 433, "mt_Nbtag0_MT40To70_pT_GT200"},
+    };
+    cats["tt"] = {
+        { 32, "tt_Nbtag0"},
+        { 35, "tt_NbtagGt1"},
+        { 132, "tt_Nbtag0_pT_0To50"},
+        { 232, "tt_Nbtag0_pT_50To100"},
+        { 332, "tt_Nbtag0_pT_100To200"},
+        { 432, "tt_Nbtag0_pT_GT200"},
+    };
+    cats["em"] = {
+        {  2, "em_NbtagGt1_DZetaLtm35"},
+        { 32, "em_Nbtag0_DZetaGt30"},
+        { 33, "em_Nbtag0_DZetam10To30"},
+        { 34, "em_Nbtag0_DZetam35Tom10"},
+        { 35, "em_NbtagGt1_DZetaGt30"},
+        { 36, "em_NbtagGt1_DZetam10To30"},
+        { 37, "em_NbtagGt1_DZetam35Tom10"},
+        { 132, "em_Nbtag0_DZetaGt30_pT_0To50"},
+        { 133, "em_Nbtag0_DZetam10To30_pT_0To50"},
+        { 134, "em_Nbtag0_DZetam35Tom10_pT_0To50"},
+        { 232, "em_Nbtag0_DZetaGt30_pT_50To100"},
+        { 233, "em_Nbtag0_DZetam10To30_pT_50To100"},
+        { 234, "em_Nbtag0_DZetam35Tom10_pT_50To100"},
+        { 332, "em_Nbtag0_DZetaGt30_pT_100To200"},
+        { 333, "em_Nbtag0_DZetam10To30_pT_100To200"},
+        { 334, "em_Nbtag0_DZetam35Tom10_pT_100To200"},
+        { 432, "em_Nbtag0_DZetaGt30_pT_GT200"},
+        { 433, "em_Nbtag0_DZetam10To30_pT_GT200"},
+        { 434, "em_Nbtag0_DZetam35Tom10_pT_GT200"},
     };
   }
   else if(categorization == "sm-ml-only"){
@@ -926,8 +1018,8 @@ int main(int argc, char **argv) {
   // Introduce ordering of categories for the final discriminator in MSSM
   std::vector<int> sm_categories = {13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
   std::vector<int> em_control_category = {2}; // Control region for em channel
-  std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
-  std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
+  std::vector<int> mssm_btag_categories = {35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}; // b-tagged MSSM-like categories with mt_tot as discriminator
+  std::vector<int> mssm_nobtag_categories = {32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}; // non-btagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> sm_signal_category = {101,102,103,104,105,106}; // category for the SM signal
 
 
@@ -1118,7 +1210,7 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
 
-      if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+      if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
         cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
         cb.AddProcesses(ggX_masses[era], {"htt"}, {era_tag}, {chn}, ggX_signals, exclude_em_control, true);
       }
@@ -1126,7 +1218,7 @@ int main(int argc, char **argv) {
     else if(analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"){
       // Adding at first the additional Higgs boson signals
       Categories additional_higgses_cats;
-      if(categorization == "classic") // classic categories cover full mass range for additional Higgs signals
+      if(categorization == "classic" || categorization == "lowmass") // classic categories cover full mass range for additional Higgs signals
       {
          additional_higgses_cats = exclude_em_control;
       }
@@ -1162,7 +1254,7 @@ int main(int argc, char **argv) {
       {
         // Defining categories for SM and BSM SM-like HTT signal: exclude mssm_nobtag_categories in case SM ML HTT categories are used because of m_sv >= 250 GeV cut
         Categories qq_gg_bb_phi_cats;
-        if(categorization == "classic")
+        if(categorization == "classic" || categorization == "lowmass")
         {
           qq_gg_bb_phi_cats = cats[chn];
         }
@@ -1204,6 +1296,38 @@ int main(int argc, char **argv) {
   }
   dout("[INFO] Add systematics AddMSSMvsSMRun2Systematics, embedding:", ! no_emb, " sm categories:", sm);
   ch::AddMSSMvsSMRun2Systematics(cb, true, ! no_emb, true, true, true, era, mva, sm, smlike);
+
+  if(variable=="m_sv_VS_pt_tt_splitpT") {
+    //extra lnN uncertainties for FF when splitting by pt_tt bins
+    cb.cp()
+    .channel({"et", "mt", "tt"})
+    .process({"jetFakes"})
+    .AddSyst(cb, "CMS_ff_total_syst_pt_tt_bin_$BIN_$ERA", "lnN", SystMap<>::init(1.05));
+  }
+  if(variable=="m_sv_puppi") {
+    // for btag categories we also use additional uncertainties to account for non-closures in m_sv distributions
+    cb.cp()
+    .channel({"et", "mt"})
+    .bin_id({35})
+    .process({"jetFakes"})
+    .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTtight_$ERA", "shape", SystMap<>::init(1.00));
+
+    cb.cp()
+    .channel({"et", "mt"})
+    .bin_id({36})
+    .process({"jetFakes"})
+    .AddSyst(cb, "CMS_ff_total_ttbar_msv_shape_syst_mTloose_$ERA", "shape", SystMap<>::init(1.00));
+
+  }
+
+  if(prop_plot){
+    // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
+    auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
+    cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+      syst->set_type("shape");
+    });
+  }
+
   dout("[INFO] Systematics added");
   // Define restriction to the desired category
   if(category != "all"){
@@ -1361,7 +1485,7 @@ int main(int argc, char **argv) {
         }
       }
     }
-    if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+    if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
       cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
         input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process({"ggX_t"}).ExtractShapes(
@@ -1469,25 +1593,13 @@ int main(int argc, char **argv) {
     binning_map["tt"][32] = {};
     binning_map["tt"][35] = {};
 
-    if(variable=="m_sv_VS_pt_tt") {
+    if(variable=="m_sv_VS_pt_tt_splitpT") {
       for(auto c : chns) {
         for(auto b : cb.cp().channel({c}).bin_id_set()) {
-          binning_map[c][b][0]={0,4,4};
-          binning_map[c][b][1]={4,20,1};
-          binning_map[c][b][2]={20,26,2};
-          binning_map[c][b][3]={26,30, 4};
-          binning_map[c][b][4]={0+30,4+30,4};
-          binning_map[c][b][5]={4+30,20+30,1};
-          binning_map[c][b][6]={20+30,26+30,2};
-          binning_map[c][b][7]={26+30,30+30, 4};
-          binning_map[c][b][8]={0+60,4+60,4};
-          binning_map[c][b][9]={4+60,20+60,1};
-          binning_map[c][b][10]={20+60,26+60,2};
-          binning_map[c][b][11]={26+60,30+60, 4};
-          binning_map[c][b][12]={0+90,4+90,4};
-          binning_map[c][b][13]={4+90,20+90,1};
-          binning_map[c][b][14]={20+90,26+90,2};
-          binning_map[c][b][15]={26+90,30+90, 4};
+          binning_map[c][b][0]={0,60,60};
+          binning_map[c][b][1]={60,200,10};
+          binning_map[c][b][2]={200,260,20};
+          binning_map[c][b][3]={260,300, 40};
         }
       }
     }
@@ -1505,10 +1617,12 @@ int main(int argc, char **argv) {
       //for btag categories use wider bins
       for(auto c : chns) {
         for(auto b : cb.cp().channel({c}).bin_id({mssm_nobtag_categories},false).bin_id_set()){
-          binning_map[c][b][0]={0,40,40};
-          binning_map[c][b][1]={40,200,10};
-          binning_map[c][b][2]={200,260,20};
-          binning_map[c][b][3]={260,300, 40};
+          binning_map[c][b][0]={0,60,60};
+          binning_map[c][b][1]={60,80,20};
+          binning_map[c][b][2]={80,120,10};
+          binning_map[c][b][3]={120,200,20};
+          binning_map[c][b][4]={200,240,40};
+          binning_map[c][b][5]={240,300,60};
         }
       }
     }
@@ -1580,8 +1694,34 @@ int main(int argc, char **argv) {
 
   // Special treatment for horizontally morphed mssm signals: Scale hists with negative intergral to zero, including its systematics
   // don't use this treatment for interference
+  // Unless we use the prop_plot option in which case we just set the inteference to 0 if it goes negative 
+
+  ch::CombineHarvester procs_no_i;
+  if(prop_plot) procs_no_i = cb.cp();
+  else procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false);
+
+  if(prop_plot){
+     // for prop_plot option if the inteference is negative we scale it positive and then add a rate parameter which will scale it negative again in the end 
+
+
+     cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}).ForEachProc([&](ch::Process *p) {
+       if(p->rate() <= 0.0){
+         std::cout << "[WARNING] Setting mssm inteference signal with negative yield to positive: \n ";
+         std::cout << ch::Process::PrintHeader << *p << "\n";
+         p->set_rate(p->rate()*-1.);
+
+         cb.cp()
+           .process({p->process()})
+           .bin({p->bin()})
+           .AddSyst(cb, "rate_minus","rateParam",SystMap<>::init(-1.0));
+         cb.GetParameter("rate_minus")->set_range(-1.0,-1.0);
+       }
+     });
+  }
+
+
   std::cout << "[INFO] Setting mssm signals with negative yield to 0 (excluding ggX interference).\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
+  procs_no_i.ForEachProc([mssm_signals,mssm_lowmass_signals](ch::Process *p) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), p->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), p->process()) != mssm_lowmass_signals.end())
     {
       if(p->rate() <= 0.0){
@@ -1594,7 +1734,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i", "ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
+  procs_no_i.ForEachSyst([mssm_signals,mssm_lowmass_signals](ch::Systematic *s) {
     if (std::find(mssm_signals.begin(), mssm_signals.end(), s->process()) != mssm_signals.end() || std::find(mssm_lowmass_signals.begin(), mssm_lowmass_signals.end(), s->process()) != mssm_lowmass_signals.end())
     {
       if (s->type() == "shape") {
@@ -1666,8 +1806,9 @@ int main(int argc, char **argv) {
       double value_u = syst->value_u();
       double value_d = syst->value_d();
 
-      if(value_u <0 || value_d <0) {
-        std::cout << "[WARNING] Setting shape systematic variation to the nominal as the yields would change sign otherwise \n ";
+      if(value_u<=0. || value_d<=0.) {
+        if(value_u<0. || value_d<0.) std::cout << "[WARNING] Setting shape systematic variation to the nominal as the yields would change sign otherwise \n ";
+        else if(value_u==0. || value_d==0.) std::cout << "[WARNING] Setting shape systematic variation to the nominal as the yields would go to zero otherwise \n ";
         std::cout << ch::Systematic::PrintHeader << *syst << "\n";
         TH1D *shape_u = (TH1D*)syst->ClonedShapeU().get()->Clone();
         TH1D *shape_d = (TH1D*)syst->ClonedShapeD().get()->Clone();
@@ -1676,11 +1817,11 @@ int main(int argc, char **argv) {
           bool match_proc = (MatchingProcess(*proc,*syst));
           if(match_proc) nominal = (TH1D*)proc->ClonedShape().get()->Clone();
         });
-        if(value_u<0){
+        if(value_u<=0.){
           syst->set_value_u(1.0);
           shape_u=(TH1D*)nominal->Clone();
         }
-        if(value_d<0){
+        if(value_d<=0.){
           syst->set_value_d(1.0);
           shape_d=(TH1D*)nominal->Clone();
         }
@@ -1691,8 +1832,6 @@ int main(int argc, char **argv) {
   // rebinning of SM categories according to ML analysis == "  // Rebin categories to predefined binning for binning
   if (rebin_sm && sm) {
     // Rebin background categories
-    // for(auto chn : chns)
-    // {
       for(auto b : cb.cp().bin_id_set())
       {
         TString bstr = b;
@@ -1719,11 +1858,10 @@ int main(int argc, char **argv) {
           std::cout << "\n";
           cb.cp().bin_id({b}).VariableRebin(sm_binning);
         }
-      // }
-    }
+      }
   }
 
-  std::vector<int> mssm_bins = {2,32,33,34,35,36,37};
+  std::vector<int> mssm_bins = {2,32,33,34,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437,132,232,332,432,133,233,333,433,134,234,334,434};
 
   // Turn systematics into lnN
   std::cout << "[INFO] Transforming shape systematics for category " << category << std::endl;
@@ -1787,39 +1925,46 @@ int main(int argc, char **argv) {
   for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"TTL","TTT"},false), u);
   // also convert ttbar in the tt channel
   for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).channel({"tt"}).process({"TTL","TTT"}), u);
-  // also convert ttbar in the nobtag categories
-  for(auto u : jetmet_systs) ConvertShapesToLnN (cb.cp().bin_id({32,33,34}).process({"TTL","TTT"}), u);
+  // also convert ttbar in the nobtag categories, but only when fitting 1D variables
 
   // some FF unc1 systematics for the tt channel only affect the normalisations so can be converted to lnN:
   for (string y : {"2016","2017","2018"}) {
-    ConvertShapesToLnN(cb.cp().bin_id({32,35}), "CMS_ff_total_qcd_stat_dR_unc1_tt_"+y);
-    ConvertShapesToLnN(cb.cp().bin_id({32,35}), "CMS_ff_total_qcd_stat_pt_unc1_tt_"+y);
-    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_low_unc1_tt_"+y);
-    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_med_unc1_tt_"+y);
-    ConvertShapesToLnN(cb.cp().bin_id({35}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({32,35,135,235,335,435,132,232,332,432}), "CMS_ff_total_qcd_stat_dR_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({32,35,135,235,335,435,132,232,332,432}), "CMS_ff_total_qcd_stat_pt_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_low_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_med_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
   }
 
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
   for (string y : {"2016","2017","2018"}) {
+
+    if(variable=="m_sv_puppi") {
+      cb.cp().channel({"et"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_"+y,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_et_"+y);
+      cb.cp().channel({"et"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTloose_"+y,"CMS_ff_total_ttbar_msv_shape_mTloose_et_"+y);
+      cb.cp().channel({"mt"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_"+y,"CMS_ff_total_ttbar_msv_shape_syst_mTtight_mt_"+y);
+      cb.cp().channel({"mt"}).RenameSystematic(cb,"CMS_ff_total_ttbar_msv_shape_syst_mTloose_"+y,"CMS_ff_total_ttbar_msv_shape_mTloose_mt_"+y);
+    }
+
     for (string u : {"unc1", "unc2"}) {
 
-      cb.cp().bin_id({32}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_Nbtag0_"+y);
-      cb.cp().bin_id({35}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_NbtagGt1_"+y);
+      cb.cp().bin_id({32,132,232,332,432}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_Nbtag0_"+y);
+      cb.cp().bin_id({35,135,235,335,435}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_dR_"+u+"_tt_NbtagGt1_"+y);
 
-      cb.cp().bin_id({32}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_Nbtag0_"+y);
-      cb.cp().bin_id({35}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_NbtagGt1_"+y);
+      cb.cp().bin_id({32,132,232,332,432}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_Nbtag0_"+y);
+      cb.cp().bin_id({35,135,235,335,435}).channel({"tt"}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_"+y,"CMS_ff_total_qcd_stat_pt_"+u+"_tt_NbtagGt1_"+y);
 
       for (string c : {"mt","et"}) {
-        cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MTLt40_"+y);
-        cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MT40To70_"+y);
-        cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MTLt40_"+y);
-        cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MT40To70_"+y);
+        cb.cp().bin_id({32,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MTLt40_"+y);
+        cb.cp().bin_id({33,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_Nbtag0_MT40To70_"+y);
+        cb.cp().bin_id({35,135,235,335,435}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MTLt40_"+y);
+        cb.cp().bin_id({36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_"+y,"CMS_ff_total_wjets_stat_extrap_"+u+"_"+c+"_NbtagGt1_MT40To70_"+y);
 
-        cb.cp().bin_id({32,35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MTLt40_"+y);
-        cb.cp().bin_id({33,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MT40To70_"+y);
+        cb.cp().bin_id({32,35,135,235,335,435,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MTLt40_"+y);
+        cb.cp().bin_id({33,36,136,236,336,436,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_"+y,"CMS_ff_total_ttbar_stat_l_pt_"+u+"_"+c+"_MT40To70_"+y);
 
-        cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_Nbtag0_"+y);
-        cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_NbtagGt1_"+y);
+        cb.cp().bin_id({32,33,132,232,332,432,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_Nbtag0_"+y);
+        cb.cp().bin_id({35,135,235,335,435,36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_"+y,"CMS_ff_total_qcd_stat_os_"+u+"_"+c+"_NbtagGt1_"+y);
 
       }
     }
@@ -1834,27 +1979,27 @@ int main(int argc, char **argv) {
 
   for (string y : {"2016","2017","2018"}) {
     for (string c : {"mt","et"}) {
-      cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MTLt40_"+y);
-      cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MT40To70_"+y);
-      cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MTLt40_"+y);
-      cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MT40To70_"+y);
+      cb.cp().bin_id({32,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MTLt40_"+y);
+      cb.cp().bin_id({33,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_Nbtag0_MT40To70_"+y);
+      cb.cp().bin_id({35,135,235,335,435}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MTLt40_"+y);
+      cb.cp().bin_id({36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_extrap_"+c+"_"+y,"CMS_ff_total_wjets_syst_extrap_"+c+"_NbtagGt1_MT40To70_"+y);
 
-      cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MTLt40_"+y);
-      cb.cp().bin_id({33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MT40To70_"+y);
-      cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MTLt40_"+y);
-      cb.cp().bin_id({36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MT40To70_"+y);
+      cb.cp().bin_id({32,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MTLt40_"+y);
+      cb.cp().bin_id({33,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_MT40To70_"+y);
+      cb.cp().bin_id({35,135,235,335,435}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MTLt40_"+y);
+      cb.cp().bin_id({36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_MT40To70_"+y);
     }
   }
   for (string y : {"2016","2017","2018"}) {
     string c = "tt";
-    cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_"+y);
-    cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y);
+    cb.cp().bin_id({32,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_Nbtag0_"+y);
+    cb.cp().bin_id({35,135,235,335,435}).channel({c}).RenameSystematic(cb,"CMS_ff_total_wjets_syst_"+c+"_"+y,"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y);
 
-    cb.cp().bin_id({32}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_Nbtag0_"+y);
-    cb.cp().bin_id({35}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_NbtagGt1_"+y);
+    cb.cp().bin_id({32,132,232,332,432}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_Nbtag0_"+y);
+    cb.cp().bin_id({35,135,235,335,435}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_"+y,"CMS_ff_total_qcd_syst_dr_closure_"+c+"_NbtagGt1_"+y);
 
     // scale Wjets uncertainty by 2 for tt channels in btag category.
-    cb.cp().bin_id({35}).channel({c}).syst_name({"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
+    cb.cp().bin_id({35,135,235,335,435}).channel({c}).syst_name({"CMS_ff_total_wjets_syst_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
       if (syst->type().find("shape") != std::string::npos) {
         syst->set_scale(syst->scale() * 2.);
       }
@@ -1871,13 +2016,13 @@ int main(int argc, char **argv) {
 
   for (string y : {"2016","2017","2018"}) {
     for (string c : {"mt","et","tt"}) {
-      cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_Nbtag0_"+y);
-      cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y);
+      cb.cp().bin_id({32,33,132,232,332,432,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_Nbtag0_"+y);
+      cb.cp().bin_id({35,135,235,335,435,36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_"+c+"_"+y,"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y);
       if(c != "tt") {
-        cb.cp().bin_id({32,33}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_Nbtag0_"+y);
-        cb.cp().bin_id({35,36}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y);
+        cb.cp().bin_id({32,33,132,232,332,432,133,233,333,433}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_Nbtag0_"+y);
+        cb.cp().bin_id({35,135,235,335,435,36,136,236,336,436}).channel({c}).RenameSystematic(cb,"CMS_ff_total_qcd_syst_iso_"+c+"_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y);
         // scale QCD extrapolation uncertainties by 2 for et and mt channels in btag category.
-        cb.cp().bin_id({35,36}).channel({c}).syst_name({"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
+        cb.cp().bin_id({35,135,235,335,435,36,136,236,336,436}).channel({c}).syst_name({"CMS_ff_total_qcd_syst_"+c+"_NbtagGt1_"+y,"CMS_ff_total_qcd_syst_iso_"+c+"_NbtagGt1_"+y}).ForEachSyst([&](ch::Systematic *syst) {
           if (syst->type().find("shape") != std::string::npos) {
             syst->set_scale(syst->scale() * 2.);
           }
@@ -1892,13 +2037,34 @@ int main(int argc, char **argv) {
     }
   }
 
-  // rename MC subtraction uncertainty in the em channel to decorrelate between years and ttbar fraction.
+  //  ConvertShapesToLnN(cb.cp().channel({"em"}), "subtrMC");
+  ConvertShapesToLnN(cb.cp().channel({"em"}), "htt_em_QFlip");
+  //ConvertShapesToLnN(cb.cp().channel({"em"}), "htt_em_MuToEFakes_SS"); // very small so removed
+  ConvertShapesToLnN(cb.cp().channel({"em"}).bin_id({33,133},false), "htt_em_MuToEFakes_OS"); // shape only in cateogory with large ZL
+  ConvertShapesToLnN(cb.cp().channel({"em"}).process({"TTL","VVL","QCD"}), "htt_em_JToMuFakes");
+  ConvertShapesToLnN(cb.cp().channel({"em"}).process({"ZL"},false), "htt_em_JToEFakes"); // To lnN for all processes except ZL in largest category
+  ConvertShapesToLnN(cb.cp().channel({"em"}).bin_id({33,133},false), "htt_em_JToEFakes");
+  ConvertShapesToLnN(cb.cp().channel({"em"}), "CMS_htt_qcd_iso");
+  for (std::string y: {"2016", "2017", "2018"}) {
+    for (std::string jetbin: {"0jet","1jet","2jet"}) {
+      for (std::string shapebin: {"rate","shape","shape2"}) {
+	ConvertShapesToLnN(cb.cp().channel({"em"}), "CMS_htt_qcd_"+jetbin+"_"+shapebin+"_"+y);
+      }
+    }
+  }
+
+  cb.cp().channel({"em"}).era({"2016"}).RenameSystematic(cb, "htt_em_QFlip", "htt_em_QFlip_2016"); // this uncertainty is systematics limited but correction for 2016 has different magnitude to 2017 and 2018 so decorrelate 
+
   for (std::string y: {"2016", "2017", "2018"}) {
       cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "CMS_htt_qcd_iso", "CMS_htt_qcd_iso_"+y);
-
-      cb.cp().bin_id({32,33,34}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
-      cb.cp().bin_id({2,35,36,37}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
+      cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "htt_em_MuToEFakes_OS", "htt_em_MuToEFakes_OS_"+y);
+      //cb.cp().channel({"em"}).era({y}).RenameSystematic(cb, "htt_em_MuToEFakes_SS", "htt_em_MuToEFakes_SS_"+y); // very small so removed
+//      cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar_"+y);
+//      cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).era({y}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar_"+y);
   }
+
+//  cb.cp().bin_id({32,33,34,132,232,332,432,133,233,333,433,134,234,334,434}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_lowttbar");
+//  cb.cp().bin_id({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}).channel({"em"}).RenameSystematic(cb, "subtrMC", "subtrMC_highttbar");
 
   std::vector<std::string> met_uncerts = {
     "CMS_htt_boson_scale_met_2016",
@@ -1911,10 +2077,16 @@ int main(int argc, char **argv) {
 
   for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
 
+  //// split TER uncertainty by era:
+  //for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"CMS_res_t","CMS_res_t_"+y);
+
+
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins
+  // Unless we use the prop_plot option in which case we just set the inteference to 0 if it goes negative 
+
   std::cout << "[INFO] Fixing negative bins.\n";
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachProc([](ch::Process *p) {
+  procs_no_i.ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
       std::cout << "[WARNING] Fixing negative bins for process: \n ";
       std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1924,7 +2096,7 @@ int main(int argc, char **argv) {
     }
   });
 
-  cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false).ForEachSyst([](ch::Systematic *s) {
+  procs_no_i.ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos)
       return;
     if (ch::HasNegativeBins(s->shape_u()) ||
@@ -2084,7 +2256,7 @@ int main(int argc, char **argv) {
       {"bbh", "norm"}
     };
 
-    if(variable=="m_sv_VS_pt_tt" || variable=="m_sv_puppi") {
+    if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
     process_norm_map = {
       {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
       {"ggX_t", "prenorm"}, {"ggX_b", "prenorm"}, {"ggX_i", "prenorm"},
@@ -2098,7 +2270,7 @@ int main(int argc, char **argv) {
     TFile fractions_sm(sm_gg_fractions.c_str());
     std::cout << "[INFO] --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
-    if(do_morph) {
+    if(do_morph && !prop_plot) {
       //w_sm->var("Yb_MSSM_h")->setVal(0.); // un-comment to remove bottom and top-bottom contirbutions (top only)
       //w_sm->var("Yt_MSSM_h")->setVal(0.); // un-comment to remove top and top-bottom contirbutions (bottom only)
       w_sm->var("mh")->SetName("MH");
@@ -2117,6 +2289,18 @@ int main(int argc, char **argv) {
       ws.import(MH);
       ws.import(Yt);
       ws.import(Yb);
+      ws.import(*t_frac, RooFit::RecycleConflictNodes());
+      ws.import(*b_frac, RooFit::RecycleConflictNodes());
+      ws.import(*i_frac, RooFit::RecycleConflictNodes());
+    }
+    else if (prop_plot) {
+      w_sm->var("mh")->setVal(100.);
+      RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
+      RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
+      RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
+      t_frac->SetName("ggh_t_frac");
+      b_frac->SetName("ggh_b_frac");
+      i_frac->SetName("ggh_i_frac");
       ws.import(*t_frac, RooFit::RecycleConflictNodes());
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
@@ -2171,7 +2355,7 @@ int main(int argc, char **argv) {
   }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
+  if(do_morph && !prop_plot && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -2179,8 +2363,7 @@ int main(int argc, char **argv) {
     std::cout << "[INFO] Performing template morphing for mssm ggh and bbh.\n";
     auto morphFactory = ch::CMSHistFuncFactory();
     morphFactory.SetHorizontalMorphingVariable(mass_var);
-    if (variable=="m_sv_VS_pt_tt") morphFactory.Run(cb, ws, process_norm_map, false); // we don't use morphed templates for low mass studies using pT vs m_sv unrolled histograms due to problem morphing inteference that can change sign
-    else morphFactory.Run(cb, ws, process_norm_map);
+    morphFactory.Run(cb, ws, process_norm_map);
 
     if(analysis == "bsm-model-indep"){
       // Adding 'norm' terms into workspace according to desired signals
@@ -2207,7 +2390,7 @@ int main(int argc, char **argv) {
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-  else if(!do_morph && analysis == "bsm-model-indep"){
+  else if(!do_morph && analysis == "bsm-model-indep" && !prop_plot){
 
    // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
    //double Tfrac = ws.function("ggh_t_frac")->getVal();
@@ -2236,13 +2419,44 @@ int main(int argc, char **argv) {
      proc->set_rate(proc->rate()*Ifrac);
     });
   }
+  else if(prop_plot){
 
+   // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
+   double Tfrac = ws.function("ggh_t_frac")->getVal();
+   double Bfrac = ws.function("ggh_b_frac")->getVal();
+   double Ifrac = ws.function("ggh_i_frac")->getVal();
+   if (Ifrac<0.) {
+     Ifrac=fabs(Ifrac);
+     // set a constant rate parameter = -1 for the interference
+     cb.cp()
+      .process({"ggh_i"})
+      .AddSyst(cb, "rate_minus_overall","rateParam",SystMap<>::init(-1.0));
+     cb.GetParameter("rate_minus_overall")->set_range(-1.0,-1.0);
+   }
+   std::cout << "setting fractions as t,b,i = " << Tfrac << "," << Bfrac << "," << Ifrac << std::endl;
+
+   cb.cp().process({"ggh_t"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Tfrac);
+    });
+
+   cb.cp().process({"ggh_b"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Bfrac);
+    });
+
+   cb.cp().process({"ggh_i"}).ForEachProc([&](ch::Process * proc) {
+     proc->set_rate(proc->rate()*Ifrac);
+    });
+  }
+  ch::CombineHarvester cb_cp;
+  if(prop_plot) cb_cp = cb.deep();
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
-  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
-
+  if(!prop_plot){
+    cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
+    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+  } 
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
@@ -2305,4 +2519,95 @@ int main(int argc, char **argv) {
     cb.PrintAll();
 
   std::cout << "[INFO] Done producing datacards.\n";
+
+
+
+  if (prop_plot) {
+
+    auto bin_set = cb.cp().bin_id({132,232,332,432,133,233,333,433}).bin_set();
+
+    double new_bins[19] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    TH1F proto("proto", "proto", 18, new_bins);
+
+    for (auto const& bin : bin_set) {
+      ch::CombineHarvester cmb_bin = std::move(cb_cp.cp().bin({bin}));
+      TH1F bkg = cmb_bin.cp().backgrounds().GetShape();
+      TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
+      TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
+       
+      double sig_scale=5.686; // set to best fit value of signal strength for ggH
+      sig.Scale(sig_scale);
+      sig_i.Scale(sig_scale);
+
+      // calculate S/(S+B) between 70-150 GeV
+      double s_sb = 0.;
+      int bin_lo = sig.FindBin(70.);
+      int bin_hi = sig.FindBin(150.) -1;
+      double i_sig_i = sig_i.Integral(bin_lo,bin_hi);
+      if(cmb_bin.GetParameter("rate_minus_overall")!=nullptr) i_sig_i*=-1.;
+      if(cmb_bin.GetParameter("rate_minus")!=nullptr) i_sig_i*=-1.;
+      //double i_sig = sig.Integral(bin_lo,bin_hi)/1.0807788; // the factor scales down by t fraction as we base weights on t-only
+      double i_sig = sig.Integral(bin_lo,bin_hi)+i_sig_i;
+      double i_bkg = bkg.Integral(bin_lo,bin_hi);
+      //std::cout <<"----  " <<  bin << "  " << bin_lo << "    " << bin_hi << "  " << bkg.Integral(bin_lo,bin_hi) << "    " << sig.Integral(bin_lo,bin_hi) << "  " << i_sig_i << std::endl;  
+      if(i_sig>0. || i_bkg>0.) s_sb = i_sig/(i_sig+i_bkg);
+      //std::cout << "weight = " << s_sb << std::endl;
+
+      cmb_bin.ForEachObs([&](ch::Observation *e) {
+        TH1 const * old_h = e->shape();
+        TH1F * new_h_ = (TH1F*)old_h->Clone();
+        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        double wt = s_sb;
+        new_h_->Scale(wt);
+        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
+        
+        new_h->Scale(e->rate());
+        e->set_shape(std::move(new_h), true);
+      });
+
+      cmb_bin.ForEachProc([&](ch::Process *e) {
+        TH1 const * old_h = e->shape();
+        TH1F * new_h_ = (TH1F*)old_h->Clone();
+        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        double wt = s_sb;
+        new_h_->Scale(wt);
+        std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
+        new_h->Scale(e->rate());
+        e->set_shape(std::move(new_h), true);
+      });
+
+      cmb_bin.ForEachSyst([&](ch::Systematic *e) {
+        if (e->type() != "shape") return;
+
+        TH1D *old_hu = (TH1D*)e->ClonedShapeU().get()->Clone();
+        TH1D *old_hd = (TH1D*)e->ClonedShapeD().get()->Clone();
+
+        float val_u = e->value_u(); 
+        float val_d = e->value_d();
+        double wt = s_sb;
+
+        TH1F * new_hu_ = (TH1F*)old_hu->Clone();
+        new_hu_ = (TH1F*)new_hu_->Rebin(18,"",new_bins);
+        new_hu_->Scale(wt*val_u);
+        std::unique_ptr<TH1> new_hu = ch::make_unique<TH1F>(*(new_hu_));
+
+        TH1F * new_hd_ = (TH1F*)old_hd->Clone();
+        new_hd_ = (TH1F*)new_hd_->Rebin(18,"",new_bins);
+        new_hd_->Scale(wt*val_d);
+        std::unique_ptr<TH1> new_hd = ch::make_unique<TH1F>(*(new_hd_));
+
+        e->set_shapes(std::move(new_hu), std::move(new_hd), nullptr);
+      });
+
+    }
+      ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
+                            output_folder + "/" + era_tag + "/$TAG/common/$BIN_input.root");
+      writer.WriteCards("plot_cmb", cb_cp.cp().bin_id({132,232,332,432,133,233,333,433}));
+      writer.WriteCards("plot_0to50", cb_cp.cp().bin_id({132,133}));
+      writer.WriteCards("plot_50to100", cb_cp.cp().bin_id({232,233}));
+      writer.WriteCards("plot_100to200", cb_cp.cp().bin_id({332,333}));
+      writer.WriteCards("plot_GT200", cb_cp.cp().bin_id({432,433}));
+  }
+ 
+
 }
