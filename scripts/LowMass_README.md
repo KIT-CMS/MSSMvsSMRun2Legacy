@@ -70,6 +70,11 @@ combineTool.py -M Impacts --approx robust -m 100  --freezeParameters r_qqX,r_ggX
 # make plot
 
 plotImpacts.py -i impacts_ggH_dec20.json -o impacts_ggH_dec20 
+
+# to make a plot with the background-only pulls overlaid run a background only MultiDimFit with option --saveFitResult and then run this command:
+
+python scripts/plotImpactsWithBkgOnly.py -i impacts_ggH_jan04.json -o impacts_ggH_jan04 -f model_independent_limits/Jan04_newemQCD_all_all_bsm-model-indep/combined/cmb/multidimfit.bkgOnly.root:fit_mdf
+
 ```
 
 **For bbH:**
