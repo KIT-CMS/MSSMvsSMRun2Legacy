@@ -11,9 +11,10 @@ hSM_treatment="hSM-in-bg"
 categorization="classic"
 sm_like_hists="bsm"
 sub_analyses="betaRd33_0 betaRd33_minus1 betaRd33_0_offdiag0"
-sub_analyses="betaRd33_0_offdiag0"
-MASS=1000
-gU=1.21
+sub_analyses="betaRd33_minus1"
+MASS=500
+#gU=1.21
+gU=0.8
 group="--group htt_em --group htt_et --group htt_mt --group htt_tt"
 
 for sub_analysis in $sub_analyses; do
@@ -34,12 +35,25 @@ for sub_analysis in $sub_analyses; do
           --hSM-treatment ${hSM_treatment} \
           --categorization ${categorization} \
           --sm-like-hists ${sm_like_hists} \
-          --eras 2016,2017,2018 \
-          --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
+          --eras 2018 \
+          --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_tt_categories.txt \
           --additional-arguments "--auto_rebin=1 --real_data=1" \
           --variable mt_tot_puppi \
           --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_vlq_log.txt
-  
+ 
+      #morph_parallel.py --output ${defaultdir}/datacards \
+      #    --analysis ${analysis} \
+      #    --sub-analysis ${sub_analysis} \
+      #    --hSM-treatment ${hSM_treatment} \
+      #    --categorization ${categorization} \
+      #    --sm-like-hists ${sm_like_hists} \
+      #    --eras 2018 \
+      #    --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_tt_categories.txt \
+      #    --additional-arguments "--auto_rebin=0 --real_data=1" \
+      #    --variable mt_tot_puppi \
+      #    --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_vlq_log.txt
+
+ 
       ############
       # combining outputs
       ############
@@ -59,16 +73,16 @@ for sub_analysis in $sub_analyses; do
       # workspace creation
       ############
   
-      #combineTool.py -M T2W -o "ws.root" \
-      #-P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
-      #-i ${datacarddir}/combined/cmb/ \
-      #-m 1000 --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
-
       combineTool.py -M T2W -o "ws.root" \
-      --PO no_interference \
       -P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
       -i ${datacarddir}/combined/cmb/ \
       -m 1000 --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
+
+      #combineTool.py -M T2W -o "ws.root" \
+      #-P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
+      #--PO no_interference \
+      #-i ${datacarddir}/combined/cmb/ \
+      #-m 1000 --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
 
  
   elif [[ $MODE == "submit" ]]; then 
@@ -131,17 +145,17 @@ for sub_analysis in $sub_analyses; do
       --use-dirs \
       -o ${datacarddir}/combined/cmb/vlq_${sub_analysis}.json
    
-      plotMSSMLimits.py --cms-sub "Preliminary" \
-      --title-right "138 fb^{-1} (13 TeV)" \
-      --x-title "M_{U} [TeV]"\
-      --y-axis-min 0.0 \
-      --y-axis-max 6.0 \
-      --show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
-      --process "vector_leptoquark" \
-      --subprocess "${sub_analysis}" \
-      --add-exp-line-from-json "{\"EXO-19-016 Total Expected\":\"input/total_expected_kappa_0.json\",\"EXO-19-016 Nonres Expected\":\"input/nonres_expected_kappa_0.json\"}" \
-      --add-obs-line-from-json "{\"EXO-19-016 Total Observed\":\"input/total_observed_kappa_0.json\",\"EXO-19-016 Nonres Observed\":\"input/nonres_observed_kappa_0.json\"}" \
-      --output vlq_${sub_analysis}_cmb
+      #plotMSSMLimits.py --cms-sub "Preliminary" \
+      #--title-right "138 fb^{-1} (13 TeV)" \
+      #--x-title "M_{U} [TeV]"\
+      #--y-axis-min 0.0 \
+      #--y-axis-max 6.0 \
+      #--show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
+      #--process "vector_leptoquark" \
+      #--subprocess "${sub_analysis}" \
+      #--add-exp-line-from-json "{\"EXO-19-016 Total Expected\":\"input/total_expected_kappa_0.json\",\"EXO-19-016 Nonres Expected\":\"input/nonres_expected_kappa_0.json\"}" \
+      #--add-obs-line-from-json "{\"EXO-19-016 Total Observed\":\"input/total_observed_kappa_0.json\",\"EXO-19-016 Nonres Observed\":\"input/nonres_observed_kappa_0.json\"}" \
+      #--output vlq_${sub_analysis}_cmb
 
       #plotMSSMLimits.py --cms-sub "Preliminary" \
       #--title-right "138 fb^{-1} (13 TeV)" \
@@ -165,6 +179,29 @@ for sub_analysis in $sub_analyses; do
       #--subprocess "${sub_analysis}" \
       #--add-exp-line-from-json "{\"3000 fb^{-1}\":\"analysis/2610_HLLHC_lumiscale_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\",\"500 fb^{-1}\":\"analysis/2610_run3_lumiscale_v2_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\"}" \
       #--output vlq_${sub_analysis}_cmb
+
+      plotMSSMLimits.py --cms-sub "Preliminary" \
+      --title-right "138 fb^{-1} (13 TeV)" \
+      --x-title "M_{U} [TeV]"\
+      --y-axis-min 0.0 \
+      --y-axis-max 6.0 \
+      --show obs,exp0 ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
+      --process "vector_leptoquark" \
+      --subprocess "${sub_analysis}" \
+      --add-exp-line-from-json "{\"3000 fb^{-1}\":\"analysis/2610_HLLHC_lumiscale_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\",\"500 fb^{-1}\":\"analysis/2610_run3_lumiscale_v2_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\"}" \
+      --output vlq_${sub_analysis}_cmb_extrap
+
+
+      plotMSSMLimits.py --cms-sub "Preliminary" \
+      --title-right "138 fb^{-1} (13 TeV)" \
+      --x-title "M_{U} [TeV]"\
+      --y-axis-min 0.0 \
+      --y-axis-max 6.0 \
+      --show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
+      --process "vector_leptoquark" \
+      --subprocess "${sub_analysis}" \
+      --output vlq_${sub_analysis}_cmb_no_extrap
+
 
 #
 #      plotMSSMLimits.py --cms-sub "Preliminary" \
@@ -285,11 +322,11 @@ for sub_analysis in $sub_analyses; do
 
   elif [[ $MODE == "prefit-plots" ]]; then
       freeze="MH=${MASS},gU=${gU}"
-      for era in 2016 2017 2018; do
-          prefit_postfit_sh3es_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_em_2_*/combined.txt.cmb" \
-                                            --workspace_name ws.root \
-                                            --output_name prefit_shapes_${freeze}.root \
-                                            --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
+      for era in 2018; do
+          #prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_em_2_*/combined.txt.cmb" \
+          #                                  --workspace_name ws.root \
+          #                                  --output_name prefit_shapes_${freeze}.root \
+          #                                  --parallel 8 | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
           prefit_postfit_shapes_parallel.py --datacard_pattern "${datacarddir}/${era}/htt_*_3*/combined.txt.cmb" \
                                             --workspace_name ws.root \
                                             --freeze_arguments "--freeze ${freeze}" \
@@ -298,12 +335,12 @@ for sub_analysis in $sub_analyses; do
       done
       hadd -f ${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root ${datacarddir}/201?/htt_*/prefit_shapes_${freeze}.root | tee -a ${defaultdir}/logs/extract_model_independent_shapes-combined-${freeze}.log
 
-      for era in 2016 2017 2018; do
+      for era in 2018; do
           bash plotting/plot_shapes_vlq.sh \
               ${era} \
               "${datacarddir}/combined/cmb/prefit_shapes_${freeze}.root" \
               "${datacarddir}/plots/prefit_shapes_$(echo ${freeze} | sed 's/=//g; s/\./p/g')/" \
-              et,mt,tt,em \
+              tt \
               $MASS \
               $gU \
               $sub_analysis

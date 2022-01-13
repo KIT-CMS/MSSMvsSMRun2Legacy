@@ -309,7 +309,9 @@ int main(int argc, char **argv) {
   else {
     sm_signals = {"bbH125"};
   }
-  main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
+  //main_sm_signals = {"ggH125", "qqH125"}; // qqH125 for mt,et,tt,em contains VBF+VH
+  main_sm_signals = {};
+  sm_signals = {};
   update_vector_by_byparser(sm_signals, parser_sm_signals, "sm_signals");
   update_vector_by_byparser(main_sm_signals, parser_main_sm_signals, "main_sm_signals");
 
@@ -910,7 +912,7 @@ int main(int argc, char **argv) {
   // Introduce ordering of categories for the final discriminator in MSSM
   std::vector<int> sm_categories = {13,14,15,16,19,20,21}; // Control regions from the ML SM HTT analysis
   std::vector<int> em_control_category = {2}; // Control region for em channel
-  std::vector<int> mssm_btag_categories = {35,36,37}; // b-tagged MSSM-like categories with mt_tot as discriminator
+  std::vector<int> mssm_btag_categories = {35,36,37,38}; // b-tagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> mssm_nobtag_categories = {32,33,34}; // non-btagged MSSM-like categories with mt_tot as discriminator
   std::vector<int> sm_signal_category = {101,102,103,104,105,106}; // category for the SM signal
 
@@ -1200,6 +1202,7 @@ int main(int argc, char **argv) {
 
   for (string chn : chns) {
     string input_file_base = input_dir[chn] + "htt_all.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
+    //string input_file_base = input_dir[chn] + "vlq.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     string input_vlq_file_base = input_dir[chn] + "vlq.inputs-mssm-vs-sm-Run" + era_tag + "-" + variable + ".root";
     if (mva) input_file_base = input_dir[chn] + "htt_" + chn + ".inputs-mssm-vs-sm-" + era_tag + "-" + variable + ".root";
     dout("[INFO] Extracting shapes from ", input_file_base);
