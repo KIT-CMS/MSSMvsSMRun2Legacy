@@ -6,6 +6,8 @@ MODE=$2
 MODEL=$3
 ANALYSISTYPE=$4
 GRIDUSER=$5
+OLDFILES=$6
+[[ -z $6 ]] && OLDFILES=0
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-additional"
@@ -150,6 +152,12 @@ else
     y_min=1.0
     y_max=60.0
 fi
+
+if [[ $OLDFILES == 1 ]]; then
+    wsoutput=${wsoutput/.root/_old.root}
+    modelfile=${modelfile/.root/_old.root}
+fi
+
 defaultdir="analysis/$TAG"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 defaultdir=$(readlink -f ${defaultdir})
@@ -228,17 +236,30 @@ elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
-    combineTool.py -M T2W -o ${wsoutput} \
-    -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
-    --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
-    --PO replace-with-SM125=${replace_with_sm125} \
-    --PO modelFile=${modelfile} \
-    --PO minTemplateMass=60 \
-    --PO maxTemplateMass=3500 \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-    --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
-    --PO qqh-pred-from-scaling=${scale_qqh_by_hand} \
-    -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+    if [[ $OLDFILES == 0 ]]; then
+        combineTool.py -M T2W -o ${wsoutput} \
+        -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
+        --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+        --PO replace-with-SM125=${replace_with_sm125} \
+        --PO modelFile=${modelfile} \
+        --PO minTemplateMass=60 \
+        --PO maxTemplateMass=3500 \
+        --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+        --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
+        --PO qqh-pred-from-scaling=${scale_qqh_by_hand} \
+        -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+    else
+        combineTool.py -M T2W -o ${wsoutput} \
+        -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM_oldModels:MSSMvsSM_oldModels \
+        --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
+        --PO replace-with-SM125=${replace_with_sm125} \
+        --PO modelFile=${modelfile} \
+        --PO minTemplateMass=60 \
+        --PO maxTemplateMass=3500 \
+        --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+        --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
+        -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+    fi
 
     ############
     # job setup creation
@@ -362,6 +383,8 @@ elif [[ $MODE == "collect" ]]; then
     else
         title="138 fb^{-1} (13 TeV)"
     fi
+    modelname=${MODEL}_13.root
+    [[ $OLDFILES == 1 ]] && modelname="${MODEL/_old/_13_old.root}"
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="${scenario_label}" \
     --output ${TAG}_${MODEL} \
@@ -371,6 +394,6 @@ elif [[ $MODE == "collect" ]]; then
     --y-range ${y_min},${y_max} \
     --mass_histogram ${sm_like_mass} \
     --mass_histogram_title ${mass_histogram_title} \
-    --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${MODEL}_13.root \
+    --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${modelname} \
     --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
 fi
