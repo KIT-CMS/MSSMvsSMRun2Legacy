@@ -26,6 +26,7 @@ else
 fi
 # Szenarios from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGMSSMNeutral?redirectedfrom=LHCPhysics.LHCHXSWGMSSMNeutral#Baseline_scenarios
 ### MSSM scenarios #####
+scale_qqh_by_hand=0
 if [[ $MODEL == "mh125" ]]; then
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
@@ -236,6 +237,7 @@ elif [[ $MODE == "ws" ]]; then
     --PO maxTemplateMass=3500 \
     --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
     --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
+    --PO qqh-pred-from-scaling=${scale_qqh_by_hand} \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
 
     ############
