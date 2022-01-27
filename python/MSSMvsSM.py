@@ -290,7 +290,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     print "[WARNING]: Both BSM and SM xsec predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     xsec_SM = 1.
                     xsec = 1.
-                elif br_htautau_SM <= 0:
+                elif xsec_SM <= 0:
                     print "[WARNING]: SM xsec prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     xsec_SM = xsec
 
