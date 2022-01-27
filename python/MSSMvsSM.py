@@ -105,6 +105,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.replace_with_sm125 = True
         self.use_hSM_difference = False
         self.cpv_template_pairs = {"H1" : "h", "H2" : "H", "H3" : "A"}
+        self.qqh_pred_from_scaling = False
 
     def setPhysicsOptions(self,physOptions):
         for po in physOptions:
@@ -174,6 +175,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 hSM_treatment = po.replace('hSM-treatment=', '')
                 self.use_hSM_difference = hSM_treatment == "hSM-in-bg"
                 print "Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference
+
+            if po.startswith('qqh-pred-from-scaling='):
+                self.qqh_pred_from_scaling = bool(int(po.replace('qqh-pred-from-scaling=', ''))) # use either 1 or 0 for the choice
+                print "Scale qqH process for sm-like H by hand instead from values in root file?", self.qqh_pred_from_scaling
 
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
@@ -268,16 +273,8 @@ class MSSMvsSMHiggsModel(PhysicsModel):
 
                 br_htautau = getattr(self.mssm_inputs, self.quantity_map['br']['method'])(accesskey_br, x, y)
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
-                xsec_vbf = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_vbf, x, y)
-                xsec_vbf_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_vbf_SM, x, y)
-                xsec_Wh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Wh, x, y)
-                xsec_Wh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Wh_SM, x, y)
-                xsec_Zh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Zh, x, y)
-                xsec_Zh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Zh_SM, x, y)
 
-                xsec = xsec_vbf + xsec_Wh + xsec_Zh
-                xsec_SM = xsec_vbf_SM + xsec_Wh_SM + xsec_Zh_SM
-
+                # Check if values for BR returned from tool are sensible.
                 if br_htautau <= 0 and br_htautau_SM <= 0:
                     print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = 1.
@@ -286,15 +283,50 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = br_htautau
 
-                if xsec <= 0 and xsec_SM <= 0:
-                    print "[WARNING]: Both BSM and SM xsec predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
-                    xsec_SM = 1.
-                    xsec = 1.
-                elif xsec_SM <= 0:
-                    print "[WARNING]: SM xsec prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
-                    xsec_SM = xsec
+                if self.qqh_pred_from_scaling:
+                    # Check if qqH prediction should not be read from root files but be computed as
+                    # xs_qqh = sin(beta-alpha)**2 * xs_qqh_SM  # if h SM like
+                    # xs_qqH = cos(beta-alpha)**2 * xs_qqh_SM  # if H SM like
+                    # Get Yukawa coupling from predictions file to solve for mixing angle alpha
+                    # In type-II THDM scaling of Htop coupling is sin(alpha)/sin(beta)
+                    if self.scenario != 'mh1125_CPV':
+                        # Get value of beta angle from histogram binning
+                        beta = np.arctan(y)
+                        gt_H = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])('gt_H', x, y)
+                        sin_alpha = gt_H * np.sin(beta)
+                        if abs(sin_alpha) > 1:
+                            sin_alpha = np.sign(sin_alpha)
+                        alpha = np.arcsin(sin_alpha)
+                        # Scale the predictions correctly for h and H
+                        if self.smlike == 'h':
+                            value = np.sin(beta-alpha)**2
+                        elif self.smlike == 'H':
+                            value = np.cos(beta-alpha)**2
+                    else:
+                        value = 1.0
+                else:
+                    xsec_vbf = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_vbf, x, y)
+                    xsec_vbf_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_vbf_SM, x, y)
+                    xsec_Wh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Wh, x, y)
+                    xsec_Wh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Wh_SM, x, y)
+                    xsec_Zh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Zh, x, y)
+                    xsec_Zh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Zh_SM, x, y)
 
-                value = xsec / xsec_SM # xsec(mh) / xsec_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
+                    xsec = xsec_vbf + xsec_Wh + xsec_Zh
+                    xsec_SM = xsec_vbf_SM + xsec_Wh_SM + xsec_Zh_SM
+
+                    if xsec <= 0 and xsec_SM <= 0:
+                        print "[WARNING]: Both BSM and SM xsec predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                        xsec_SM = 1.
+                        xsec = 1.
+                    elif xsec_SM <= 0:
+                        print "[WARNING]: SM xsec prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                        xsec_SM = xsec
+
+                    value = xsec / xsec_SM # xsec(mh) / xsec_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
+
+                # BR rescaling calculated independently from cross section and needs to be corrected for
+                # mass prediction as well.
                 value *= br_htautau / br_htautau_SM # br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
                 value *= self.scaleforh # additional manual rescaling of light scalar h (default is 1.0)
                 if self.use_hSM_difference:
