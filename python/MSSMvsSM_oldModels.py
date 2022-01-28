@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 from array import array
 
-class MSSMvsSMHiggsModel(PhysicsModel):
+class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
     def __init__(self):
         PhysicsModel.__init__(self)
         self.filePrefix = ''
@@ -29,11 +29,11 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.quantity_map = {
             "mass"             : {"method" :     "mass", "name" : "m{HIGGS}",                 "access" : "{HIGGS}"},
             "width"            : {"method" :    "width", "name" : "w{HIGGS}",                 "access" : "{HIGGS}"},
-            "width_SM"         : {"method" :    "width", "name" : "w{HIGGS}_SM",              "access" : "HSM"},
+            "width_SM"         : {"method" :    "width", "name" : "w{HIGGS}_SM",              "access" : "{HIGGS}_SM"},
             "br"               : {"method" :       "br", "name" : "br_{HIGGS}tautau",         "access" : "{HIGGS}->tautau"},
-            "br_SM"            : {"method" :       "br", "name" : "br_{HIGGS}tautau_SM",      "access" : "HSM->tautau"},
+            "br_SM"            : {"method" :       "br", "name" : "br_{HIGGS}tautau_SM",      "access" : "{HIGGS}->tautau_SM"},
             "xsec"             : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}",         "access" : "{PROD}->{HIGGS}"},
-            "xsec_SM"          : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}_SM",      "access" : "{PROD}->{ADD}HSM"},
+            "xsec_SM"          : {"method" :     "xsec", "name" : "xs_{PROD}{HIGGS}_SM",      "access" : "{PROD}->{HIGGS}_SM"},
             "interference"     : {"method" :     "xsec", "name" : "int_{PROD}{HIGGS}_tautau", "access" : "int_{PROD}_tautau_{HIGGS}"},
             "yukawa_top"       : {"method" : "coupling", "name" : "Yt_MSSM_{HIGGS}",          "access" : "gt_{HIGGS}"},
             "yukawa_bottom"    : {"method" : "coupling", "name" : "Yb_MSSM_{HIGGS}",          "access" : "gb_{HIGGS}"},
@@ -51,6 +51,10 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 "mA" :   np.arange(130.0, 2605.0, 5.0),
             },
             "mh125": {
+                "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
+                "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
+            },
+            "mh125-old": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
                 "mA" :   np.concatenate((np.arange(70.0, 200.0, 1.0), np.arange(200.0, 320.0, 5.0), np.arange(320.0, 370, 1.0), np.arange(370.0, 2605.0, 5.0))),
             },
@@ -121,7 +125,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                 self.energy = cfgSplit[0]
                 self.era = cfgSplit[1]
                 self.modelFile = cfgSplit[2]
-                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'')
+                self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'').replace('_old','')
                 print "Importing scenario '%s' for sqrt(s) = '%s TeV' and '%s' data-taking period from '%s'"%(self.scenario, self.energy, self.era, self.modelFile)
 
                 if self.scenario == "mHH125":
@@ -251,13 +255,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = "sf_qqphi_MSSM"
 
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access']
-        accesskey_vbf = self.quantity_map['xsec']['access'].format(PROD="vbf",HIGGS=self.smlike)
-        accesskey_vbf_SM = self.quantity_map['xsec_SM']['access'].format(PROD="vbf", ADD="")
-        accesskey_Wh = self.quantity_map['xsec']['access'].format(PROD="hs",HIGGS="W"+self.smlike)
-        accesskey_Wh_SM = self.quantity_map['xsec_SM']['access'].format(PROD="hs",ADD="W")
-        accesskey_Zh = self.quantity_map['xsec']['access'].format(PROD="hs",HIGGS="Z"+self.smlike)
-        accesskey_Zh_SM = self.quantity_map['xsec_SM']['access'].format(PROD="hs",ADD="Z")
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
         print "Computing 'qqphi' scaling function from xsec tools"
 
@@ -283,48 +281,26 @@ class MSSMvsSMHiggsModel(PhysicsModel):
                     print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
                     br_htautau_SM = br_htautau
 
-                if self.qqh_pred_from_scaling:
-                    # Check if qqH prediction should not be read from root files but be computed as
-                    # xs_qqh = sin(beta-alpha)**2 * xs_qqh_SM  # if h SM like
-                    # xs_qqH = cos(beta-alpha)**2 * xs_qqh_SM  # if H SM like
-                    # Get Yukawa coupling from predictions file to solve for mixing angle alpha
-                    # In type-II THDM scaling of Htop coupling is sin(alpha)/sin(beta)
-                    if self.scenario != 'mh1125_CPV':
-                        # Get value of beta angle from histogram binning
-                        beta = np.arctan(y)
-                        gt_H = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])('gt_H', x, y)
-                        sin_alpha = gt_H * np.sin(beta)
-                        if abs(sin_alpha) > 1:
-                            sin_alpha = np.sign(sin_alpha)
-                        alpha = np.arcsin(sin_alpha)
-                        # Scale the predictions correctly for h and H
-                        if self.smlike == 'h':
-                            value = np.sin(beta-alpha)**2
-                        elif self.smlike == 'H':
-                            value = np.cos(beta-alpha)**2
-                    else:
-                        value = 1.0
+                # Check if qqH prediction should not be read from root files but be computed as
+                # xs_qqh = sin(beta-alpha)**2 * xs_qqh_SM  # if h SM like
+                # xs_qqH = cos(beta-alpha)**2 * xs_qqh_SM  # if H SM like
+                # Get Yukawa coupling from predictions file to solve for mixing angle alpha
+                # In type-II THDM scaling of Htop coupling is sin(alpha)/sin(beta)
+                if self.scenario != 'mh1125_CPV':
+                    # Get value of beta angle from histogram binning
+                    beta = np.arctan(y)
+                    gt_H = getattr(self.mssm_inputs, self.quantity_map['yukawa_top']['method'])('gt_H', x, y)
+                    sin_alpha = gt_H * np.sin(beta)
+                    if abs(sin_alpha) > 1:
+                        sin_alpha = np.sign(sin_alpha)
+                    alpha = np.arcsin(sin_alpha)
+                    # Scale the predictions correctly for h and H
+                    if self.smlike == 'h':
+                        value = np.sin(beta-alpha)**2
+                    elif self.smlike == 'H':
+                        value = np.cos(beta-alpha)**2
                 else:
-                    xsec_vbf = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_vbf, x, y)
-                    xsec_vbf_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_vbf_SM, x, y)
-                    xsec_Wh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Wh, x, y)
-                    xsec_Wh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Wh_SM, x, y)
-                    xsec_Zh = getattr(self.mssm_inputs, self.quantity_map['xsec']['method'])(accesskey_Zh, x, y)
-                    xsec_Zh_SM = getattr(self.mssm_inputs, self.quantity_map['xsec_SM']['method'])(accesskey_Zh_SM, x, y)
-
-                    xsec = xsec_vbf + xsec_Wh + xsec_Zh
-                    xsec_SM = xsec_vbf_SM + xsec_Wh_SM + xsec_Zh_SM
-
-                    if xsec <= 0 and xsec_SM <= 0:
-                        print "[WARNING]: Both BSM and SM xsec predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
-                        xsec_SM = 1.
-                        xsec = 1.
-                    elif xsec_SM <= 0:
-                        print "[WARNING]: SM xsec prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
-                        xsec_SM = xsec
-
-                    value = xsec / xsec_SM # xsec(mh) / xsec_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
-
+                    value = 1.0
                 # BR rescaling calculated independently from cross section and needs to be corrected for
                 # mass prediction as well.
                 value *= br_htautau / br_htautau_SM # br_htautau(mh) / br_htautau_SM(mh), correcting for mass dependence mh vs. 125.4 GeV
@@ -341,9 +317,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = "sf_ggphi_MSSM"
 
         accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='gg')
-        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(ADD="",PROD='gg')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='gg')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access']
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
         print "Computing 'ggphi' scaling function from xsec tools"
 
@@ -391,9 +367,9 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         name  = "sf_bbphi_MSSM"
 
         accesskey_xs = self.quantity_map['xsec']['access'].format(HIGGS=self.smlike,PROD='bb')
-        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(ADD="",PROD='bb')
+        accesskey_xs_SM = self.quantity_map['xsec_SM']['access'].format(HIGGS=self.smlike,PROD='bb')
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
-        accesskey_br_SM = self.quantity_map['br_SM']['access']
+        accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
         xs_bbh_SM125 = self.sm_predictions["xs_bb_SMH125"]
         br_htautau_SM125 = self.sm_predictions["br_SMH125_tautau"]
@@ -641,4 +617,4 @@ class MSSMvsSMHiggsModel(PhysicsModel):
             self.debug_output.Close()
 
 
-MSSMvsSM = MSSMvsSMHiggsModel()
+MSSMvsSM_oldModels = MSSMvsSMOldModelsHiggsModel()
