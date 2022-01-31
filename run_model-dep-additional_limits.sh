@@ -385,7 +385,7 @@ elif [[ $MODE == "collect" ]]; then
         title="138 fb^{-1} (13 TeV)"
     fi
     modelname=${MODEL}_13.root
-    [[ $OLDFILES == 1 ]] && modelname="${MODEL/_old/_13_old.root}"
+    [[ $OLDFILES == 1 ]] && modelname="${MODEL}_13_old.root"
     plotLimitGrid.py asymptotic_grid.root \
     --scenario-label="${scenario_label}" \
     --output ${TAG}_${MODEL} \
