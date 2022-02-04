@@ -143,6 +143,17 @@ elif [[ $MODEL == "mh125EFT_lc" ]]; then
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=10.0
+### hMSSM scenario #####
+elif [[ $MODEL == "hMSSM" ]]; then
+    wsoutput="hMSSM.root"
+    modelfile="13,Run2017,hMSSM_13.root"
+    scenario_label="hMSSM scenario (H,A#rightarrow#tau#tau)"
+    sub_analysis="sm-like-light"
+    sm_like_mass="m_h"
+    x_title='m_{A} [GeV]'
+    mass_histogram_title="m_{h}"
+    y_min=1.0
+    y_max=60.0
 else
     wsoutput="ws_mh125.root"
     modelfile="13,Run2017,mh125_13.root"
