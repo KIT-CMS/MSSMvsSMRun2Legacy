@@ -48,7 +48,7 @@ class MSSMvsSMHiggsModel(PhysicsModel):
         self.binning =  {
             "hMSSM": {
                 "tanb" : np.concatenate((np.arange(0.5, 6.0, 0.1), np.arange(6.0, 61.0, 1.0))),
-                "mA" :   np.arange(130.0, 2605.0, 5.0),
+                "mA" :   np.arange(130.0, 2005.0, 5.0),
             },
             "mh125": {
                 "tanb" : np.concatenate((np.arange(0.5, 1.0, 0.1), np.arange(1.0, 10.0, 0.5), np.arange(10.0, 61.0, 1.0))),
