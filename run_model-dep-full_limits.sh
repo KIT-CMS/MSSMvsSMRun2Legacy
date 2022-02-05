@@ -147,7 +147,7 @@ elif [[ $MODEL == "mh125EFT_lc" ]]; then
 elif [[ $MODEL == "hMSSM" ]]; then
     wsoutput="hMSSM.root"
     modelfile="13,Run2017,hMSSM_13.root"
-    scenario_label="hMSSM scenario (H,A#rightarrow#tau#tau)"
+    scenario_label="hMSSM scenario (h,H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
