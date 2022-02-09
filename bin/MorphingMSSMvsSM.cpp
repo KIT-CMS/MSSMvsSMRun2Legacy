@@ -2077,9 +2077,20 @@ int main(int argc, char **argv) {
 
   for(auto u : met_uncerts) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
 
+  if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT") {
+    // convert ggH theory uncertainties to lnN when fitting m_sv
+    std::vector<std::string> ggh_theory = {"Hdamp_ggH_t_REWEIGHT","Hdamp_ggH_b_REWEIGHT","Hdamp_ggH_i_REWEIGHT","QCDscale_ggH_REWEIGHT"}; 
+    for(auto u : ggh_theory) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
+  }
+
+  //// convert TER to lnN for btag category and most boosted nobtag categories
+  //ConvertShapesToLnN (cb.cp().bin_id({132,232}, false), "CMS_res_t");
   //// split TER uncertainty by era:
   //for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"CMS_res_t","CMS_res_t_"+y);
-
+  //for (string x : {"1prong", "1prong1pizero", "3prong", "3prong1pi0"}) {
+  //  ConvertShapesToLnN (cb.cp().bin_id({132,232}, false), "CMS_res_t_"+x);
+  //  for (string y : {"2016","2017","2018"}) cb.cp().era({y}).RenameSystematic(cb,"CMS_res_t_"+x,"CMS_res_t_"+x+"_"+y);
+  //}
 
   // At this point we can fix the negative bins for the remaining processes
   // We don't want to do this for the ggH i component since this can have negative bins

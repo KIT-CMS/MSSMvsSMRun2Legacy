@@ -14,6 +14,17 @@ for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/Dec2
 
 for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13 TeV)" --process "${p}#phi" --y-axis-min 0.01 --y-axis-max 1000.0 --show exp,obs model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/mssm_${p}H_combined_cmb.json  --output mssm_model-independent_combined_${p}H_cmb  --logy; done
 
+
+# plot low and high mass limits on same axis:
+
+# collect limits:
+DIR="Jan12_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
+for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
+
+# make plots
+
+for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13 TeV)" --process "${p}#phi" --y-axis-min 0.0001 --y-axis-max 1000.0 --show exp,obs model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined_cmb.json  --output mssm_model-independent_combined_${p}H_cmb  --logy --logx --low_high_split; done
+
 # plot significances
 python scripts/significance_plot.py
 ```
@@ -23,7 +34,7 @@ python scripts/significance_plot.py
 **With signal = 100 GeV:**
 
 ```bash
-combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX,r_bbH --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
+combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
 ```
 
 **Background only:**
@@ -51,6 +62,39 @@ PostFitShapesFromWorkspace -w model_independent_limits/Dec20_2D_all_all_bsm-mode
 # make prefit plots
 
 PostFitShapesFromWorkspace -w model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/restore_binning/combined.txt.cmb  -o shapes_prefit.root --mass 100 --freeze r_bbH=1,r_ggH=1,MH=100
+
+# make S/(S+B) weighted plots for low mass analysis
+# run this script to run morphing, T2W and submit PostFitShapesFromWorkspace as seperate jobs over the IC batch system
+
+python run_model_independent_limits_2D_splitpTbins_prop_plot.py -o Jan12_propplots -f Jan12
+
+# produce plots
+
+python scripts/prop_plots.py
+
+# make postfit and prefit plots as batch jobs
+
+python run_postfitplots.py
+
+# hadd outputfiles
+
+hadd -f shapes_m100.root shapes_m100_htt_*_*_201*.root
+hadd -f shapes_bkgOnly.root shapes_bkgOnly_htt_*_*_201*.root
+
+# make plots
+
+# s+b
+
+for c in mt tt et em; do for y in 6 7 8; do for b in 132 232 332 432 35; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b}_201${y} -f shapes_m100.root --ratio --ratio_range "0.85,1.15" ; done; done; done
+
+for c in em; do for y in 6 7 8; do for b in 133 233 333 433 36; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b}_201${y} -f shapes_m100.root --ratio --ratio_range "0.85,1.15" ; done; done; done
+
+
+# s+b (prefit)
+
+for c in mt tt et em; do for y in 6 7 8; do for b in 132 232 332 432 35; do python scripts/postFitPlotJetFakes.py --mode prefit --file_dir htt_${c}_${b}_201${y} -f shapes_bkgOnly.root --ratio --ratio_range "0.85,1.15" ; done; done; done
+
+for c in em; do for y in 6 7 8; do for b in 133 233 333 433 36; do python scripts/postFitPlotJetFakes.py --mode prefit --file_dir htt_${c}_${b}_201${y} -f shapes_bkgOnly.root --ratio --ratio_range "0.85,1.15" ; done; done; done
 
 ```
 
@@ -103,9 +147,11 @@ combineTool.py -M Impacts  --doInitialFit --robustFit=1 -m 100  --freezeParamete
 
 # run seperate fits
 
-combineTool.py -M Impacts  --doFits --robustFit=1 -m 100  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/ws.root  -n ".ggH.impacts_full.jan03"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --named CMS_res_t > impacts_full_fits.out
+combineTool.py -M Impacts  --doFits --robustFit=1 -m 100  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/ws.root  -n ".ggH.impacts_full.jan03"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --named CMS_res_t
 
 # to run all parameters remove --named option
+# to run on IC batch (1 uncertainty per job) use: 
+--merge 1 --job-mode 'SGE'  --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0"
 
 # collect results into json
 
@@ -147,7 +193,7 @@ combine -M ChannelCompatibilityCheck \
 
 ```bash
 MASS=100
-datacarddir="model_independent_limits/Dec20_2D_all_all_bsm-model-indep/"
+datacarddir="model_independent_limits/Jan12_all_all_bsm-model-indep/"
 
 #run fits
 

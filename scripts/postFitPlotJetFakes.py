@@ -584,13 +584,13 @@ def main(args):
     sbhist.Scale(scale,"width")
 
     for shist in sighists:
-        if mode == 'prefit': shist.Scale(5.7*scale,"width") # can scale up signals here if desired
+        if mode == 'prefit': shist.Scale(5.8*scale,"width") # can scale up signals here if desired
         else: shist.Scale(scale,"width") # can scale up signals here if desired
+
+    for shist in sighists:
         sbhist.Add(shist)
     #sbhist.Scale(scale,"width")
     #sbhist_alt.Scale(scale,"width")
-    for shist in sighists:
-        shist.Scale(scale,"width")
     blind_datahist.Scale(scale,"width")
     azimov_datahist.Scale(scale,"width")
 
@@ -719,8 +719,8 @@ def main(args):
         bkghist.SetFillColor(plot.CreateTransparentColor(12,0.4))
         bkghist.SetLineColor(0)    
 
-        stack.Draw("histsame")
-        bkghist.Draw("e2same")
+        #stack.Draw("histsame")
+        #bkghist.Draw("e2same")
         #Add signal, either model dependent or independent
         if not args.no_signal:
             sighist.SetLineColor(ROOT.kRed)
@@ -732,7 +732,17 @@ def main(args):
                     entry = shist.GetBinContent(j)
                     if entry < axish[0].GetMinimum():
                         shist.SetBinContent(j,axish[0].GetMinimum()*1.00001)
-                shist.Draw("histsame][") # removing vertical lines at the borders of the pad; possible with the trick above
+                     
+                shist_stack = shist.Clone()
+                shist_stack.SetLineColor(ROOT.kBlack)
+                shist_stack.SetLineWidth(1)
+                #shist_stack.SetFillStyle(1)
+                shist_stack.SetFillColor(ROOT.kRed)
+                stack.Add(shist_stack)
+        #        shist.Draw("histsame][") # removing vertical lines at the borders of the pad; possible with the trick above
+        stack.Draw("histsame")
+        shist.Draw("histsame ][")
+        bkghist.Draw("e2same")
         blind_datagraph_extra = blind_datagraph.Clone()
         blind_datagraph_extra.Draw("P Z 0 same")
         blind_datagraph.SetMarkerSize(0.)
@@ -771,12 +781,13 @@ def main(args):
     legend.AddEntry(bkghist,"Bkg. Uncertainty","f")
     if is2D:
         if not mode == 'prefit':
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
         else:
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
 
     else:
-        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.7 pb"%vars(),"l")
+        if not args.no_signal: legend.AddEntry(shist_stack,"ggH(100 GeV) @ 5.8 pb"%vars(),"f")
+        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()
@@ -793,7 +804,7 @@ def main(args):
         latex3.SetTextAngle(0)
         latex3.SetTextColor(ROOT.kBlack)
         latex3.SetTextFont(42)
-        latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
+        if len(bin_label.split(','))>1: latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
     else:
         latex2.SetTextAlign(23)
         latex2.SetTextSize(0.05)
@@ -802,7 +813,7 @@ def main(args):
     #CMS and lumi labels
     plot.FixTopRange(pads[0], plot.GetPadYMax(pads[0]), extra_pad if extra_pad>0 else 0.3)
     extra=''
-    extra='Preliminary'
+    #extra='Preliminary'
     if 'htt_tt_2018_6_' in file_dir: extra=''
     if not is2D:
         DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.85, relExtraDX=0.05)
