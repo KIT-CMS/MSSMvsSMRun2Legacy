@@ -291,11 +291,19 @@ def main(args):
 
             # set axes limits and labels
             if channel == "em":
-                plot.setXlims(-200.,150.)
-                plot.subplot(0).setYlims(
-                    split_dict[channel],
-                    max(1.45 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
-                        split_dict[channel] * 2))
+                # plot.setXlims(-200.,150.)
+                if category in ["300", "301"]:
+                    plot.setXlims(-70., 100.)
+                    plot.subplot(0).setYlims(
+                        split_dict[channel],
+                        max(1.40 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
+                            split_dict[channel] * 2))
+                elif category == "302":
+                    plot.setXlims(-140., 140)
+                    plot.subplot(0).setYlims(
+                        split_dict[channel],
+                        max(1.40 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
+                            split_dict[channel] * 2))
             elif channel in ["et", "mt"]:
                 if category in ["300", "301"]:
                     plot.subplot(0).setYlims(
@@ -382,6 +390,9 @@ def main(args):
             if channel == "mt" and category in ["302"]:
                 plot.add_legend(width=0.5, height=0.20)
                 plot.legend(0).setNColumns(2)
+            elif channel == "em" and category in ["302"]:
+                plot.add_legend(width=0.25, height=0.35)
+                plot.legend(0).setNColumns(1)
             else:
                 plot.add_legend(width=0.3, height=0.35)
                 plot.legend(0).setNColumns(1)
@@ -397,14 +408,25 @@ def main(args):
             plot.legend(0).Draw()
 
             if channel == "em":
-                _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
-                _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
-                plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                plot.DrawText(0.325, 0.8, "low-D_{#zeta}", textsize=0.025)
-                plot.DrawText(0.415, 0.8, "medium-D_{#zeta}", textsize=0.025)
-                plot.DrawText(0.68, 0.5, "high-D_{#zeta}", textsize=0.025)
+                if category in ["300", "301"]:
+                    _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
+                    _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
+                    plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.DrawText(0.335, 0.80, "low-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.465, 0.80, "medium-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.5, "high-p_{#zeta}", textsize=0.025)
+                elif category in ["302"]:
+                    _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
+                    _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
+                    plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
+                    plot.DrawText(0.450, 0.8, "low-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.525, 0.8, "medium-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.45, "high-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.305, 0.8, "t#bar{t} CR", textsize=0.025)
             elif channel in ["et", "mt"]:
                 if category in ["300", "301"]:
                     _ymax = max(0.8 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
