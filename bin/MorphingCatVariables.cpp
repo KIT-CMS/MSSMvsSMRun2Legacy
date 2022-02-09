@@ -564,6 +564,15 @@ int main(int argc, char **argv) {
     cb.SetAutoMCStats(cb, 0.0);
   }
 
+  // Treatment of CMS_htt_ttbarShape in plots
+  auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
+  cb_syst.ForEachSyst([&](ch::Systematic *syst) {
+    syst->set_type("shape");
+  });
+  cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+  cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+
   // Write out datacards. Naming convention important for rest of workflow. We
   // make one directory per chn-cat, one per chn and cmb. In this code we only
   // store the individual datacards for each directory to be combined later.
