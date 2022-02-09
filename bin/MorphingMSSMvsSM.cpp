@@ -649,7 +649,7 @@ int main(int argc, char **argv) {
   RooRealVar mh("mh", "mh", 125., 90., 4000.);
 
   std::string max_lowmass = "60";
-  if(SUSYggH_lowmasses.size()>0) SUSYggH_lowmasses[2018].back(); // this is set the same for all years for the time-being
+  if(SUSYggH_lowmasses.size()>0) max_lowmass = SUSYggH_lowmasses[2018].back(); // this is set the same for all years for the time-being
 
   TString expression = max_lowmass + "*(mA >=" + max_lowmass +") + mA*(mA < "+ max_lowmass + ")";
   RooFormulaVar mA_lowmass("mA_lowmass", "mA_lowmass", expression, mA);
