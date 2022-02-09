@@ -633,16 +633,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  std::map< int, std::map<std::string,int> > SM_thresholds_bbH{
-    {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
-    {2017,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
-    {2018,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}}};
-
-  std::map< int, std::map<std::string,int> > SM_thresholds_ggH{
-    {2016,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
-    {2017,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}},
-    {2018,{{"et", 1900}, {"mt", 1900}, {"tt", 1900}, {"em", 1900}}}};
-
   // Define MSSM model-dependent mass parameters mA, mH, mh
   RooRealVar mA("mA", "mA", 125., 90., 4000.);
   RooRealVar mH("mH", "mH", 125., 90., 4000.);
