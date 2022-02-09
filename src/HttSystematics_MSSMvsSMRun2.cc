@@ -2289,6 +2289,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(mc_processes)
       .AddSyst(cb, "CMS_scale_e", "shape", SystMap<>::init(1.00));
 
+  // Only using electron resolution for SM categories
+  cb.cp()
+      .channel({"em", "et"})
+      .process(mc_processes)
+      .bin_id(mssm_categories, false)
+      .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.00));
+
   // Embedded uncorrelated uncertainty
 
   cb.cp()

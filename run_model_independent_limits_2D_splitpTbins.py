@@ -21,14 +21,12 @@ if all_perm:
   if channel == 'fake':
     channel_perm = ['et','mt','tt','fake']
   elif channel == 'all':
-#    channel_perm = ['em','et','mt','tt','all']
-    channel_perm = ['et','mt','tt']
+    channel_perm = ['em','et','mt','tt','all']
   else:
     channel_perm = channel.split(",").append(channel)
 
   if year == 'all':
- #   year_perm = ['2016','2017','2018','all']
-    year_perm = ['all']
+    year_perm = ['2016','2017','2018','all']
   else:
     year_perm = year.split(',').append(year)
 else:
@@ -107,14 +105,3 @@ for year in year_perm:
 
     os.system('combineTool.py -m "60,80,95,100,120,125,130,140,160,180,200,250" -M AsymptoticLimits --rAbsAcc 0 --rRelAcc 0.0005 --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_bbH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".bbH.v2" --task-name bbH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" ' % vars())
 
-#    # azimov fits:
-#    
-#    os.system('combineTool.py -m "100" -M GenerateOnly --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=5.8,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".ggH.Toys100"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01  -t -1 --saveToys' % vars())
-#
-#    os.system('combineTool.py -m "60,65,70,75,80,85,90,95,100,105,110,120,125,130,140,160,180,200,250" -M Significance --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".ggH.azimov" --task-name ggH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s_pvalue --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" -t -1 --toysFile /vols/cms/dw515/MSSMLowMass/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/%(directory)s/%(year_str)s/%(channel_str)s/higgsCombine.ggH.Toys100.GenerateOnly.mH100.123456.root ' % vars())
-#
-#    os.system('combineTool.py -m "60,65,70,75,80,85,90,95,100,105,110,120,125,130,140,160,180,200,250" -M Significance --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_bbH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".bbH.azimov" --task-name bbH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s_pvalue --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" -t -1 --toysFile /vols/cms/dw515/MSSMLowMass/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/%(directory)s/%(year_str)s/%(channel_str)s/higgsCombine.ggH.Toys100.GenerateOnly.mH100.123456.root ' % vars())
-#
-#    os.system('combineTool.py -m "60,80,95,100,120,125,130,140,160,180,200,250" -M AsymptoticLimits --rAbsAcc 0 --rRelAcc 0.0005 --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".ggH.azimov" --task-name ggH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" -t -1 --toysFile /vols/cms/dw515/MSSMLowMass/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/%(directory)s/%(year_str)s/%(channel_str)s/higgsCombine.ggH.Toys100.GenerateOnly.mH100.123456.root ' % vars())
-#
-#    os.system('combineTool.py -m "60,80,95,100,120,125,130,140,160,180,200,250" -M AsymptoticLimits --rAbsAcc 0 --rRelAcc 0.0005 --boundlist input/mssm_boundaries.json --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_bbH -d %(directory)s/%(year_str)s/%(channel_str)s/ws.root --there -n ".bbH.azimov" --task-name bbH_full_combined_%(analysis)s_%(channel)s_%(year)s_%(output)s --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 -v 1 --job-mode \'SGE\' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" -t -1 --toysFile /vols/cms/dw515/MSSMLowMass/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/%(directory)s/%(year_str)s/%(channel_str)s/higgsCombine.ggH.Toys100.GenerateOnly.mH100.123456.root ' % vars())
