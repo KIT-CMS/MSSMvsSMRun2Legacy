@@ -62,7 +62,7 @@ elif [[ $MODEL == "mh125_ls" ]]; then
 elif [[ $MODEL == "mh125_align" ]]; then
     wsoutput="ws_mh125_align.root"
     modelfile="13,Run2017,mh125_align_13.root"
-    scenario_label="M_{h}^{125} alignment scenario (H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125}(alignment) scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
@@ -72,7 +72,7 @@ elif [[ $MODEL == "mh125_align" ]]; then
 elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
-    scenario_label="M_{H}^{125} alignment scenario (h,A#rightarrow#tau#tau)"
+    scenario_label="M_{H}^{125} scenario (h,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-heavy"
     sm_like_mass="m_H"
     x_title='m_{H^{#plus}} [GeV]'
@@ -82,7 +82,7 @@ elif [[ $MODEL == "mHH125" ]]; then
 elif [[ $MODEL == "mh1125_CPV" ]]; then
     wsoutput="ws_mh1125_cpv.root"
     modelfile="13,Run2017,mh1125_CPV_13.root"
-    scenario_label="M_{h_{1}}^{125} (CPV) scenario (^{}h_{2},^{}h_{3}#rightarrow#tau#tau)"
+    scenario_label="M_{h_{1}}^{125}(CPV) scenario (^{}h_{2},^{}h_{3}#rightarrow#tau#tau)"
     sub_analysis="cpv"
     sm_like_mass="m_H1"
     x_title='m_{H^{#plus}} [GeV]'
@@ -93,7 +93,7 @@ elif [[ $MODEL == "mh1125_CPV" ]]; then
 elif [[ $MODEL == "mh125_muneg_1" ]]; then
     wsoutput="mh125_muneg_1.root"
     modelfile="13,Run2017,mh125_muneg_1_13.root"
-    scenario_label="M_{h}^{125} (#mu = -1 TeV) scenario (H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125 ^{}#mu_{1}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
@@ -103,7 +103,7 @@ elif [[ $MODEL == "mh125_muneg_1" ]]; then
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
     modelfile="13,Run2017,mh125_muneg_2_13.root"
-    scenario_label="M_{h}^{125} (#mu = -2 TeV) scenario (H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125 ^{}#mu_{2}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
@@ -113,7 +113,7 @@ elif [[ $MODEL == "mh125_muneg_2" ]]; then
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
     modelfile="13,Run2017,mh125_muneg_3_13.root"
-    scenario_label="M_{h}^{125} (#mu = -3 TeV) scenario (H,A#rightarrow#tau#tau)"
+    scenario_label="M_{h}^{125 ^{}#mu_{3}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
@@ -397,15 +397,17 @@ elif [[ $MODE == "collect" ]]; then
     fi
     modelname=${MODEL}_13.root
     [[ $OLDFILES == 1 ]] && modelname="${MODEL}_13_old.root"
-    plotLimitGrid.py asymptotic_grid.root \
-    --scenario-label="${scenario_label}" \
-    --output ${TAG}_${MODEL} \
-    --title-right="${title}" \
-    --cms-sub="Preliminary" \
-    --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
-    --y-range ${y_min},${y_max} \
-    --mass_histogram ${sm_like_mass} \
-    --mass_histogram_title ${mass_histogram_title} \
-    --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${modelname} \
-    --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
+    for label in "Preliminary" ""; do
+        plotLimitGrid.py asymptotic_grid.root \
+        --scenario-label="${scenario_label}" \
+        --output ${TAG}_${MODEL}_${label} \
+        --title-right="${title}" \
+        --cms-sub=${label} \
+        --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
+        --y-range ${y_min},${y_max} \
+        --mass_histogram ${sm_like_mass} \
+        --mass_histogram_title ${mass_histogram_title} \
+        --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${modelname} \
+        --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
+    done
 fi
