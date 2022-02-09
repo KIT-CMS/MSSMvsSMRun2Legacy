@@ -1925,3 +1925,271 @@ def getOverlayMarkerAndLegend(legend, entries, options, borderSize=2.0/3, marker
     borderLegend.SetFillStyle(0)
     borderLegend.SetFillColor(0)
     return (borderLegend,graphs)
+
+def CompareHists(hists=[],
+             legend_titles=[],
+             title="",
+             ratio=True,
+             log_y=False,
+             log_x=False,
+             ratio_range="0.7,1.3",
+             custom_x_range=False,
+             x_axis_max=4000,
+             x_axis_min=0,
+             custom_y_range=False,
+             y_axis_max=4000,
+             y_axis_min=0,
+             x_title="",
+             y_title="",
+             extra_pad=0,
+             norm_hists=False,
+             plot_name="plot",
+             label="",
+             norm_bins=True,
+             uncert_hist=None,
+             uncert_title='',
+             ReweightPlot=False):
+   
+    objects=[]
+    R.gROOT.SetBatch(R.kTRUE)
+    R.TH1.AddDirectory(False)
+    ModTDRStyle(r=0.04, l=0.14)
+
+    colourlist=[R.kBlue,R.kRed,R.kGreen+3,R.kBlack,R.kYellow+2,R.kOrange,R.kCyan+3,R.kMagenta+2,R.kViolet-5,R.kGray]
+    if ReweightPlot:
+      colourlist=[R.kBlack,R.kBlue,R.kRed,R.kGreen+3,R.kYellow+2,R.kOrange,R.kCyan+3,R.kMagenta+2,R.kViolet-5,R.kGray]
+
+    hs = R.THStack("hs","")
+    hist_count=0
+    legend_hists=[]
+    if isinstance(uncert_hist, (list,)):
+     for i in uncert_hist:
+       if i is None: continue 
+       if norm_bins and i is not None: i.Scale(1.0,"width")
+    else:
+      if norm_bins and uncert_hist is not None: uncert_hist.Scale(1.0,"width")
+
+    for hist in hists:
+        # print hist.GetName()
+        # for bin_ in range(1,hist.GetNbinsX()):
+        #     print hist.GetBinContent(bin_)
+        #     print np.sqrt(hist.GetBinContent(bin_))
+        if norm_hists: hist.Scale(1.0/hist.Integral(0, hist.GetNbinsX()+1))
+        if norm_bins: hist.Scale(1.0,"width")
+        h = hist.Clone()
+        objects.append(h)
+        h.SetFillColor(0)
+        h.SetLineWidth(3)
+        h.SetLineColor(colourlist[hist_count])
+        h.SetMarkerColor(colourlist[hist_count])
+        h.SetMarkerSize(0)
+        hs.Add(h)
+        hist_count+=1
+        o=h.Clone()
+        objects.append(o)
+        legend_hists.append(o)
+   # hs.Draw("nostack")
+        
+    c1 = R.TCanvas()
+    c1.cd()
+    
+    if ratio:
+        if ReweightPlot: pads=TwoPadSplit(0.39,0.01,0.01)
+        else: pads=TwoPadSplit(0.29,0.01,0.01)
+    else:
+        pads=OnePad()
+    pads[0].cd()
+    
+    if(log_y): pads[0].SetLogy(1)
+    if(log_x): pads[0].SetLogx(1)
+    if custom_x_range:
+        if x_axis_max > hists[0].GetXaxis().GetXmax(): x_axis_max = hists[0].GetXaxis().GetXmax()
+    if ratio:
+        if(log_x): pads[1].SetLogx(1)
+        axish = createAxisHists(2,hists[0],hists[0].GetXaxis().GetXmin(),hists[0].GetXaxis().GetXmax()-0.01)
+        axish[1].GetXaxis().SetTitle(x_title)
+        axish[1].GetXaxis().SetLabelSize(0.03)
+        axish[1].GetYaxis().SetNdivisions(4)
+        axish[1].GetYaxis().SetTitle("Ratio")
+        #if ReweightPlot:
+        #  axish[1].GetYaxis().SetTitle("Correction")
+        axish[1].GetYaxis().SetTitleOffset(1.6)
+        axish[1].GetYaxis().SetTitleSize(0.04)
+        axish[1].GetYaxis().SetLabelSize(0.03)
+    
+        axish[0].GetXaxis().SetTitleSize(0)
+        axish[0].GetXaxis().SetLabelSize(0)
+        if custom_x_range:
+          axish[0].GetXaxis().SetRangeUser(x_axis_min,x_axis_max-0.01)
+          axish[1].GetXaxis().SetRangeUser(x_axis_min,x_axis_max-0.01)
+        if custom_y_range:
+          axish[0].GetYaxis().SetRangeUser(y_axis_min,y_axis_max)
+          axish[1].GetYaxis().SetRangeUser(y_axis_min,y_axis_max)
+    else:
+        axish = createAxisHists(1,hists[0],hists[0].GetXaxis().GetXmin(),hists[0].GetXaxis().GetXmax()-0.005)
+        axish[0].GetXaxis().SetLabelSize(0.03)
+        axish[0].GetXaxis().SetTitle(x_title)
+        axish[0].GetXaxis().SetTitleSize(0.04)
+        if custom_x_range:
+          axish[0].GetXaxis().SetRangeUser(x_axis_min,x_axis_max-0.01)
+        if custom_y_range:                                                                
+          axish[0].GetYaxis().SetRangeUser(y_axis_min,y_axis_max)
+    axish[0].GetYaxis().SetTitle(y_title)
+    axish[0].GetYaxis().SetTitleOffset(1.6)
+    axish[0].GetYaxis().SetTitleSize(0.04)
+    axish[0].GetYaxis().SetLabelSize(0.03)
+
+    hs.Draw("nostack same")
+
+    uncert_hs = R.THStack()
+    if uncert_hist is not None:
+      if isinstance(uncert_hist, (list,)):
+         #col_list = [12,6,4,2,3,4]
+         col_list=colourlist
+         count = 0
+         for i in uncert_hist:
+           if i is not None:
+             i.SetFillColor(CreateTransparentColor(col_list[count],0.4))
+             i.SetLineColor(CreateTransparentColor(col_list[count],0.4))
+             i.SetMarkerSize(0)
+             i.SetMarkerColor(CreateTransparentColor(col_list[count],0.4))
+             i.SetFillStyle(1111)
+             uncert_hs.Add(i)
+           count+=1
+         uncert_hs.Draw("nostack e2same")  
+      else: 
+        uncert_hist.SetFillColor(CreateTransparentColor(12,0.4))
+        uncert_hist.SetLineColor(CreateTransparentColor(12,0.4))
+        uncert_hist.SetMarkerSize(0)
+        uncert_hist.SetMarkerColor(CreateTransparentColor(12,0.4))
+        uncert_hist.SetFillStyle(1111)
+        uncert_hs.Add(uncert_hist)
+        uncert_hs.Draw("e2same")
+
+      uncert_hs.Draw("nostack e2same")  
+    if not custom_y_range:
+        if(log_y):
+            if hs.GetMinimum("nostack") >0: axish[0].SetMinimum(hs.GetMinimum("nostack"))
+            else: axish[0].SetMinimum(0.0009)
+            axish[0].SetMaximum(10**((1+extra_pad)*(math.log10(1.1*hs.GetMaximum("nostack") - math.log10(axish[0].GetMinimum())))))
+        else:
+            maxi=1.1*(1+extra_pad)*max(hs.GetMaximum("nostack"),uncert_hs.GetMaximum("nostack"))
+            if not ReweightPlot: axish[0].SetMinimum(0)
+            else:
+              mini = None
+              maxi = None
+              for h in hists+uncert_hist:
+                if h is None: continue
+                for i in range(1,h.GetNbinsX()+1): 
+                  lo = h.GetBinContent(i)-h.GetBinError(i) 
+                  hi = h.GetBinContent(i)+h.GetBinError(i) 
+                  if mini is None:
+                    mini = min(lo,hi) 
+                    maxi = max(lo,hi) 
+                  else:
+                    mini = min(mini,lo,hi) 
+                    maxi = max(maxi,lo,hi) 
+              #mini = min(hs.GetMinimum("nostack"),uncert_hs.GetMinimum("nostack"))
+              mini-= abs(mini)*extra_pad
+              axish[0].SetMinimum(mini)
+              maxi*=(1.+extra_pad)
+            axish[0].SetMaximum(maxi)
+    axish[0].Draw()
+    uncert_hs.Draw("nostack e2same")  
+
+    hs.Draw("nostack hist same")
+    axish[0].Draw("axissame")
+    
+    
+    #Setup legend
+    tot = len(hists)
+    if isinstance(uncert_hist,list): tot+=len(uncert_hist)
+    if tot > 4: legend = PositionedLegend(0.35,0.3,3,0.03)
+    else: legend = PositionedLegend(0.35,0.2,3,0.03)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.040)
+    legend.SetFillColor(0)
+    
+
+    for legi,hist in enumerate(legend_hists):
+        legend.AddEntry(hist,legend_titles[legi],"l")
+    if isinstance(uncert_hist, (list,)):
+     count=0
+     for i in uncert_hist:
+       if i is not None: legend.AddEntry(i,uncert_title[count],'f') 
+       count+=1
+    else:
+      if uncert_hist is not None and uncert_title: legend.AddEntry(uncert_hist,uncert_title,'f')
+    legend.Draw("same")
+    
+    #CMS label and title
+    #FixTopRange(pads[0], axish[0].GetMaximum(), extra_pad if extra_pad>0 else 0.30)
+    #DrawCMSLogo(pads[0], 'CMS', 'Preliminary', 11, 0.045, 0.05, 1.0, '', 1.0)
+    # DrawCMSLogo(pads[0], 'CMS', 'Simulation', 11, 0.045, 0.05, 1.0, '', 1.0)
+    DrawTitle(pads[0], title, 3)
+    
+    latex2 = R.TLatex()
+    latex2.SetNDC()
+    latex2.SetTextAngle(0)
+    latex2.SetTextColor(R.kBlack)
+    latex2.SetTextSize(0.028)
+    latex2.DrawLatex(0.145,0.955,label)
+    
+    #Add ratio plot if required
+    if ratio:
+        ratio_hs = R.THStack("ratio_hs","")
+        hist_count=0
+        pads[1].cd()
+        pads[1].SetGrid(0,1)
+        axish[1].Draw("axis")
+        axish[1].SetMinimum(float(ratio_range.split(',')[0]))
+        axish[1].SetMaximum(float(ratio_range.split(',')[1]))
+        div_hist = hists[0].Clone()
+        objects.append(div_hist)
+        
+        for i in range(0,div_hist.GetNbinsX()+2): div_hist.SetBinError(i,0)
+        first_hist=True
+        for hist in hists:
+            h = hist.Clone()
+            objects.append(h)
+
+            h.SetFillColor(0)
+            h.SetLineWidth(3)
+            h.SetLineColor(colourlist[hist_count])
+            h.SetMarkerColor(colourlist[hist_count])
+            h.SetMarkerSize(0)
+
+            h.Divide(div_hist)
+            #if first_hist:
+            #    for i in range(1,h.GetNbinsX()+1): h.SetBinError(i,0.00001)
+            #    first_hist=False
+            o = h.Clone()
+            objects.append(o)
+            ratio_hs.Add(o)
+            hist_count+=1
+        if uncert_hist is not None:
+           if isinstance(uncert_hist, (list,)):
+             ratio_err_hs = R.THStack("ratio_err_hs","")
+             count=0
+             for i in uncert_hist:
+               if i is not None:
+                 h = i.Clone()
+                 objects.append(h)
+                 h.Divide(div_hist)
+                 ratio_err_hs.Add(h)
+                 h.Draw("e2same")
+               count+=1
+             #ratio_err_hs.Draw("nostack e2same")
+           else:
+             h = uncert_hist.Clone()
+             objects.append(h)
+             h.Divide(div_hist)
+             h.Draw("e2same") 
+        ratio_hs.Draw("nostack e same")  
+        pads[1].RedrawAxis("G")
+    pads[0].cd()
+    pads[0].GetFrame().Draw()
+    pads[0].RedrawAxis()
+    
+    c1.SaveAs(plot_name+'.pdf')
+

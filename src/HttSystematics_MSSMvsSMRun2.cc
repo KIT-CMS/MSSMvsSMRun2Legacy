@@ -2350,7 +2350,6 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process(mc_processes)
       .AddSyst(cb, "CMS_scale_e", "shape", SystMap<>::init(1.00));
 
-
   // Only using electron resolution for SM categories
   cb.cp()
       .channel({"em", "et"})
@@ -2451,28 +2450,55 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // These uncertainties were only used to determine their would-be impact on the results
   // ##########################################################################
   
-  //cb.cp()
-  //    .channel({"em", "mt"})
-  //    .process({"EMB"})
-  //    .bin_id({2},false)
-  //    .AddSyst(cb, "CMS_scale_mu", "shape", SystMap<>::init(1.0));
+ // // uncomment to add MUES uncertainty
+ // cb.cp()
+ //     .channel({"em", "mt"})
+ //     .process({"EMB"})
+ //     .bin_id({2},false)
+ //     .AddSyst(cb, "CMS_scale_mu", "shape", SystMap<>::init(1.0));
 
-  //cb.cp()
-  //    .channel({"em", "mt"})
-  //    .process({"EMB"})
-  //    .bin_id({2},false)
-  //    .AddSyst(cb, "CMS_res_mu", "shape", SystMap<>::init(1.0));
+ // // uncomment to add MUER uncertainty
+ // cb.cp()
+ //     .channel({"em", "mt"})
+ //     .process({"EMB"})
+ //     .bin_id({2},false)
+ //     .AddSyst(cb, "CMS_res_mu", "shape", SystMap<>::init(1.0));
 
-  //cb.cp()
-  //    .channel({"em", "et"})
-  //    .process({"EMB"})
-  //    .bin_id({2},false)
-  //    .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.0));
+ // // uncomment to add EER uncertainty
+ // cb.cp()
+ //     .channel({"em", "et"})
+ //     .process({"EMB"})
+ //     .bin_id({2},false)
+ //     .AddSyst(cb, "CMS_res_e", "shape", SystMap<>::init(1.0));
 
-  //cb.cp()
-  //    .channel({"et", "mt", "tt"})
-  //    .process({"EMB"})
-  //    .AddSyst(cb, "CMS_res_t", "shape", SystMap<>::init(1.0));
+ // // uncomment to add TER uncertainty
+ // cb.cp()
+ //     .channel({"et", "mt", "tt"})
+ //     .process({"EMB"})
+ //     .AddSyst(cb, "CMS_res_t", "shape", SystMap<>::init(1.0));
+
+ // // uncomment to add TER uncertaintiues split by DM
+
+ // cb.cp()
+ //     .channel({"et", "mt", "tt"})
+ //     .process({"EMB"})
+ //     .AddSyst(cb, "CMS_res_t_1prong", "shape", SystMap<>::init(1.0));
+
+ // cb.cp()
+ //     .channel({"et", "mt", "tt"})
+ //     .process({"EMB"})
+ //     .AddSyst(cb, "CMS_res_t_1prong1pizero", "shape", SystMap<>::init(1.0));
+
+ // cb.cp()
+ //     .channel({"et", "mt", "tt"})
+ //     .process({"EMB"})
+ //     .AddSyst(cb, "CMS_res_t_3prong", "shape", SystMap<>::init(1.0));
+
+ // cb.cp()
+ //     .channel({"et", "mt", "tt"})
+ //     .process({"EMB"})
+ //     .AddSyst(cb, "CMS_res_t_3prong1pizero", "shape", SystMap<>::init(1.0));
+
 
   // ##########################################################################
   // Uncertainty: Jet energy scale

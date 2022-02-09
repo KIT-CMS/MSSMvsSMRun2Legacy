@@ -34,6 +34,8 @@ parser.add_argument(
 parser.add_argument(
     '--logx', action='store_true', help="""Draw x-axis in log scale""")
 parser.add_argument(
+    '--low_high_split', action='store_true', help="""Draw line and labels for low mass - high mass split""")
+parser.add_argument(
     '--ratio-to', default=None)
 parser.add_argument(
     '--pad-style', default=None, help="""Extra style options for the pad, e.g. Grid=(1,1)""")
@@ -91,7 +93,7 @@ graphs = []
 graph_sets = []
 
 legend = plot.PositionedLegend(0.48, 0.25, 3, 0.015)
-legend.SetTextSize(0.03)
+legend.SetTextSize(0.04)
 
 axis = None
 
@@ -116,6 +118,20 @@ has_band = False
 dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
 plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
 
+def RemovePoints(graph_set, high=True):
+  graph_set_new = {}
+  for key,g in graph_set.items(): 
+    x=ROOT.Double()
+    y=ROOT.Double()
+    g_clone = g.Clone()
+    for i in range(g_clone.GetN(),-1,-1):
+      g_clone.GetPoint(i,x,y)
+      if high and x < 250: g_clone.RemovePoint(i)
+      if not high and x >= 250: g_clone.RemovePoint(i)
+
+    graph_set_new[key] = g_clone
+  return graph_set_new
+
 for src in args.input:
     splitsrc = src.split(':')
     file = splitsrc[0]
@@ -126,7 +142,13 @@ for src in args.input:
             axis = plot.CreateAxisHists(len(pads), graph_sets[-1].values()[0], True)
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
-        plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+         
+        if not args.low_high_split: plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+        else: 
+          graph_set_high = RemovePoints(graph_sets[-1], high=True)
+          graph_set_low = RemovePoints(graph_sets[-1], high=False)
+          plot.DrawLimitBand(pads[0], graph_set_high, legend=legend,legend_overwrite=style_dict["legend"])
+          plot.DrawLimitBand(pads[0], graph_set_low)
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw()
@@ -164,9 +186,9 @@ for src in args.input:
 
 
 
-axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
+axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
 if args.process == "bb#phi":
-    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
+    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)
@@ -223,9 +245,27 @@ if legend.GetNRows() == 1:
     legend.SetY1(legend.GetY2() - 0.5*(legend.GetY2()-legend.GetY1()))
 legend.Draw()
 
-plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
-plot.DrawTitle(pads[0], args.title_right, 3)
-plot.DrawTitle(pads[0], args.title_left, 1)
+plot.DrawTitle(pads[0], args.title_right % vars(), 3)
+plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 1, 0.045, 0.05, 1.0, '', 0.9)
+
+#plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
+#plot.DrawTitle(pads[0], args.title_right, 3)
+#plot.DrawTitle(pads[0], args.title_left, 1)
+
+if args.low_high_split:
+
+  line =  ROOT.TLine(225.,hobj.GetMinimum(),225,hobj.GetMaximum())
+  line.Draw()
+  latex2 = ROOT.TLatex()
+  latex2.SetNDC()
+  latex2.SetTextAngle(0)
+  latex2.SetTextAlign(12)
+  latex2.SetTextFont(42)
+  latex2.SetTextSize(0.04)
+  latex2.DrawLatex(0.19,0.17, 'Low-mass')
+  latex2.DrawLatex(0.45,0.17, 'High-mass')
+  latex2.SetTextSize(0.05)
+
 
 canv.Print('.pdf')
 canv.Print('.png')
