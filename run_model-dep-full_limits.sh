@@ -244,6 +244,12 @@ if [[ $MODE == "initial" ]]; then
             rsync -av --progress ${datacarddir}/${era}/htt_${channel}*/* ${datacarddir}/${era}/${channel}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards_${era}_${channel}.txt
         done
     done
+    # Check if the expected number of datacards has been written
+    EXPECTED=$(((15+15+11+18)*3))
+    if [[ $(ls ${datacarddir}/combined/cmb/*.txt | wc -l) != $EXPECTED ]]; then
+        echo "[ERROR] Not all datacards have been created or written. Please check the logs..."
+        echo "Expected ${EXPECTED} datacards written but found only $(ls ${datacarddir}/combined/cmb/ | wc -l) in the combined directory."
+    fi
 
 elif [[ $MODE == "ws" ]]; then
     ############
