@@ -54,7 +54,7 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment ${HSMTREATMENT} \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
@@ -66,7 +66,7 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment ${HSMTREATMENT} \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
@@ -79,7 +79,7 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment ${HSMTREATMENT} \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
@@ -106,7 +106,7 @@ elif [[ $MODE == "ws" ]]; then
     --PO modelFile=13,Run2017,mh125_13.root \
     --PO minTemplateMass=60 \
     --PO maxTemplateMass=3500 \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
     -i ${datacarddir}/$ERA/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace.txt
     ############
     # job setup creation

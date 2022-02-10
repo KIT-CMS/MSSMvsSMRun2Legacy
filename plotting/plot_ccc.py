@@ -24,6 +24,14 @@ def parse_args():
                         type=lambda ranges: [float(edge.replace("m", "-")) for edge in ranges.split(",")],
                         default=[-10, 10],
                         help="Range of the fit values")
+    parser.add_argument("--separate-nominal-fit",
+                        type=str,
+                        default=None,
+                        help="Fallback solution, take nominal fit result from different fit")
+    parser.add_argument("--mass",
+                        type=str,
+                        default=None,
+                        help="Mass of the considered Higgs boson.")
     return parser.parse_args()
 
 
@@ -35,7 +43,14 @@ def main(args):
     infile = ROOT.TFile(args.input, "read")
 
     # Load the fit results
-    fit_nominal = infile.Get("fit_nominal")
+    if args.separate_nominal_fit is None:
+        fit_nominal = infile.Get("fit_nominal")
+    else:
+        if not os.path.exists(args.separate_nominal_fit):
+            print("Input file {} for separate fit does not exist.".format(args.input))
+            raise ValueError
+        infile_separate = ROOT.TFile(args.separate_nominal_fit, "read")
+        fit_nominal = infile_separate.Get("fit_nominal")
     fit_alternate = infile.Get("fit_alternate")
 
     # Get POI result RooFit object
@@ -98,10 +113,34 @@ def main(args):
     globalFitLine.Draw("same")
     points.Draw("P SAME")
 
-    legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
+    # legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
+    legend = ROOT.TLegend(0.2, 0.7, 0.5, 0.9)
+    # legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
     legend.AddEntry(globalFitLine, "Global Best Fit", "l")
     legend.AddEntry(globalFitBand, "Global Best Fit #pm 1 #sigma", "f")
     legend.Draw()
+
+    limit_tree = infile.Get("limit")
+    limit_tree.GetEntry(0)
+    latex2 = ROOT.TLatex()
+    latex2.SetNDC()
+    latex2.SetTextAngle(0)
+    latex2.SetTextColor(ROOT.kBlack)
+    latex2.SetTextSize(0.04)
+    begin_left = 0.245
+    # latex2.DrawLatex(begin_left, 0.360, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    latex2.DrawLatex(begin_left, 0.640, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+
+    # Draw mass of Higgs boson outside of frame
+    if args.mass is not None:
+        latex2 = ROOT.TLatex()
+        latex2.SetNDC()
+        latex2.SetTextAngle(0)
+        latex2.SetTextColor(ROOT.kBlack)
+        latex2.SetTextSize(0.04)
+        begin_left = 0.205
+        latex2.DrawLatex(begin_left, 0.920, "m_{#phi} = %s GeV" % args.mass)
+
     canv.Print(args.output + ".png", "png")
     canv.Print(args.output + ".pdf", "pdf")
     return

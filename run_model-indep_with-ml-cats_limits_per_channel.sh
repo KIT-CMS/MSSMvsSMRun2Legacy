@@ -44,7 +44,7 @@ if [[ $MODE == "initial" ]]; then
         --eras 2016,2017,2018 \
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/sm_neuralnet_categories_$CHANNEL.txt \
         --variable nnscore \
-        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
         --sm \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
@@ -56,7 +56,7 @@ if [[ $MODE == "initial" ]]; then
         --eras 2016,2017,2018 \
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/by_channel/mssm_signal_categories_$CHANNEL.txt \
         --variable mt_tot_puppi \
-        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
