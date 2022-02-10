@@ -2546,7 +2546,7 @@ int main(int argc, char **argv) {
       TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
       TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
        
-      double sig_scale=5.686; // set to best fit value of signal strength for ggH
+      double sig_scale=6.0; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
       sig_i.Scale(sig_scale);
 
