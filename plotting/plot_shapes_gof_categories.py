@@ -395,7 +395,10 @@ def main(args):
             if args.normalize_by_bin_width:
                 plot.subplot(0).setYlabel("dN/d(%s)"%args.gof_variable)
             else:
-                plot.subplot(0).setYlabel("Events / 10 GeV")
+                if channel == "em":
+                    plot.subplot(0).setYlabel("Events / 5 GeV")
+                else:
+                    plot.subplot(0).setYlabel("Events / 5 GeV")
 
             plot.subplot(2).setYlabel("Data/Exp")
             plot.subplot(2).setGrid()
@@ -453,18 +456,18 @@ def main(args):
                     plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                    plot.DrawText(0.335, 0.80, "low-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.465, 0.80, "medium-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.75, 0.5, "high-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.335, 0.80, "Low-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.465, 0.80, "Medium-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.5, "High-D_{#zeta}", textsize=0.025)
                 elif category in ["302"]:
                     _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
                     _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
                     plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                    plot.DrawText(0.450, 0.8, "low-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.525, 0.8, "medium-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.75, 0.45, "high-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.450, 0.8, "Low-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.525, 0.8, "Medium-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.45, "High-D_{#zeta}", textsize=0.025)
                     plot.DrawText(0.305, 0.8, "t#bar{t} CR", textsize=0.025)
             elif channel in ["et", "mt"]:
                 if category in ["300", "301"]:
@@ -498,15 +501,15 @@ def main(args):
                 plot.DrawText(0.7, 0.3,
                               "\chi^{2}/ndf = " + str(round(chi2, 3)))
 
-            plot.add_legend(
-                reference_subplot=2, pos=1, width=0.5, height=0.03)
-            plot.legend(1).add_entry(0, "data_obs", "Data", 'PE')
-            plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
-            plot.legend(1).setNColumns(4)
-            plot.legend(1).Draw()
+            # plot.add_legend(
+            #     reference_subplot=2, pos=1, width=0.5, height=0.03)
+            # plot.legend(1).add_entry(0, "data_obs", "Data", 'PE')
+            # plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
+            # plot.legend(1).setNColumns(4)
+            # plot.legend(1).Draw()
 
             # draw additional labels
-            plot.DrawCMS()
+            plot.DrawCMS(cms_sub="")
             if "2016" in args.era:
                 plot.DrawLumi("36.3 fb^{-1} (2016, 13 TeV)")
             elif "2017" in args.era:
