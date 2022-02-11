@@ -2683,42 +2683,46 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"ZTT", "ZL", "ZJ"})
       .AddSyst(cb, "CMS_htt_zjXsec", "lnN", SystMap<>::init(1.02));
 
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_0jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_0jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_0jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_1jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_1jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-      .channel({"em"})
-      .process({"QCD"})
-      .AddSyst(cb, "CMS_htt_qcd_1jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-     .channel({"em"})
-     .process({"QCD"})
-     .AddSyst(cb, "CMS_htt_qcd_2jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-     .channel({"em"})
-     .process({"QCD"})
-     .AddSyst(cb, "CMS_htt_qcd_2jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-  cb.cp()
-     .channel({"em"})
-     .process({"QCD"})
-     .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+  if (sm){
+    // stat uncerts are buggy for the mssm categories in 2017 (and perhaps 2016 as well), but they are also very small for 2018 so we can probably drop them
+    // stat uncertainties are very small (<1%) so we drop them
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_0jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_0jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_0jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_1jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_1jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+        .channel({"em"})
+        .process({"QCD"})
+        .AddSyst(cb, "CMS_htt_qcd_1jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_2jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_2jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+    cb.cp()
+       .channel({"em"})
+       .process({"QCD"})
+       .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+  }
   cb.cp()
      .channel({"em"})
      .process({"QCD"})

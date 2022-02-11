@@ -18,7 +18,7 @@ for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13
 # plot low and high mass limits on same axis:
 
 # collect limits:
-DIR="Jan12_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
+DIR="Feb07_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
 for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
 
 # make plots
@@ -34,13 +34,13 @@ python scripts/significance_plot.py
 **With signal = 100 GeV:**
 
 ```bash
-combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
+combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
 ```
 
 **Background only:**
 
 ```bash
-combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX,r_bbH,r_ggH --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.bkgOnly.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
+combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX,r_bbH,r_ggH --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.bkgOnly.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
 ```
 
 ## make post-fit / pre-fit plots
@@ -187,6 +187,19 @@ combine -M ChannelCompatibilityCheck \
 --saveFitResult \
 -g htt_em -g htt_et -g htt_mt -g htt_tt \
 -v 2
+
+# to run the toys:
+
+combineTool.py -M ChannelCompatibilityCheck \
+    -d ${datacarddir}/combined/cmb/ws.root \
+    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustFit 1 --stepSize 0.01 \
+    --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-20,20:r_bbH=-0,100 --rMin=-20 \
+    -m ${MASS} \
+    -n .CCC.channel.toys \
+    -v 0 \
+    --there --runMinos=false \
+    -g htt_em -g htt_et -g htt_mt -g htt_tt \
+    -t 2 -s 0:500:1 --job-mode 'SGE' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" --task-name ChannelCompatibilityCheck.Test.combined-cmb.mH${MASS}
 ```
 
 **By era:**

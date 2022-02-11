@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
   bool enable_bsm_lowmass = false;
   bool lowmass = false;
   bool prop_plot = false;
+  bool cbyear_plot = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -166,6 +167,7 @@ int main(int argc, char **argv) {
       ("no_shape_systs", po::value<bool>(&no_shape_systs)->default_value(no_shape_systs))
       ("enable_bsm_lowmass", po::value<bool>(&enable_bsm_lowmass)->default_value(enable_bsm_lowmass))
       ("prop_plot", po::value<bool>(&prop_plot)->default_value(false))
+      ("cbyear_plot", po::value<bool>(&cbyear_plot)->default_value(false))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -546,7 +548,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if(prop_plot) {
+  if(prop_plot || (cbyear_plot && variable!="mt_tot_puppi")) {
     SUSYggH_masses[2016] = {"100"};
     SUSYggH_masses[2017] = {"100"};
     SUSYggH_masses[2018] = {"100"};
@@ -562,6 +564,23 @@ int main(int argc, char **argv) {
     ggX_masses[2017] = {};
     ggX_masses[2016] = {};
   }
+  else if(cbyear_plot && variable=="mt_tot_puppi") {
+    SUSYggH_masses[2016] = {"1200"};
+    SUSYggH_masses[2017] = {"1200"};
+    SUSYggH_masses[2018] = {"1200"};
+    SUSYbbH_masses[2016] = {"1200"};
+    SUSYbbH_masses[2017] = {"1200"};
+    SUSYbbH_masses[2018] = {"1200"};
+
+    SUSYqqH_masses[2018] = {};
+    SUSYqqH_masses[2017] = {};
+    SUSYqqH_masses[2016] = {};
+
+    ggX_masses[2018] = {};
+    ggX_masses[2017] = {};
+    ggX_masses[2016] = {};
+  }
+
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
   update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
@@ -1310,7 +1329,7 @@ int main(int argc, char **argv) {
 
   }
 
-  if(prop_plot){
+  if(prop_plot || cbyear_plot){
     // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
     auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
     cb_syst.ForEachSyst([&](ch::Systematic *syst) {
@@ -1687,10 +1706,10 @@ int main(int argc, char **argv) {
   // Unless we use the prop_plot option in which case we just set the inteference to 0 if it goes negative 
 
   ch::CombineHarvester procs_no_i;
-  if(prop_plot) procs_no_i = cb.cp();
+  if(prop_plot || cbyear_plot) procs_no_i = cb.cp();
   else procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"}, false);
 
-  if(prop_plot){
+  if(prop_plot||cbyear_plot){
      // for prop_plot option if the inteference is negative we scale it positive and then add a rate parameter which will scale it negative again in the end 
 
 
@@ -1924,6 +1943,10 @@ int main(int argc, char **argv) {
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_low_unc1_tt_"+y);
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_med_unc1_tt_"+y);
     ConvertShapesToLnN(cb.cp().bin_id({35,135,235,335,435}),    "CMS_ff_total_qcd_stat_njet1_jet_pt_high_unc1_tt_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_et_1prong_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_et_1prong1pizero_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_mt_1prong_"+y);
+    ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_mt_1prong1pizero_"+y);
   }
 
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
@@ -2271,7 +2294,7 @@ int main(int argc, char **argv) {
     TFile fractions_sm(sm_gg_fractions.c_str());
     std::cout << "[INFO] --> Loading WS: " << sm_gg_fractions.c_str() << std::endl;
     RooWorkspace *w_sm = (RooWorkspace*)fractions_sm.Get("w");
-    if(do_morph && !prop_plot) {
+    if(do_morph && !(prop_plot||cbyear_plot)) {
       //w_sm->var("Yb_MSSM_h")->setVal(0.); // un-comment to remove bottom and top-bottom contirbutions (top only)
       //w_sm->var("Yt_MSSM_h")->setVal(0.); // un-comment to remove top and top-bottom contirbutions (bottom only)
       w_sm->var("mh")->SetName("MH");
@@ -2294,8 +2317,9 @@ int main(int argc, char **argv) {
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
     }
-    else if (prop_plot) {
-      w_sm->var("mh")->setVal(100.);
+    else if (prop_plot||cbyear_plot) {
+      if (variable=="mt_tot_puppi") w_sm->var("mh")->setVal(1200.);
+      else w_sm->var("mh")->setVal(100.);
       RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
       RooAbsReal *b_frac = w_sm->function("ggh_b_MSSM_frac");
       RooAbsReal *i_frac = w_sm->function("ggh_i_MSSM_frac");
@@ -2305,7 +2329,7 @@ int main(int argc, char **argv) {
       ws.import(*t_frac, RooFit::RecycleConflictNodes());
       ws.import(*b_frac, RooFit::RecycleConflictNodes());
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
-    }
+    } 
     else {
       w_sm->var("mh")->setVal(std::stof(non_morphed_mass));
       RooAbsReal *t_frac = w_sm->function("ggh_t_MSSM_frac");
@@ -2356,7 +2380,7 @@ int main(int argc, char **argv) {
   }
 
   dout("[INFO] Prepare demo.");
-  if(do_morph && !prop_plot && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
+  if(do_morph && !(prop_plot||cbyear_plot) && (analysis == "bsm-model-indep" || analysis == "bsm-model-dep-additional" || analysis == "bsm-model-dep-full"))
   {
     //TFile morphing_demo(("htt_mssm_morphing_" + category+ "_"  + era_tag + "_" + analysis + "_demo.root").c_str(), "RECREATE");
 
@@ -2391,7 +2415,7 @@ int main(int argc, char **argv) {
     cb.ExtractData("htt", "$BIN_data_obs");
     std::cout << "[INFO] Finished template morphing for mssm ggh and bbh.\n";
   }
-  else if(!do_morph && analysis == "bsm-model-indep" && !prop_plot){
+  else if(!do_morph && analysis == "bsm-model-indep" && !(prop_plot||cbyear_plot)){
 
    // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
    //double Tfrac = ws.function("ggh_t_frac")->getVal();
@@ -2420,7 +2444,7 @@ int main(int argc, char **argv) {
      proc->set_rate(proc->rate()*Ifrac);
     });
   }
-  else if(prop_plot){
+  else if(prop_plot || cbyear_plot){
 
    // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
    double Tfrac = ws.function("ggh_t_frac")->getVal();
@@ -2449,11 +2473,11 @@ int main(int argc, char **argv) {
     });
   }
   ch::CombineHarvester cb_cp;
-  if(prop_plot) cb_cp = cb.deep();
+  if(prop_plot || cbyear_plot) cb_cp = cb.deep();
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-  if(!prop_plot){
+  if(!(prop_plot||cbyear_plot)){
     cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
     cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
     cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
@@ -2609,6 +2633,86 @@ int main(int argc, char **argv) {
       writer.WriteCards("plot_100to200", cb_cp.cp().bin_id({332,333}));
       writer.WriteCards("plot_GT200", cb_cp.cp().bin_id({432,433}));
   }
- 
+  if (cbyear_plot) {
+
+    // set common binning here (must use common bin boundaries). 
+    // if similar plots are required for other channels need to define these seperatly
+    std::map<string, vector<double>> binnings; 
+    binnings["htt_tt_32"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1100.0, 1300.0, 5000.0};
+    binnings["htt_tt_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 900.0, 5000.0};
+    binnings["htt_em_32"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 5000.0};
+    binnings["htt_em_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 5000.0};
+    binnings["htt_lt_32"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1100.0, 5000.0};
+    binnings["htt_lt_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 900.0, 5000.0};
+    binnings["htt_tt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_tt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_lt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_lt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+
+    vector<int> bins = {}; 
+    if(variable=="m_sv_VS_pt_tt_splitpT") bins = {332,432};
+    else bins = {32,35};
+    //auto bin_set = cb.cp().bin_id(bins).bin_set();
+
+    for (auto chn : chns) {
+      for (auto bin : bins) {
+        string chn_name = chn;
+        if (chn == "et" || chn == "mt") chn_name = "lt";
+        string bin_name = "htt_"+chn_name+"_"+to_string(bin);
+        if(binnings.find(bin_name) == binnings.end()) continue;
+        auto new_bins = binnings[bin_name];
+        TH1F proto("proto", "proto", new_bins.size()-1, new_bins.data());
+
+        ch::CombineHarvester cmb_bin = std::move(cb_cp.cp().channel({chn}).bin_id({bin}));
+
+        cmb_bin.ForEachObs([&](ch::Observation *e) {
+          TH1 const * old_h = e->shape();
+          TH1F * new_h_ = (TH1F*)old_h->Clone();
+          new_h_ = (TH1F*)new_h_->Rebin(new_bins.size()-1,"",new_bins.data());
+          std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
+          
+          new_h->Scale(e->rate());
+          e->set_shape(std::move(new_h), true);
+        });
+
+        cmb_bin.ForEachProc([&](ch::Process *e) {
+          TH1 const * old_h = e->shape();
+          TH1F * new_h_ = (TH1F*)old_h->Clone();
+          new_h_ = (TH1F*)new_h_->Rebin(new_bins.size()-1,"",new_bins.data());
+          std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
+          new_h->Scale(e->rate());
+          e->set_shape(std::move(new_h), true);
+        });
+
+        cmb_bin.ForEachSyst([&](ch::Systematic *e) {
+          if (e->type() != "shape") return;
+
+          TH1D *old_hu = (TH1D*)e->ClonedShapeU().get()->Clone();
+          TH1D *old_hd = (TH1D*)e->ClonedShapeD().get()->Clone();
+
+          float val_u = e->value_u(); 
+          float val_d = e->value_d();
+
+          TH1F * new_hu_ = (TH1F*)old_hu->Clone();
+          new_hu_ = (TH1F*)new_hu_->Rebin(new_bins.size()-1,"",new_bins.data());
+          new_hu_->Scale(val_u);
+          std::unique_ptr<TH1> new_hu = ch::make_unique<TH1F>(*(new_hu_));
+
+          TH1F * new_hd_ = (TH1F*)old_hd->Clone();
+          new_hd_ = (TH1F*)new_hd_->Rebin(new_bins.size()-1,"",new_bins.data());
+          new_hd_->Scale(val_d);
+          std::unique_ptr<TH1> new_hd = ch::make_unique<TH1F>(*(new_hd_));
+
+          e->set_shapes(std::move(new_hu), std::move(new_hd), nullptr);
+        });
+
+        ch::CardWriter writer(output_folder + "/" + "/$TAG/$BIN.txt",
+                              output_folder + "/" + "/$TAG/common/$BIN_input.root");
+        writer.WriteCards(bin_name, cb_cp.cp().channel({chn}).bin_id({bin}));
+      }
+    }
+  } 
 
 }
