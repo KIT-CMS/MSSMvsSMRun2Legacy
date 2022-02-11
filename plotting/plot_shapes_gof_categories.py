@@ -99,30 +99,47 @@ def check_for_zero_bins(hist):
 
 def get_histogram(rootfile, era, channel, category, process):
     if era == "combined":
-        hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
-        hist.Add(get_histogram(rootfile, "2017", channel, category, process))
-        hist.Add(get_histogram(rootfile, "2018", channel, category, process))
+        if process != "TotalBkg":
+            if category == "300":
+                hist = get_histogram(rootfile, "2016", channel, "301", process).Clone()
+                hist.Add(get_histogram(rootfile, "2016", channel, "302", process))
+                for era in ["2017", "2018"]:
+                    for cat in ["301", "302"]:
+                        hist.Add(get_histogram(rootfile, era, channel, cat, process))
+            else:
+                hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
+                for era in ["2017", "2018"]:
+                    hist.Add(get_histogram(rootfile, era, channel, category, process))
+        else:
+            if rootfile._type == "postfit":
+                hist = rootfile.rootfile.Get("postfit/TotalBkg")
+            else:
+                if category == "300":
+                    hist = get_histogram(rootfile, "2016", channel, "301", process).Clone()
+                    hist.Sumw2()
+                    hist.Add(get_histogram(rootfile, "2016", channel, "302", process))
+                    for era in ["2017", "2018"]:
+                        for cat in ["301", "302"]:
+                            hist.Add(get_histogram(rootfile, era, channel, cat, process))
+                else:
+                    hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
+                    hist.Sumw2()
+                    hist.Add(get_histogram(rootfile, "2017", channel, category, process))
+                    hist.Add(get_histogram(rootfile, "2018", channel, category, process))
     else:
         if channel == "tt" and process == "jetFakes":
             hist = rootfile.get(era, channel, category, process).Clone()
-            hist.Sumw2()
             hist.Add(rootfile.get(era, channel, category, "wFakes"))
         elif channel == "em" and process == "EWK":
             hist = rootfile.get(era, channel, category, "W").Clone()
-            hist.Sumw2()
             hist.Add(rootfile.get(era, channel, category, "VVL"))
         else:
             hist = rootfile.get(era, channel, category, process)
-            hist.Sumw2()
     return hist
 
 
 def main(args):
     #### plot signals
-    if args.background_only:
-        stxs_stage1p1_cats = []
-    else:
-        stxs_stage1p1_cats = [str(100+i) for i in range(5)] + [str(200+i) for i in range(4)]
     print(args)
     if args.gof_variable != None:
         channel_categories = {
@@ -131,6 +148,28 @@ def main(args):
             "tt": ["300"],
             "em": ["301", "302"],
         }
+        if args.era == "combined":
+            if "prefit" in args.input:
+                channel_categories = {
+                    "et": ["300"],
+                    "mt": ["300", "301", "302"],
+                    "tt": ["300"],
+                    "em": ["300", "301", "302"],
+                }
+            else:
+                if "301" in args.input:
+                    channel_categories["mt"] = ["301"]
+                    channel_categories["em"] = ["301"]
+                elif "302" in args.input:
+                    channel_categories["mt"] = ["302"]
+                    channel_categories["em"] = ["302"]
+                else:
+                    channel_categories = {
+                        "et": ["300"],
+                        "mt": ["300"],
+                        "tt": ["300"],
+                        "em": ["300"],
+                    }
     else:
         channel_categories = {
             #"et": ["ztt", "zll", "w", "tt", "ss", "misc"],
@@ -481,7 +520,7 @@ def main(args):
                 raise Exception
 
             plot.DrawChannelCategoryLabel(
-                "%s, %s" % (channel_dict[channel], category_dict[category]),
+                "%s, %s" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
                 begin_left=None)
 
             # save plot
