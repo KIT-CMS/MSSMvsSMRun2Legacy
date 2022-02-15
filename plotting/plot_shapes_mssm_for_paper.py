@@ -59,10 +59,6 @@ def parse_arguments():
         action="store_true",
         help="Fake factor estimation method used")
     parser.add_argument(
-        "--chi2test",
-        action="store_true",
-        help="Print chi2/ndf result in upper-right of subplot")
-    parser.add_argument(
         "-o", "--output-dir",
         help="Output directory for the plots.")
     parser.add_argument(
@@ -85,17 +81,27 @@ def parse_arguments():
         default=None,
         type=str,
         help="Higgs boson mass displayed on the legend.")
-    parser.add_argument("--control-region", action="store_true",
-                        help="Skip signal categories")
-    parser.add_argument("--model-independent", action="store_true",
-                        help="Plot shapes from model independent analysis.")
-    parser.add_argument("--blinded",
-                        action="store_true",
-                        help="Do not draw data.")
-    parser.add_argument("--x-range",
-                        type=lambda xranges: [float(edge) for edge in xranges.split(',')],
-                        default=None,
-                        help="Smaller x-range used in the plot to zoom into problematic regions")
+    parser.add_argument(
+        "--control-region",
+        action="store_true",
+        help="Skip signal categories")
+    parser.add_argument(
+        "--model-independent",
+        action="store_true",
+        help="Plot shapes from model independent analysis.")
+    parser.add_argument(
+        "--blinded",
+        action="store_true",
+        help="Do not draw data.")
+    parser.add_argument(
+        "--x-range",
+        type=lambda xranges: [float(edge) for edge in xranges.split(',')],
+        default=None,
+        help="Smaller x-range used in the plot to zoom into problematic regions")
+    parser.add_argument(
+        "--combine-backgrounds",
+        action="store_true",
+        help="Combine minor backgrounds to single shape")
     return parser.parse_args()
 
 
@@ -258,6 +264,10 @@ def main(args):
     bkg_processes = [
         "HSM", "VVL", "TTL", "ZL", "jetFakes", "EMB"
     ]
+    if args.combine_backgrounds:
+        bkg_processes = [
+            "other", "TTL", "jetFakes", "EMB"
+        ]
     if not args.fake_factor and args.embedding:
         bkg_processes = [
             "QCD", "VVJ", "VVL", "W", "TTJ", "TTL", "ZJ", "ZL", "EMB"
@@ -294,10 +304,14 @@ def main(args):
                 bkg_processes = [
                     "HSM", "QCDMC", "VVT", "VVL", "W", "TTT", "TTL", "ZL", "ZTT"
                 ]
-            if args.embedding:
+            else:
                 bkg_processes = [
-                    "HSM", "HWW", "QCD", "EWK", "TTL", "ZL", "EMB"
+                    "HSM", "QCD", "EWK", "TTL", "ZL", "EMB"
                 ]
+                if args.combine_backgrounds:
+                    bkg_processes = [
+                        "other", "QCD", "TTL", "EMB"
+                    ]
 
         for category in channel_categories[channel]:
             if args.control_region and category != "2":
@@ -320,10 +334,20 @@ def main(args):
                     jetfakes_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "wFakes"), xlow=30.))
                     plot.add_hist(jetfakes_hist, process, "bkg")
                 elif process in ["HSM"]:
-                    hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone(), xlow=30.)
-                    hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
-                    hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
-                    plot.add_hist(hsm_hist, process, "bkg")
+                    if channel == "em":
+                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone(), xlow=30.)
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggHWW125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqHWW125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZHWW125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
+                        plot.add_hist(hsm_hist, process, "bkg")
+                    else:
+                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone(), xlow=30.)
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
+                        hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
+                        plot.add_hist(hsm_hist, process, "bkg")
                 elif process == "EWK" and channel == "em":
                     ewk_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone(), xlow=30.)
                     ewk_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL"), xlow=30.))
@@ -334,6 +358,26 @@ def main(args):
                     hww_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZHWW125"), xlow=30.))
                     hww_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
                     plot.add_hist(hww_hist, process, "bkg")
+                elif process == "other":
+                    if channel == "em":
+                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone(), xlow=30.)
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZL"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggHWW125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqHWW125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZHWW125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
+                        plot.add_hist(other_hist, process, "bkg")
+                    elif channel in ["et", "mt", "lt", "tt"]:
+                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL").Clone(), xlow=30.)
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZL"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
+                        other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
+                        plot.add_hist(other_hist, process, "bkg")
                 else:
                     #print era, channel, category, process
                     plot.add_hist(
@@ -499,13 +543,14 @@ def main(args):
                     plot.subplot(2).setXlabel("SVFit m_{#tau#tau} (GeV)")
             if args.normalize_by_bin_width:
                 if int(category) > 30 or int(category) == 2:
-                    plot.subplot(0).setYlabel("dN/dm_{T}^{tot} (1/GeV)")
+                    # plot.subplot(0).setYlabel("dN/dm_{T}^{tot} (1/GeV)")
+                    plot.subplot(0).setYlabel("< Events / GeV >")
                 else:
                     plot.subplot(0).setYlabel("dN/dm_{#tau#tau} (1/GeV)")
             else:
-                plot.subplot(0).setYlabel("N_{events}")
+                plot.subplot(0).setYlabel("Events / {} GeV".format(plot.subplot(0).get_hist("total_bkg").GetBinWidth(1)))
 
-            plot.subplot(2).setYlabel("Data/Exp")
+            plot.subplot(2).setYlabel("Obs./Exp.")
 
 
             if (int(category) > 30 or int(category) == 2) and args.x_range is None:
@@ -578,8 +623,12 @@ def main(args):
                 plot.add_legend(width=0.40, height=0.33, pos=3)
             # plot.add_legend(width=0.6, height=0.15)
             for process in legend_bkg_processes:
-                plot.legend(0).add_entry(
-                    0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV")], 'f')
+                if process == "HSM" and channel == "em":
+                    plot.legend(0).add_entry(
+                        0, process, "H(125 GeV)", "f")
+                else:
+                    plot.legend(0).add_entry(
+                        0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV")], 'f')
             plot.legend(0).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
             if args.control_region and category == "2":
                 pass
@@ -595,22 +644,10 @@ def main(args):
                 else:
                     plot.legend(0).add_entry(0 if args.linear else 1, "mssm_sig", "#splitline{H #rightarrow #tau#tau}{#splitline{(m_{A}= %s GeV,}{ tan #beta = %s)}}" %(args.mass, args.tanbeta), 'l')
             if not args.blinded:
-                plot.legend(0).add_entry(0, "data_obs", "Data", 'PE')
+                plot.legend(0).add_entry(0, "data_obs", "Observed", 'PE')
             plot.legend(0).setNColumns(2)
             plot.legend(0).Draw()
 
-            if args.chi2test:
-                import ROOT as r
-                f = r.TFile(args.input, "read")
-                background = f.Get("htt_{}_{}_Run{}_{}/TotalBkg".format(
-                    channel, category, args.era, "prefit"
-                    if "prefit" in args.input else "postfit"))
-                data = f.Get("htt_{}_{}_Run{}_{}/data_obs".format(
-                    channel, category, args.era, "prefit"
-                    if "prefit" in args.input else "postfit"))
-                chi2 = data.Chi2Test(background, "UW CHI2/NDF")
-                plot.DrawText(0.7, 0.3,
-                              "\chi^{2}/ndf = " + str(round(chi2, 3)))
 
             # FIXME: Legend for ratio plot temporarily disabled.
             plot.add_legend(
@@ -630,7 +667,7 @@ def main(args):
                     plot.legend(1).add_entry(0 if args.linear else 1, "mssm_sig",
                                                  "H+bkg.", 'l')
             if not args.blinded:
-                plot.legend(1).add_entry(0, "data_obs", "Data", 'PE')
+                plot.legend(1).add_entry(0, "data_obs", "Observed", 'PE')
             plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
             plot.legend(1).setNColumns(3)
             plot.legend(1).Draw()
