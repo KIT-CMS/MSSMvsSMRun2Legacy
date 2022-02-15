@@ -19,13 +19,21 @@ if [[ $ANALYSISTYPE == "classic" ]]; then
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_classic"
     fi
-else
+elif [[ $ANALYSISTYPE == "with-sm-ml" ]]; then
     analysis="bsm-model-dep-full"
     sm_like_hists="sm125"
     replace_with_sm125=1
     categorization="with-sm-ml"
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_with_ml"
+    fi
+else
+    analysis="bsm-model-dep-full"
+    sm_like_hists="sm125"
+    replace_with_sm125=1
+    categorization="sm-ml-only"
+    if [[ $TAG == "auto" ]]; then
+        TAG="cmb_sm_ml_only"
     fi
 fi
 # Szenarios from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGMSSMNeutral?redirectedfrom=LHCPhysics.LHCHXSWGMSSMNeutral#Baseline_scenarios
@@ -214,18 +222,20 @@ if [[ $MODE == "initial" ]]; then
             --sm \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
-        morph_parallel.py --output ${defaultdir}/datacards \
-            --analysis ${analysis} \
-            --sub-analysis ${sub_analysis} \
-            --hSM-treatment $HSMTREATMENT  \
-            --categorization ${categorization} \
-            --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
-            --eras 2016,2017,2018 \
-            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
-            --variable mt_tot_puppi \
-            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        if [[ $ANALYSISTYPE == "with-sm-ml" ]]; then
+            morph_parallel.py --output ${defaultdir}/datacards \
+                --analysis ${analysis} \
+                --sub-analysis ${sub_analysis} \
+                --hSM-treatment $HSMTREATMENT  \
+                --categorization ${categorization} \
+                --sm-like-hists ${sm_like_hists} \
+                --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+                --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
+                --eras 2016,2017,2018 \
+                --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+                --variable mt_tot_puppi \
+                --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
+        fi
     fi
 
     ############
@@ -468,6 +478,8 @@ elif [[ $MODE == "collect" ]]; then
     ############
     if [[ $ANALYSISTYPE == "classic" ]]; then
         title="Classic categorisation 138 fb^{-1} (13 TeV)"
+    elif [[ $ANALYSISTYPE == "sm-ml-only" ]]; then
+        title="SM categories only 138 fb^{-1} (13 TeV)"
     else
         title="138 fb^{-1} (13 TeV)"
     fi
