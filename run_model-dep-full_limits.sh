@@ -260,7 +260,7 @@ if [[ $MODE == "initial" ]]; then
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_cr.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_cr.txt
-    elif [[ $ANALYSISTYPE == "with-sm-ml" || $ANALYSISTYPE == "sm-ml-only" ]]
+    elif [[ $ANALYSISTYPE == "with-sm-ml" || $ANALYSISTYPE == "sm-ml-only" ]]; then
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
