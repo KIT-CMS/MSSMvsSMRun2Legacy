@@ -314,7 +314,8 @@ def main(args):
     fitvars='m_sv_vs_pt_tt'
     fitvars='m_sv'
 
-    era = args.file_dir.split("_")[3]
+    if len(args.file_dir.split("_"))>=4: era = args.file_dir.split("_")[3]
+    else: era='all'
     if era == "2016":
         lumi = "36.3 fb^{-1} (13 TeV)"
     elif era == "2017":
@@ -332,6 +333,8 @@ def main(args):
         args.channel = args.file_dir.split("_")[1]
     if args.channel == "tt":
         channel_label = "#tau_{h}#tau_{h}"
+    if args.channel == "lt":
+        channel_label = "#mu_{}#tau_{h}+e_{}#tau_{h}"
     if args.channel == "mt":
         channel_label = "#mu_{}#tau_{h}"
     if args.channel == "et":
@@ -344,16 +347,16 @@ def main(args):
     #  args.ratio_range = "0.7,1.3"
     if bin_number in ["2","35","36","37"]:
         if args.channel=='tt': bin_label = "B-tag"
-        if args.channel in ['mt','et']: 
+        if args.channel in ['mt','et','lt']: 
           bin_label = "B-tag"
-          if bin_number=="35": bin_label = "B-tag Tight-m_{T}"
-          if bin_number=="36": bin_label = "B-tag Loose-m_{T}"
+          if bin_number=="35": bin_label = "B-tag, Tight-m_{T}"
+          if bin_number=="36": bin_label = "B-tag, Loose-m_{T}"
         if args.channel in ['em']:
           bin_label = "B-tag"
           if bin_number=="2": bin_label = "t#bar{t} CR"
-          if bin_number=="35": bin_label = "B-tag High d_{#zeta}"
-          if bin_number=="36": bin_label = "B-tag Medium d_{#zeta}" 
-          if bin_number=="37": bin_label = "B-tag Low d_{#zeta}" 
+          if bin_number=="35": bin_label = "B-tag, High d_{#zeta}"
+          if bin_number=="36": bin_label = "B-tag, Medium d_{#zeta}" 
+          if bin_number=="37": bin_label = "B-tag, Low d_{#zeta}" 
         plot.ModTDRStyle(r=0.04, l=0.18)
         if args.ratio_range=="":
           args.ratio_range = "0.85,1.15"
@@ -361,29 +364,29 @@ def main(args):
         if args.ratio_range=="":
           args.ratio_range = "0.4,1.6"
         if args.channel=='tt': bin_label = "No B-tag"
-        if args.channel in ['mt','et']: 
+        if args.channel in ['mt','et','lt']: 
           bin_label = "No B-tag"
-          if bin_number=="32": bin_label = "No B-tag Tight-m_{T}"
-          if bin_number=="33": bin_label = "No B-tag Loose-m_{T}"
+          if bin_number=="32": bin_label = "No B-tag, Tight-m_{T}"
+          if bin_number=="33": bin_label = "No B-tag, Loose-m_{T}"
         if args.channel in ['em']:
           bin_label = "No B-tag"
-          if bin_number=="32": bin_label = "No B-tag High d_{#zeta}"
-          if bin_number=="33": bin_label = "No B-tag Medium d_{#zeta}"
-          if bin_number=="34": bin_label = "No B-tag Low d_{#zeta}"
+          if bin_number=="32": bin_label = "No B-tag, High d_{#zeta}"
+          if bin_number=="33": bin_label = "No B-tag, Medium d_{#zeta}"
+          if bin_number=="34": bin_label = "No B-tag, Low d_{#zeta}"
 
     if bin_number in ["132","232","332","432","133","233","333","433","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.7,1.3"
         if args.channel=='tt': bin_label = "No B-tag"
-        if args.channel in ['mt','et']:
+        if args.channel in ['mt','et','lt']:
           bin_label = "No B-tag"
-          if bin_number[1:]=="32": bin_label = "No B-tag Tight-m_{T}"
-          if bin_number[1:]=="33": bin_label = "No B-tag Loose-m_{T}"
+          if bin_number[1:]=="32": bin_label = "No B-tag, Tight-m_{T}"
+          if bin_number[1:]=="33": bin_label = "No B-tag, Loose-m_{T}"
         if args.channel in ['em']:
           bin_label = "No B-tag"
-          if bin_number[1:]=="32": bin_label = "No B-tag High d_{#zeta}"
-          if bin_number[1:]=="33": bin_label = "No B-tag Medium d_{#zeta}"
-          if bin_number[1:]=="34": bin_label = "No B-tag Low d_{#zeta}"
+          if bin_number[1:]=="32": bin_label = "No B-tag, High d_{#zeta}"
+          if bin_number[1:]=="33": bin_label = "No B-tag, Medium d_{#zeta}"
+          if bin_number[1:]=="34": bin_label = "No B-tag, Low d_{#zeta}"
 
         if bin_number[0] == '1': bin_label+=', p_{T}^{#tau#tau}<50 GeV'
         if bin_number[0] == '2': bin_label+=', 50#leq p_{T}^{#tau#tau}<100 GeV'
@@ -468,6 +471,14 @@ def main(args):
                 backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes"],ROOT.TColor.GetColor(192, 232, 100)),
                 backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
+        'lt':[
+                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
+                backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
+                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes"],ROOT.TColor.GetColor(192, 232, 100)),
+                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                ],
         'tt':[
                 backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
                 backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
@@ -479,10 +490,9 @@ def main(args):
 
 
         'em':[
-                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                backgroundComp("H(125 GeV)",["qqH125","bbH125","ggH125",'WHWW125','ZHWW125','ggHWW125','qqHWW125'],ROOT.TColor.GetColor(51,51,230)),
                 backgroundComp("QCD", ["QCD"], ROOT.TColor.GetColor("#ffccff")),
-                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
-                backgroundComp("W+jets",["W"],ROOT.TColor.GetColor(222, 90, 106)),
+                backgroundComp("Electroweak",["W","VVL"],ROOT.TColor.GetColor(222, 90, 106)),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
                 backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
                 backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
@@ -584,7 +594,7 @@ def main(args):
     sbhist.Scale(scale,"width")
 
     for shist in sighists:
-        if mode == 'prefit': shist.Scale(5.8*scale,"width") # can scale up signals here if desired
+        if mode == 'prefit': shist.Scale(6.0*scale,"width") # can scale up signals here if desired
         else: shist.Scale(scale,"width") # can scale up signals here if desired
 
     for shist in sighists:
@@ -738,7 +748,7 @@ def main(args):
                 shist_stack.SetLineWidth(1)
                 #shist_stack.SetFillStyle(1)
                 shist_stack.SetFillColor(ROOT.kRed)
-                stack.Add(shist_stack)
+                #stack.Add(shist_stack) # uncomment to add to the stack
         #        shist.Draw("histsame][") # removing vertical lines at the borders of the pad; possible with the trick above
         stack.Draw("histsame")
         shist.Draw("histsame ][")
@@ -760,7 +770,7 @@ def main(args):
     pads[1].SetTicks(1)
     #Setup legend
     if not is2D:
-        legend = plot.PositionedLegend(0.35,0.30,3,0.07,0.01)
+        legend = plot.PositionedLegend(0.35,0.30,3,0.07,0.035)
         legend.SetTextSize(0.025)
     else:
         legend = PositionedLegendUnrolled(0.13,0.5,7,0.02)
@@ -778,16 +788,16 @@ def main(args):
         legend.AddEntry(hists,background_schemes[channel][legi]['leg_text'],"f")
     #legend.AddEntry(bkghist,"Background uncertainty","f")
     bkghist.SetLineWidth(0)
-    legend.AddEntry(bkghist,"Bkg. Uncertainty","f")
+    legend.AddEntry(bkghist,"Bkg. unc.","f")
     if is2D:
         if not mode == 'prefit':
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
         else:
-          if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
 
     else:
-        if not args.no_signal: legend.AddEntry(shist_stack,"ggH(100 GeV) @ 5.8 pb"%vars(),"f")
-        if not args.no_signal: legend.AddEntry(sighist,"ggH(100 GeV) @ 5.8 pb"%vars(),"l")
+        #if not args.no_signal: legend.AddEntry(shist_stack,"ggH(100 GeV) @ 6.0 pb"%vars(),"f") # uncomment if showing in the stack
+        if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()
@@ -796,15 +806,27 @@ def main(args):
     latex2.SetTextColor(ROOT.kBlack)
     latex2.SetTextFont(42)
     if not is2D:
-        latex2.SetTextSize(0.032)
-        latex2.DrawLatex(0.21,0.89,"{}, {}".format(bin_label.split(',')[0], channel_label))
-        latex3 = ROOT.TLatex()
-        latex3.SetNDC()
-        latex3.SetTextSize(0.032)
-        latex3.SetTextAngle(0)
-        latex3.SetTextColor(ROOT.kBlack)
-        latex3.SetTextFont(42)
-        if len(bin_label.split(','))>1: latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
+        #latex2.SetTextSize(0.032)
+        #latex2.DrawLatex(0.21,0.89,"{}, {}".format(bin_label.split(',')[0], channel_label))
+        #latex3 = ROOT.TLatex()
+        #latex3.SetNDC()
+        #latex3.SetTextSize(0.032)
+        #latex3.SetTextAngle(0)
+        #latex3.SetTextColor(ROOT.kBlack)
+        #latex3.SetTextFont(42)
+        #if len(bin_label.split(','))>1: latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
+        textsize=0.027
+        begin_left=None
+        ypos = 0.960 if "_{" in bin_label else 0.955
+        latex2 = ROOT.TLatex()
+        latex2.SetNDC()
+        latex2.SetTextAngle(0)
+        latex2.SetTextColor(ROOT.kBlack)
+        latex2.SetTextSize(textsize)
+        if begin_left == None:
+            #begin_left = 0.145
+            begin_left = 0.180
+        latex2.DrawLatex(begin_left, 0.960, channel_label+', '+bin_label)
     else:
         latex2.SetTextAlign(23)
         latex2.SetTextSize(0.05)
@@ -816,7 +838,9 @@ def main(args):
     #extra='Preliminary'
     if 'htt_tt_2018_6_' in file_dir: extra=''
     if not is2D:
-        DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.85, relExtraDX=0.05)
+        #DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.85, relExtraDX=0.05)
+        DrawCMSLogo(pads[0], 'CMS', extra, 11, 0.045, 0.05, 1.0, '', 0.6)
+
         plot.DrawTitle(pads[0], lumi, 3, textSize=0.6)
     else:
         DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.6, relExtraDX=0.005)

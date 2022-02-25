@@ -17,13 +17,17 @@ dir_map = {
   'mt_35' : 'mt_NbtagGt1_MTLt40',
   'et_32' : 'et_Nbtag0_MTLt40',
   'et_35' : 'et_NbtagGt1_MTLt40',
-  'em_32' : 'em_Nbtag0_DZetam10To30',
-  'em_35' : 'em_NbtagGt1_DZetam10To30',
+  'em_33' : 'em_Nbtag0_DZetam10To30',
+  'em_32' : 'em_Nbtag0_DZetaGt30',
+  'em_36' : 'em_NbtagGt1_DZetam10To30',
+  'em_35' : 'em_NbtagGt1_DZetaGt30',
 }
 
 
 for c in ['lt','tt','em']:
-  for b in [32,35,432,332]:
+  bins = [32,35,432,332]
+  if c=='em': bins=[33,36,433,333,332,432,32,35]
+  for b in bins:
 
     out_dir = 'htt_%(c)s_%(b)s_postfit' % vars()
     fout.mkdir(out_dir)
@@ -55,7 +59,7 @@ for c in ['lt','tt','em']:
       h.Write()
 
     # for high mass categories we also add 1 TeV VLQ signal scales to bestfit point (gU=1.2)
-    if b not in [32,35]: continue
+    if b not in [32,35,33,36]: continue
     h1 = fin.Get('postfit/data_obs').Clone()
     h2 = fin.Get('postfit/data_obs').Clone()
     h1.Reset()
@@ -86,6 +90,14 @@ for c in ['lt','tt','em']:
     gU=1.2
     h1.Scale(1.2**4)
     h2.Scale(1.2**2)
+
+    # remove stat fluctuations in low mt_tot bins
+    for i in range(1,h1.FindBin(100)):
+      c1 = h1.GetBinContent(i)   
+      c2 = h1.GetBinContent(i)
+      if c1+c2>0: 
+        h1.SetBinContent(i,0.)   
+        h2.SetBinContent(i,0.)   
 
     h1.Write()
     h2.Write()

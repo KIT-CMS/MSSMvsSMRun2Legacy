@@ -19,7 +19,11 @@ for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13
 
 # collect limits:
 DIR="Feb07_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
-for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
+#for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200,250}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
+
+
+# define as seperate files
+for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200,250}.root  --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowonly.json; combineTool.py -M CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_highonly.json; done
 
 # make plots
 
@@ -271,5 +275,31 @@ hadd -f model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/com
 # make plots
 
 python scripts/plot1DScan.py --obs model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --POI CMS_res_t --exp model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --y-max=20 --y-cut=20 --output scan_tres 
+
+```
+
+## make plot with years an channels combined
+
+This script will produce the datacards and histograms rebinned properly, run T2W, anbd the run postfit shapes
+
+```bash
+
+python run_cbyear_plots.py -o Feb11_cbyear_plots
+
+```
+
+Then you can combine these output root files into 1 root file containing all categories with VLQ signal also added for high mass cases
+
+```bash
+
+python scripts/combine_cbyears_shapes.py
+
+```
+
+and then the plots can be produced using:
+
+```bash
+
+for c in em lt tt; do for b in 332 432; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b} -f shapes_cbyears.root --ratio --ratio_range "0.85,1.15" ; done; done 
 
 ```

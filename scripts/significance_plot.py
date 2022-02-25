@@ -80,7 +80,7 @@ for proc in ['gg','bb']:
       masses = [250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500]
     for m in masses:
       if key == 'lowmass':
-        f = ROOT.TFile("model_independent_limits/Jan12_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.v2.Significance.mH%(m)s.root" % vars())
+        f = ROOT.TFile("model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.v2.Significance.mH%(m)s.root" % vars())
       else: 
         f = ROOT.TFile("model_independent_limits/Jan12_mt_tot_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.Significance.mH%(m)s.root" % vars())
       t = f.Get('limit')

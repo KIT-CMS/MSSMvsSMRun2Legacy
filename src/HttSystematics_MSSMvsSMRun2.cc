@@ -2683,9 +2683,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"ZTT", "ZL", "ZJ"})
       .AddSyst(cb, "CMS_htt_zjXsec", "lnN", SystMap<>::init(1.02));
 
-  if (sm){
-    // stat uncerts are buggy for the mssm categories in 2017 (and perhaps 2016 as well), but they are also very small for 2018 so we can probably drop them
-    // stat uncertainties are very small (<1%) so we drop them
+  //if (sm){
     cb.cp()
         .channel({"em"})
         .process({"QCD"})
@@ -2722,7 +2720,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
        .channel({"em"})
        .process({"QCD"})
        .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-  }
+  //}
   cb.cp()
      .channel({"em"})
      .process({"QCD"})
@@ -2821,7 +2819,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   cb.cp()
       .channel({"et", "mt", "tt", "em"})
       .process({"TTT", "TTL", "TTJ", "TT"})
-      .AddSyst(cb, "CMS_htt_ttbarShape", "shapeU", SystMap<>::init(1.00));
+      .AddSyst(cb, "CMS_htt_ttbarShape", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
   // Uncertainty: Electron/muon to tau fakes and ZL energy scale

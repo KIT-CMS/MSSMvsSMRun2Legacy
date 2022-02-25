@@ -76,6 +76,11 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
       syst->set_type("lnN");
       return;
     }
+    if (syst->type() == "shapeU") {
+      std::cout << "Converting systematic " << syst->name() << " for process " << syst->process() << " in bin " << syst->bin() << " to lnU." <<std::endl;
+      syst->set_type("lnU");
+      return;
+    }
   });
 }
 
@@ -1330,10 +1335,10 @@ int main(int argc, char **argv) {
   }
 
   if(prop_plot || cbyear_plot){
-    // shapeU seems to have issues for prop plots so change CMS_htt_ttbarShape to shape
-    auto cb_syst = cb.cp().syst_name({"CMS_htt_ttbarShape"});
+    // shapeU seems to have issues for prop plots so change them to shapes
+    auto cb_syst = cb.cp();
     cb_syst.ForEachSyst([&](ch::Systematic *syst) {
-      syst->set_type("shape");
+      if(syst->type() == "shapeU") syst->set_type("shape");
     });
   }
 
@@ -1947,6 +1952,7 @@ int main(int argc, char **argv) {
     ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_et_1prong1pizero_"+y);
     ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_mt_1prong_"+y);
     ConvertShapesToLnN(cb.cp().bin_id({332,432,335,435}),    "CMS_ZLShape_mt_1prong1pizero_"+y);
+
   }
 
   // rename some fake factor systematics so that they are decorrelated between categories to match how closure corrections are measured
@@ -2093,7 +2099,8 @@ int main(int argc, char **argv) {
   if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT") {
     // convert ggH theory uncertainties to lnN when fitting m_sv
     std::vector<std::string> ggh_theory = {"Hdamp_ggH_t_REWEIGHT","Hdamp_ggH_b_REWEIGHT","Hdamp_ggH_i_REWEIGHT","QCDscale_ggH_REWEIGHT"}; 
-    for(auto u : ggh_theory) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ZTT"}, false), u);
+    for(auto u : ggh_theory) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).signals(), u);
+    for(auto u : ggh_theory) cb.cp().RenameSystematic(cb,u,"Hdamp_ggH_REWEIGHT");
   }
 
   //// convert TER to lnN for btag category and most boosted nobtag categories
@@ -2477,11 +2484,11 @@ int main(int argc, char **argv) {
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-  if(!(prop_plot||cbyear_plot)){
-    cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
-    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
-    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
-  } 
+  //if(!(prop_plot||cbyear_plot)){
+  //    cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
+  //    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+  //    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+  //} 
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
@@ -2643,20 +2650,33 @@ int main(int argc, char **argv) {
     binnings["htt_em_32"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 5000.0};
     binnings["htt_em_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 5000.0};
     binnings["htt_lt_32"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1100.0, 5000.0};
+
+    binnings["htt_em_33"] =  {0.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0, 700.0, 800.0, 900.0, 5000.0};
+    binnings["htt_em_36"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1100.0, 5000.0};
+
     binnings["htt_lt_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 900.0, 5000.0};
     binnings["htt_tt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
     binnings["htt_tt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
     binnings["htt_em_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
     binnings["htt_em_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+
+    binnings["htt_em_433"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_333"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+
     binnings["htt_lt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
     binnings["htt_lt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
 
     vector<int> bins = {}; 
-    if(variable=="m_sv_VS_pt_tt_splitpT") bins = {332,432};
-    else bins = {32,35};
-    //auto bin_set = cb.cp().bin_id(bins).bin_set();
 
     for (auto chn : chns) {
+      if(variable=="m_sv_VS_pt_tt_splitpT") bins = {332,432};
+      else bins = {32,35};
+
+      if(chn=="em") {
+        if(variable=="m_sv_VS_pt_tt_splitpT") bins = {333,433};
+        else bins = {33,36};
+      }
+
       for (auto bin : bins) {
         string chn_name = chn;
         if (chn == "et" || chn == "mt") chn_name = "lt";

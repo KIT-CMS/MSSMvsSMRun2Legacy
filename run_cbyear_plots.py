@@ -67,8 +67,11 @@ for year in year_perm:
     directory = "model_independent_limits/%(output)s_%(channel)s_%(year)s_%(analysis)s" % vars()
 
     for c in ['em','lt','tt']:
-      for b in [32,35,432,332]:
-        if b in [32,35]: 
+    for c in ['em']:
+      bins = [32,35,432,332]
+      #if c == 'em': bins = [33,36,433,333]
+      for b in bins:
+        if b in [32,35,33,36]: 
           mass = 1200
           fit_directory="model_independent_limits/Jan12_mt_tot_all_all_bsm-model-indep/"
           freeze='--freeze r_bbH=0.00306'
