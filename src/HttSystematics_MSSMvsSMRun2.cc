@@ -2683,44 +2683,43 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .process({"ZTT", "ZL", "ZJ"})
       .AddSyst(cb, "CMS_htt_zjXsec", "lnN", SystMap<>::init(1.02));
 
-  //if (sm){
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_0jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_0jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_0jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_1jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_1jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-        .channel({"em"})
-        .process({"QCD"})
-        .AddSyst(cb, "CMS_htt_qcd_1jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-       .channel({"em"})
-       .process({"QCD"})
-       .AddSyst(cb, "CMS_htt_qcd_2jet_rate_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-       .channel({"em"})
-       .process({"QCD"})
-       .AddSyst(cb, "CMS_htt_qcd_2jet_shape_$ERA", "shape", SystMap<>::init(1.00));
-    cb.cp()
-       .channel({"em"})
-       .process({"QCD"})
-       .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
-  //}
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_0jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_0jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_0jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_1jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_1jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+      .channel({"em"})
+      .process({"QCD"})
+      .AddSyst(cb, "CMS_htt_qcd_1jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+     .channel({"em"})
+     .process({"QCD"})
+     .AddSyst(cb, "CMS_htt_qcd_2jet_rate_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+     .channel({"em"})
+     .process({"QCD"})
+     .AddSyst(cb, "CMS_htt_qcd_2jet_shape_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp()
+     .channel({"em"})
+     .process({"QCD"})
+     .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+
   cb.cp()
      .channel({"em"})
      .process({"QCD"})
