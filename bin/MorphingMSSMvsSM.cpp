@@ -2100,7 +2100,6 @@ int main(int argc, char **argv) {
     // convert ggH theory uncertainties to lnN when fitting m_sv
     std::vector<std::string> ggh_theory = {"Hdamp_ggH_t_REWEIGHT","Hdamp_ggH_b_REWEIGHT","Hdamp_ggH_i_REWEIGHT","QCDscale_ggH_REWEIGHT"}; 
     for(auto u : ggh_theory) ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).signals(), u);
-    for(auto u : ggh_theory) cb.cp().RenameSystematic(cb,u,"Hdamp_ggH_REWEIGHT");
   }
 
   //// convert TER to lnN for btag category and most boosted nobtag categories
