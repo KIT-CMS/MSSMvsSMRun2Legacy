@@ -9,18 +9,165 @@ if [[ $TAG == "auto" ]]; then
 fi
 
 
-defaultdir=analysis/$TAG
+defaultdir=analysis_2022_02_28/$TAG
 analysis="bsm-model-indep"
 hSM_treatment="hSM-in-bg"
+# hSM_treatment="no-hSM-in-bg"
 categorization="classic"
 sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
 [[ ! -d ${defaultdir}/limits_ind/condor ]] && mkdir -p ${defaultdir}/limits_ind/condor
-defaultdir=$(readlink -f analysis/$TAG)
+defaultdir=$(readlink -f analysis_2022_02_28/$TAG)
 datacarddir=${defaultdir}/datacards_${analysis}
-freeze="MH=200,r_ggH=0.0,r_bbH=0.0"
+freeze="MH=1200,r_ggH=0.005,r_bbH=0.0015"
+identifier_toy_submit=$(date +%Y_%m_%d)
+[[ -z $3 ]] || identifier_toy_submit=$3
+
+xrange () {
+    [ "$#" != 1 ] && exit
+    case $1 in
+        "250")
+            echo 0.12
+            ;;
+        "300")
+            echo 0.08
+            ;;
+        "350")
+            echo 0.05
+            ;;
+        "400")
+            echo 0.05
+            ;;
+        "450")
+            echo 0.05
+            ;;
+        "500")
+            echo 0.03
+            ;;
+        "600")
+            echo 0.014
+            ;;
+        "700")
+            echo 0.01
+            ;;
+        "800")
+            echo 0.008
+            ;;
+        "900")
+            echo 0.01
+            ;;
+        "1000")
+            echo 0.01
+            ;;
+        "1200")
+            echo 0.007
+            ;;
+        "1400")
+            echo 0.005
+            ;;
+        "1600")
+            echo 0.003
+            ;;
+        "1800")
+            echo 0.0018
+            ;;
+        "2000")
+            echo 0.0014
+            ;;
+        "2300")
+            echo 0.001
+            ;;
+        "2600")
+            echo 0.0008
+            ;;
+        "2900")
+            echo 0.0006
+            ;;
+        "3200")
+            echo 0.0005
+            ;;
+        "3500")
+            echo 0.0005
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+}
+
+yrange () {
+    [ "$#" != 1 ] && exit
+    case $1 in
+        "250")
+            echo 0.12
+            ;;
+        "300")
+            echo 0.08
+            ;;
+        "350")
+            echo 0.06
+            ;;
+        "400")
+            echo 0.05
+            ;;
+        "450")
+            echo 0.06
+            ;;
+        "500")
+            echo 0.045
+            ;;
+        "600")
+            echo 0.022
+            ;;
+        "700")
+            echo 0.012
+            ;;
+        "800")
+            echo 0.008
+            ;;
+        "900")
+            echo 0.006
+            ;;
+        "1000")
+            echo 0.005
+            ;;
+        "1200")
+            echo 0.003
+            ;;
+        "1400")
+            echo 0.002
+            ;;
+        "1600")
+            echo 0.0016
+            ;;
+        "1800")
+            echo 0.0014
+            ;;
+        "2000")
+            echo 0.0012
+            ;;
+        "2300")
+            echo 0.001
+            ;;
+        "2600")
+            echo 0.0008
+            ;;
+        "2900")
+            echo 0.0006
+            ;;
+        "3200")
+            echo 0.0006
+            ;;
+        "3500")
+            echo 0.0006
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+}
 
 if [[ $MODE == "initial" ]]; then
     ############
