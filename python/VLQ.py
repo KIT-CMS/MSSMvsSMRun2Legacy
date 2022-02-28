@@ -1,6 +1,7 @@
 from HiggsAnalysis.CombinedLimit.PhysicsModel import PhysicsModel
 from HiggsAnalysis.CombinedLimit.SMHiggsBuilder import SMHiggsBuilder
 import numpy as np
+import ROOT
 
 class VLQ(PhysicsModel):
     def __init__(self):
@@ -33,12 +34,29 @@ class VLQ(PhysicsModel):
 
         self.modelBuilder.doVar('gU[0,0,10]')
         poiNames.append('gU')
-        
+
+        #self.modelBuilder.doVar('r_ggH[0,0,10]')
+        #poiNames.append('r_ggH')
+
+
         if self.mu:
           self.modelBuilder.doVar('mu[0,0,10]')
           poiNames.append('mu')
 
         self.modelBuilder.doSet('POI', ','.join(poiNames))
+
+        #reweight_file = "/vols/cms/gu18/CH_unblinding/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root"
+        #rf = ROOT.TFile(reweight_file)
+        #w = rf.Get("w")
+        #w.var("Yb_MSSM_H").setVal(1)
+        #w.var("Yt_MSSM_H").setVal(1)
+        #w.var("mH").setVal(1200)
+        #Yt_scale = w.function("ggH_t_MSSM_frac").getVal()
+        #Yb_scale = w.function("ggH_b_MSSM_frac").getVal()
+        #Yi_scale = w.function("ggH_i_MSSM_frac").getVal()
+        #self.modelBuilder.factory_('expr::ggH_t_scale("{}*@0", r_ggH)'.format(Yt_scale))
+        #self.modelBuilder.factory_('expr::ggH_b_scale("{}*@0", r_ggH)'.format(Yb_scale))
+        #self.modelBuilder.factory_('expr::ggH_i_scale("{}*@0", r_ggH)'.format(Yi_scale))
 
         if not self.mu:
           if self.grid:
@@ -63,6 +81,12 @@ class VLQ(PhysicsModel):
             scalings.append('gU4')
         if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process:
             scalings.append('gU2')
+        #if "ggH_t_1200" in process:
+        #    scalings.append('ggH_t_scale')
+        #if "ggH_b_1200" in process:
+        #    scalings.append('ggH_b_scale')
+        #if "ggH_i_1200" in process:
+        #    scalings.append('ggH_i_scale')
 
         if scalings:
             scaling = '_'.join(scalings)

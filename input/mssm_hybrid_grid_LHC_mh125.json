@@ -1,30 +1,24 @@
 {
     "verbose" : false,
-    "opts" : "--LHCmode LHC-limits --singlePoint 1.0 --saveHybridResult --clsAcc 0 --fork 0 --fullBToys --redefineSignalPOIs x --setParameters r=1 --freezeParameters r",
+    "opts" : "--LHCmode LHC-limits --singlePoint 1.0 --saveHybridResult --clsAcc 0 --fork 0 --fullBToys --setParameterRanges x=0,1 --redefineSignalPOIs x --setParameters r=1 --freezeParameters r",
     "POIs" : ["mA", "tanb"],
     "grids" : [
-        ["110:200|10", "1:20|1", ""],
-        ["110:200|10", "20:60|2", ""],
+        ["70:200|10", "1:20|1", ""],
+        ["70:200|10", "20:60|2", ""],
         ["200:1400|50", "1:20|1", ""],
         ["200:1400|50", "20:60|2", ""],
         ["1400:2600|50", "1:60|1", ""]
-      ],
-    "grids_to_remove" : [
-      ["150:200|10","24:28|2"],
-      ["300","34:36|2"],
-      ["350","36:38|2"],
-      ["1900:2600|50","11"]
     ],
-    "toys_per_cycle"  : 100,
+    "toys_per_cycle"  : 50,
     "min_toys"        : 500,
-    "max_toys"        : 200000,
+    "max_toys"        : 1000000,
     "signif"          : 4.0,
     "CL"              : 0.95,
     "contours"        : ["obs", "exp-2", "exp-1", "exp0", "exp+1", "exp+2"],
     "make_plots"      : false,
     "plot_settings" : {
         "one_sided"     : false,
-        "model_label"   : "m_{H}^{mod+}",
+        "model_label"   : "M_{h}^{125}",
         "poi_labels"    : ["m_{A}", "tan#beta"],
         "null_label"    : "SM",
         "alt_label"     : "MSSM",

@@ -7,6 +7,7 @@ MODEL=$3
 ANALYSISTYPE=$4
 HSMTREATMENT=$5
 GRIDUSER=$6
+CYCLES=$7
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-full"
@@ -65,8 +66,8 @@ elif [[ $MODEL == "mh125_align" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
-    y_max=20.0
+    y_min=3.0
+    y_max=12.0
 elif [[ $MODEL == "mHH125" ]]; then
     wsoutput="ws_mHH125.root"
     modelfile="13,Run2017,mHH125_13.root"
@@ -96,7 +97,7 @@ elif [[ $MODEL == "mh125_muneg_1" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=4.0
     y_max=56.0
 elif [[ $MODEL == "mh125_muneg_2" ]]; then
     wsoutput="mh125_muneg_2.root"
@@ -106,7 +107,7 @@ elif [[ $MODEL == "mh125_muneg_2" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=5.0
     y_max=30.0
 elif [[ $MODEL == "mh125_muneg_3" ]]; then
     wsoutput="mh125_muneg_3.root"
@@ -116,7 +117,7 @@ elif [[ $MODEL == "mh125_muneg_3" ]]; then
     sm_like_mass="m_h"
     x_title='m_{A} [GeV]'
     mass_histogram_title="m_{h}"
-    y_min=1.0
+    y_min=6.0
     y_max=20.0
 ### EFT scenarios #####
 elif [[ $MODEL == "mh125EFT" ]]; then
@@ -172,8 +173,8 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment $HSMTREATMENT  \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
@@ -185,8 +186,8 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment $HSMTREATMENT  \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_neuralnet_categories.txt \
             --variable nnscore \
@@ -199,8 +200,8 @@ if [[ $MODE == "initial" ]]; then
             --hSM-treatment $HSMTREATMENT  \
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
-            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1" \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
             --variable mt_tot_puppi \
@@ -236,9 +237,11 @@ elif [[ $MODE == "ws" ]]; then
     --PO modelFile=${modelfile} \
     --PO minTemplateMass=60 \
     --PO maxTemplateMass=3500 \
-    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+    --PO MSSM-NLO-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
     --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
     -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+
+elif [[ $MODE == "setup" ]]; then
 
     ############
     # job setup creation
@@ -289,30 +292,80 @@ elif [[ $MODE == "submit-local" ]]; then
     cd ${defaultdir}/limits_${MODEL}/condor
     python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
 
-elif [[ $MODE == "hybrid-gc" ]]; then
+elif [[ $MODE == "hybrid-lhc" ]]; then
 
-    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid/condor
-    cd ${defaultdir}/limits_${MODEL}_hybrid/condor
+    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+
+    jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
+    if [[ $HSMTREATMENT == "hSM-in-bg" ]]; then
+        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}_newsigmodel.json
+    elif [[ $HSMTREATMENT == "no-hSM-in-bg" ]]; then
+        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
+    fi
 
     combineTool.py -M HybridNewGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_${MODEL}.json \
-    --cycles 2 \
+    ${jsonfile} \
+    --cycles $CYCLES \
     -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'condor' \
-    --task-name ${taskname}_hybrid \
-    --dry-run | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid.txt
-    ############
-    # job submission
-    ############
+    --job-mode 'crab3' \
+    --task-name ${taskname}_hybrid_lhc \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
     cd -
-    # python scripts/build_gc_job.py \
-    #     --combine-script ${defaultdir}/limits_${MODEL}_hybrid/condor/condor_${taskname}_hybrid.sh \
-    #     --workspace ${datacarddir}/combined/cmb/${wsoutput} \
-    #     --workdir /work/sbrommer/workdirs/combine/${taskname}_hybrid \
-    #     --tag ${taskname}_hybrid \
-    #     --se-path /storage/gridka-nrg/sbrommer/gc_storage/combine/${TAG}/${taskname}_hybrid
 
-    # ${CMSSW_BASE}/src/grid-control/go.py /work/sbrommer/workdirs/combine/${taskname}_hybrid/${taskname}_hybrid.conf -Gc -m 3
+elif [[ $MODE == "hybrid-tev" ]]; then
+
+    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_TEV_${MODEL}.json \
+    --cycles $CYCLES \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'crab3' \
+    --task-name ${taskname}_hybrid_tev \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
+    cd -
+
+elif [[ $MODE == "collect-hybrid-lhc" ]]; then
+
+    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
+    --cycles 0 \
+    --output \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'interactive' \
+    --task-name ${taskname}_hybrid_lhc_finished \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
+    cd -
+
+elif [[ $MODE == "collect-hybrid-tev" ]]; then
+
+    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
+
+    combineTool.py -M HybridNewGrid \
+    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
+    --cycles 0 \
+    --output \
+    -d ${datacarddir}/combined/cmb/${wsoutput} \
+    --job-mode 'interactive' \
+    --task-name ${taskname}_hybrid_tev_finished \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    --X-rtd MINIMIZER_analytic \
+    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
+    cd -
 
 elif [[ $MODE == "submit-gc" ]]; then
     ############

@@ -261,12 +261,12 @@ elif args.process == "vector_leptoquark":
     axis[0].SetNdivisions(8, "X")
       
 
-    t1 = ROOT.TLatex()
-    t1.SetTextColor(ROOT.kBlack)
-    t1.SetTextFont(42)
-    t1.SetTextSize(0.03)
-    t1.DrawLatex(0.8, 4.5, "#kappa = 0")
-    t1.DrawLatex(0.8, 4.1, "With interference")
+    #t1 = ROOT.TLatex()
+    #t1.SetTextColor(ROOT.kBlack)
+    #t1.SetTextFont(42)
+    #t1.SetTextSize(0.03)
+    #t1.DrawLatex(0.8, 4.5, "#kappa = 0")
+    #t1.DrawLatex(0.8, 4.1, "With interference")
 
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)

@@ -1,3 +1,4 @@
+#!/bin/bash
 # based on https://github.com/KIT-CMS/MSSMvsSMRun2Legacy/tree/ntuple_processor
 ulimit -s unlimited
 
@@ -35,7 +36,7 @@ if [[ $MODE == "initial" ]]; then
         --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
         --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
         --variable mt_tot_puppi \
-        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root \
+        --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
         --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
 
     ############
@@ -240,4 +241,66 @@ elif [[ $MODE == "postfit-plots" ]]; then
             $(echo $freeze | cut -d, -f1 | cut -d= -f2) \
             $(echo $freeze | cut -d, -f2 | cut -d= -f2)
     done
+
+elif [[ $MODE == "prepare-ggH-bbH-scan" ]]; then
+    [[ ! -d ${defaultdir}/ggH_bbH_scan_ind/condor ]] && mkdir -p ${defaultdir}/ggH_bbH_scan_ind/condor
+    cd ${defaultdir}/ggH_bbH_scan_ind/condor
+    # Run 2D likelihood scans for r_ggH and r_bbH
+    combineTool.py -M MultiDimFit \
+        --algo grid --points 225 --split-points 50 \
+        -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
+        --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_ggH_bbH_2D_boundaries.json \
+        --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH,r_bbH \
+        -d ${datacarddir}/combined/cmb/ws.root \
+        --job-mode condor --dry-run --task-name ggH_bbH_likelihood_scan \
+        --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
+        -n ".ggH-bbH" \
+        -v 1
+        # --there -n ".ggH-bbH"
+        # -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
+
+    # Create asimov dataset for SM-expectation.
+    combineTool.py -M MultiDimFit \
+        --algo none \
+        -m "125" \
+        --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_ggH_bbH_2D_boundaries.json \
+        --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH,r_bbH \
+        -d ${datacarddir}/combined/cmb/ws.root \
+        -t -1 --saveToys \
+        --there -n ".2D.ToyDataset.SM1" \
+        --dry-run
+        # -d output/mssm_201017_SMHbkg/cmb/ws.root \ TODO: maybe need different datacard here
+
+    # Copy it to correct location
+    # Copy only necessary in case different datacards are used for the asimov creation and the fits.
+    # cp output/mssm_070617_SMHbkg/cmb/higgsCombine.2D.ToyDataset.SM1.MultiDimFit.mH125.123456.root output/mssm_201017/cmb/higgsCombine.2D.ToyDataset.SM1.MultiDimFit.mH125.123456.root
+
+    # Run fits on this asimov dataset
+    combineTool.py -M MultiDimFit \
+        --algo none \
+        -m "60,80,100,120,125,130,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500" \
+        --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_ggH_bbH_2D_boundaries.json \
+        --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH,r_bbH \
+        -d ${datacarddir}/combined/cmb/ws.root \
+        -t -1 --toysFile higgsCombine.2D.ToyDataset.SM1.MultiDimFit.mH125.123456.root \
+        --job-mode condor --dry-run --task-name ggH_bbH_likelihood_SM --merge 3 \
+        --there -n ".2D.SM1.bestfit"
+
+elif [[ $MODE == "submit-ggH-bbH-scan" ]]; then
+    cd ${defaultdir}/ggH_bbH_scan_ind/condor
+    condor_submit condor_ggH_bbH_likelihood_scan.sub
+    # condor_submit condor_ggH_bbH_likelihood_SM.sub
+
+elif [[ $MODE == "collect-ggH-bbH-scan" ]]; then
+    cd ${defaultdir}/ggH_bbH_scan_ind/
+    for mass in 60 80 100 120 125 130 140 160 180 200 250 300 350 400 450 500 600 700 800 900 1000 1200 1400 1600 1800 2000 2300 2600 2900 3200 3500; do
+        python ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plotMultiDimFit.py \
+            --title-right="138 fb^{-1} (13 TeV)" \
+            --cms-sub="Preliminary" \
+            --mass $mass \
+            -o 2D_limit_mH${mass} \
+            --debug-output test_mH${mass}.root \
+            condor/higgsCombine.ggH-bbH.POINTS.*.mH${mass}.root
+    done
+
 fi
