@@ -3,7 +3,7 @@ ROOT.gROOT.SetBatch(True)
 import CombineHarvester.CombineTools.plotting as plot
 
 # before you can use this plotting script you need to run the postfit shapes like:
-# for x in plot_50to100 plot_100to200 plot_0to50 plot_GT200; do PostFitShapesFromWorkspace -w model_independent_limits/Dec01_2D_all_all_bsm-model-indep/combined/plot_${x}/ws.root -d model_independent_limits/Dec01_2D_all_all_bsm-model-indep/combined/plot_${x}/combined.txt.cmb --fitresult model_independent_limits/Nov19_2D_all_all_bsm-model-indep/combined/cmb/multidimfit.ggH.m100.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_${x}_v5.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit; done 
+# for x in plot_50to100 plot_100to200 plot_0to50 plot_GT200; do PostFitShapesFromWorkspace -w model_independent_limits/Dec01_2D_all_all_bsm-model-indep/combined/plot_${x}/ws.root -d model_independent_limits/Dec01_2D_all_all_bsm-model-indep/combined/plot_${x}/combined.txt.cmb --fitresult model_independent_limits/Nov19_2D_all_all_bsm-model-indep/combined/cmb/multidimfit.ggH.m100.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_plot_${x}_v5.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit; done 
 
 def PositionedLegendUnrolled(width, height, pos, offset):
     o = offset
@@ -401,7 +401,7 @@ def ModTDRStyle(width=600, height=600, t=0.06, b=0.12, l=0.16, r=0.04):
     ROOT.gROOT.ForceStyle()
 
 def HTTMassPlot(cats=[432],
-            infile=None, infile2=None
+            infile=None, infile2=None, prefit_plot=None
             ):
 
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -423,6 +423,7 @@ def HTTMassPlot(cats=[432],
     total_bkg = infile.Get('postfit/TotalBkg').Clone()
     total_sig = infile.Get('postfit/TotalSig').Clone()
     if infile2: bkgonly = infile2.Get('postfit/TotalBkg').Clone()
+    if prefit_plot: prefit = prefit_plot.Get('prefit/TotalBkg').Clone()
 
     total_datahist.Scale(1.0,"width")
     total_bkg.Scale(1.0,"width")
@@ -513,7 +514,10 @@ def HTTMassPlot(cats=[432],
     # draw data
     total_datahist.SetMarkerStyle(20)
     total_datahist.SetLineColor(1)
-    total_datahist.Draw("E same")
+    #total_datahist.Draw("E same")
+    total_datahist.Draw("Esame")
+    total_datahist.SetFillStyle(1)
+    
     axish[0].Draw("axissame")
 
     #Setup legend
@@ -564,8 +568,12 @@ def HTTMassPlot(cats=[432],
     if infile2:
       bkgonly.Scale(1.0,"width") 
       bkgonly_sub = SubtractData(error_hist, bkgonly)
+    if prefit_plot:
+      prefit.Scale(1.0,"width")
+      prefit_sub = SubtractData(error_hist, prefit)
     pads[1].cd()
     pads[1].SetGrid(0,1)
+
     maxy = 0
     miny = 100000
     for i in range(1,data_sub.GetNbinsX()+1):
@@ -594,10 +602,17 @@ def HTTMassPlot(cats=[432],
       legend2.SetTextSize(0.025)
       legend2.SetTextFont(42)
       legend2.SetFillStyle(0)
-  
+
       legend2.AddEntry(bkgonly_sub,"Bkg. only fit","l")
-      legend2.AddEntry(total_sig,"Sig+Bkg. fit","l")
+      legend2.AddEntry(total_sig,"Sig.+Bkg. fit","l")
       legend2.Draw("same")
+
+    if prefit_plot:
+      prefit_sub.SetLineWidth(3)
+      prefit_sub.SetLineColor(ROOT.kMagenta)
+      prefit_sub.SetMarkerSize(0)
+      prefit_sub.SetLineStyle(2)
+      prefit_sub.Draw("histsame")
 
     total_sig.Draw("histsame")
     data_sub.DrawCopy("e0same")
@@ -620,8 +635,14 @@ def HTTMassPlot(cats=[432],
     elif cats[0] == 132: plot_name+='_0to50'
     c1.SaveAs('prop_plots/%(plot_name)s.pdf' % vars())
 
-HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_0to50_dec20.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_0to50_dec20.root'))
-HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_50to100_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_50to100_dec20.root'))
-HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_100to200_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_100to200_dec20.root'))
-HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_GT200_dec20.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_GT200_dec20.root'))
-#HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_cmb_dec20.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_cmb_dec20.root'))
+HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_0to50.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_0to50.root'))
+HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_50to100.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_50to100.root'))
+HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_100to200.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_100to200.root'))
+HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_GT200.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_GT200.root'))
+#HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_cmb.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_cmb.root'))
+
+#HTTMassPlot(cats=[132], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_0to50.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_0to50.root'),prefit_plot=ROOT.TFile('shapes_prop_plot_prefit_plot_0to50.root'))
+#HTTMassPlot(cats=[232], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_50to100.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_50to100.root'),prefit_plot=ROOT.TFile('shapes_prop_plot_prefit_plot_50to100.root'))
+#HTTMassPlot(cats=[332], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_100to200.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_100to200.root'),prefit_plot=ROOT.TFile('shapes_prop_plot_prefit_plot_100to200.root'))
+#HTTMassPlot(cats=[432], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_GT200.root'), infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_GT200.root'),prefit_plot=ROOT.TFile('shapes_prop_plot_prefit_plot_GT200.root'))
+#HTTMassPlot(cats=[132,232,332,432], infile=ROOT.TFile('shapes_prop_plot_postfit_plot_cmb.root'),infile2=ROOT.TFile('shapes_prop_plot_postfit_bkgonly_plot_cmb.root'),prefit_plot=ROOT.TFile('shapes_prop_plot_prefit_plot_cmb.root'))

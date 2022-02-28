@@ -2,7 +2,7 @@
 
 ### Setup of CMSSW release
 NUM_CORES=10
-CMSSW=CMSSW_10_2_27
+CMSSW=CMSSW_10_2_28
 
 export SCRAM_ARCH=slc7_amd64_gcc700
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
@@ -47,6 +47,9 @@ scramv1 b clean; scramv1 b -j $NUM_CORES
 for model in hMSSM mHH125 mh1125_CPV mh125EFT mh125EFT_lc mh125 mh125_align mh125_lc mh125_ls mh125_muneg_1 mh125_muneg_2 mh125_muneg_3;
 do
     wget -O CombineHarvester/MSSMvsSMRun2Legacy/data/${model}_13.root https://zenodo.org/record/5730271/files/${model}_13.root?download=1;
+    if [[ "${model}" != "hMSSM" ]]; then
+    wget -O CombineHarvester/MSSMvsSMRun2Legacy/data/${model}_13_old.root https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHWGMSSMNeutral/${model}_13.root
+    fi
 done;
 
 # Download ggH NLO reweighting inputs

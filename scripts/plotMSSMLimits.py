@@ -37,6 +37,8 @@ parser.add_argument(
 parser.add_argument(
     '--logx', action='store_true', help="""Draw x-axis in log scale""")
 parser.add_argument(
+    '--low_high_split', action='store_true', help="""Draw line and labels for low mass - high mass split""")
+parser.add_argument(
     '--ratio-to', default=None)
 parser.add_argument(
     '--pad-style', default=None, help="""Extra style options for the pad, e.g. Grid=(1,1)""")
@@ -195,7 +197,98 @@ if args.process == "vector_leptoquark" and args.subprocess in ["betaRd33_0","bet
   bestfit_band =  {"exp1": plot.LimitBandTGraphFromJSON(new_data, "exp0", "exp-1", "exp+1"),"exp2": plot.LimitBandTGraphFromJSON(new_data, "exp0", "exp-2", "exp+2")}
   plot.StyleLimitBand(bestfit_band,overwrite_style_dict=bestfit_style_dict["style"])
 
-for src in args.input:
+def RemovePoints(graph_set, high=True):
+  graph_set_new = {}
+  for key,g in graph_set.items(): 
+    x=ROOT.Double()
+    y=ROOT.Double()
+    
+    import math
+    shift=5.
+    g_clone = g.Clone()
+    for i in range(g_clone.GetN(),-1,-1):
+      g_clone.GetPoint(i,x,y)
+      if high and key =='obs' and x < 250: g_clone.RemovePoint(i)
+      elif high and key !='obs' and x < 250:
+        x_bound=225.
+        x_bound+=1.4*shift
+        #x_bound=200
+        if x==200:
+          y_new = g_clone.Eval(x_bound)
+          if key in ['exp1','exp2']:
+            print key
+            x_=ROOT.Double()
+            y_=ROOT.Double()
+            g.GetPoint(i+1,x_,y_)
+
+            lo_0 = y - g.GetErrorYlow(i)
+            lo_1 = y_ - g.GetErrorYlow(i+1)
+            hi_0 = y + g.GetErrorYhigh(i)
+            hi_1 = y_ + g.GetErrorYhigh(i+1)
+
+            up_new=(hi_1-hi_0)/(x_-x)*(x_bound-x) + hi_0 -y_new
+            down_new = y_new - ((lo_1-lo_0)/(x_-x)*(x_bound-x)+lo_0)
+
+#            down_new = y_new - ((lo_1-lo_0)/(x-x_)*(x_bound-x_)+lo_0)
+            #up_new = ((hi_1-hi_0)/(x-x_)*(x_bound-x_)+hi_0) -y_new
+
+            g_clone.SetPointEYhigh(i,up_new)
+            g_clone.SetPointEYlow(i,down_new)
+          g_clone.SetPoint(i,x_bound,y_new) 
+        else: g_clone.RemovePoint(i)
+      if not high and key == 'obs' and x>= 250: g_clone.RemovePoint(i)
+      elif not high and key != 'obs' and x> 200: 
+        x_bound=225.-shift
+        if x==250:
+          y_new = g.Eval(x_bound)
+          if key in ['exp1','exp2']:
+            x0=ROOT.Double()
+            y0=ROOT.Double()
+            g.GetPoint(i-1,x0,y0)
+
+            lo_0 = y0 - g.GetErrorYlow(i-1) 
+            lo_1 = y - g.GetErrorYlow(i)
+            hi_0 = y0 + g.GetErrorYhigh(i-1)
+            hi_1 = y + g.GetErrorYhigh(i)
+            down_new = y_new - ((lo_1-lo_0)/(x-x0)*(x_bound-x0)+lo_0)
+            up_new = ((hi_1-hi_0)/(x-x0)*(x_bound-x0)+hi_0) -y_new
+
+            g_clone.SetPointEYhigh(i,up_new)
+            g_clone.SetPointEYlow(i,down_new)
+          g_clone.SetPoint(i,x_bound,y_new)
+        else: g_clone.RemovePoint(i) 
+
+
+    graph_set_new[key] = g_clone
+  return graph_set_new
+
+def DrawLimitBandWithRange(pad, graph_dict, draw=['exp2', 'exp1', 'exp0', 'obs'], draw_legend=None,
+                  legend=None, legend_overwrite=None, range_=None):
+    legend_dict = {
+        'obs' : { 'Label' : 'Observed', 'LegendStyle' : 'LP', 'DrawStyle' : 'PLSAME'},
+        'exp0' : { 'Label' : 'Expected', 'LegendStyle' : 'L', 'DrawStyle' : 'LSAME'},
+        'exp1' : { 'Label' : '#pm1#sigma Expected', 'LegendStyle' : 'F', 'DrawStyle' : '3SAME'},
+        'exp2' : { 'Label' : '#pm2#sigma Expected', 'LegendStyle' : 'F', 'DrawStyle' : '3SAME'}
+    }
+    if legend_overwrite is not None:
+        for key in legend_overwrite:
+            if key in legend_dict:
+                legend_dict[key].update(legend_overwrite[key])
+            else:
+                legend_dict[key] = legend_overwrite[key]
+    pad.cd()
+    for key in draw:
+        if key in graph_dict:
+            graph_dict[key].Draw(legend_dict[key]['DrawStyle'])
+    if legend is not None:
+        if draw_legend is None:
+            draw_legend = reversed(draw)
+        for key in draw_legend:
+            if key in graph_dict:
+                legend.AddEntry(graph_dict[key],legend_dict[key]['Label'],legend_dict[key]['LegendStyle'])
+
+
+for i, src in enumerate(args.input):
     splitsrc = src.split(':')
     file = splitsrc[0]
     # limit.json => Draw as full obs + exp limit band
@@ -203,16 +296,27 @@ for src in args.input:
         graph_sets.append(plot.StandardLimitsFromJSONFile(file, args.show.split(',')))
         if axis is None:
             axis = plot.CreateAxisHists(len(pads), graph_sets[-1].values()[0], True)
+            for a in axis: a.GetXaxis().SetLimits(60., 3500,)
             DrawAxisHists(pads, axis, pads[0])
         if args.process == "vector_leptoquark" and args.subprocess in ["betaRd33_0","betaRd33_minus1"]:
           plot.DrawLimitBand(pads[0], bestfit_band, legend=legend,legend_overwrite=bestfit_style_dict["legend"])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
-        plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+         
+        if not args.low_high_split: plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
+        else: 
+          if i==1: 
+            graph_set_high = RemovePoints(graph_sets[-1], high=True)
+            DrawLimitBandWithRange(pads[0], graph_set_high, legend=legend,legend_overwrite=style_dict["legend"],range_=None)
+          if i==0: 
+            graph_set_low = RemovePoints(graph_sets[-1], high=False)
+            DrawLimitBandWithRange(pads[0], graph_set_low, range_=None)
         pads[0].RedrawAxis()
         pads[0].RedrawAxis('g')
         pads[0].GetFrame().Draw("")
         has_band = True  # useful to know later if we want to do style settings
                          # based on whether or not the expected band has been drawn
+
+        #break
 
     # limit.json:X => Draw a single graph for entry X in the json file 
     # 'limit.json:X:Title="Blah",LineColor=4,...' =>
@@ -293,6 +397,7 @@ if args.y_axis_min is not None or args.y_axis_max is not None:
   hobj = plot.GetAxisHist(pads[0])
   if args.y_axis_min is not None: hobj.SetMinimum(float(args.y_axis_min))
   if args.y_axis_max is not None: hobj.SetMaximum(float(args.y_axis_max))
+
 
 ratio_graph_sets = []
 ratio_graphs = []
@@ -397,8 +502,26 @@ if args.process == "vector_leptoquark" and args.title_left == "":
 else:
   plot.DrawTitle(pads[0], args.title_left, 1)
 
-plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
-plot.DrawTitle(pads[0], args.title_right, 3)
+plot.DrawTitle(pads[0], args.title_right % vars(), 3)
+plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 1, 0.045, 0.05, 1.0, '', 0.9)
+
+#plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
+#plot.DrawTitle(pads[0], args.title_right, 3)
+#plot.DrawTitle(pads[0], args.title_left, 1)
+
+if args.low_high_split:
+
+  line =  ROOT.TLine(225.,hobj.GetMinimum(),225,hobj.GetMaximum())
+  line.Draw()
+  latex2 = ROOT.TLatex()
+  latex2.SetNDC()
+  latex2.SetTextAngle(0)
+  latex2.SetTextAlign(12)
+  latex2.SetTextFont(42)
+  latex2.SetTextSize(0.04)
+  latex2.DrawLatex(0.19,0.17, 'Low-mass')
+  latex2.DrawLatex(0.45,0.17, 'High-mass')
+  latex2.SetTextSize(0.05)
 
 canv.Print('.pdf')
 canv.Print('.png')

@@ -1,17 +1,28 @@
 import os
 import argparse
 
-# python run_model_independent_limits_unblinding.py -o unblinding 
+def makeJob(name, command):
+
+  os.system('echo \#\!/bin/sh > %(name)s' % vars())
+  os.system('echo ulimit -s unlimited >> %(name)s' % vars())
+  os.system('echo cd $(pwd) >> %(name)s' % vars())
+  os.system('echo export SCRAM_ARCH=$SCRAM_ARCH >> %(name)s' % vars())
+  os.system('echo source /vols/grid/cms/setup.sh >> %(name)s' % vars())
+  os.system('echo eval \`scramv1 runtime -sh\` >> %(name)s' % vars())
+  os.system('echo %(command)s >> %(name)s' % vars())
+  os.system('chmod 755 %(name)s' % vars())
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--channel',help= 'Channel to run limits for', default='all')
 parser.add_argument('--output','-o', help= 'Name of output directory', default='output')
+parser.add_argument('--fit','-f', help= 'Name of directory with fit result', default='output')
 parser.add_argument('--year', help= 'Name of input year', default='all')
 parser.add_argument('--all_perm', help= 'Run all permutations of year and channel inputs', default=False)
 args = parser.parse_args()
 
 channel = args.channel
 output = args.output
+fit = args.fit
 year = args.year
 all_perm = args.all_perm
 
@@ -50,6 +61,7 @@ for x in ["plot_cmb","plot_50to100","plot_100to200","plot_0to50","plot_GT200"]:
     ### Set up channel input ###
     
     directory = "model_independent_limits/%(output)s_all_all_%(analysis)s" % vars()
+    fit_directory = "model_independent_limits/%(fit)s_all_all_%(analysis)s" % vars()
     
     os.system("mkdir -p %(directory)s/combined/%(x)s/; rsync -av --progress %(directory)s/201?/%(x)s/*  %(directory)s/combined/%(x)s/" % vars())
  
@@ -60,12 +72,19 @@ for x in ["plot_cmb","plot_50to100","plot_100to200","plot_0to50","plot_GT200"]:
     channel_str='%(x)s' % vars()
     year_str = 'combined' 
 
-    os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' -i %(directory)s/%(year_str)s/%(channel_str)s -m 100 --parallel 8' % vars())
+    os.system('combineTool.py -M T2W -i %(directory)s/%(year_str)s/%(channel_str)s/' % vars())
+
 
     # s+b fit
-    os.system('PostFitShapesFromWorkspace -w %(directory)s/%(year_str)s/%(channel_str)s/ws.root -d %(directory)s/%(year_str)s/%(channel_str)s/combined.txt.cmb --fitresult %(directory)s/combined/cmb/multidimfitggH.m100.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_${x}_dec20.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit')
+    makeJob('job_prop_plot_sb_%(x)s.sh' % vars(), 'PostFitShapesFromWorkspace -w %(directory)s/%(year_str)s/%(channel_str)s/ws.root -d %(directory)s/%(year_str)s/%(channel_str)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/multidimfitggH.m100.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_%(x)s.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit \&\> job_prop_plot_sb_%(x)s.log' % vars())
+    os.system('qsub -e /dev/null -o /dev/null -V -q hep.q -l h_rt=3:0:0 -cwd job_prop_plot_sb_%(x)s.sh' % vars())
 
     # b-only fit
-    os.system('PostFitShapesFromWorkspace -w %(directory)s/%(year_str)s/%(channel_str)s/ws.root -d %(directory)s/%(year_str)s/%(channel_str)s/combined.txt.cmb --fitresult %(directory)s/combined/cmb/multidimfitggH.bkgOnly.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_bkgonly_${x}_dec20.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit')
+    makeJob('job_prop_plot_b_%(x)s.sh' % vars(), 'PostFitShapesFromWorkspace -w %(directory)s/%(year_str)s/%(channel_str)s/ws.root -d %(directory)s/%(year_str)s/%(channel_str)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/multidimfitggH.bkgOnly.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_postfit_bkgonly_%(x)s.root --skip-prefit=true   --mass 100 --total-shapes=true --postfit \&\> job_prop_plot_b_%(x)s.log' % vars())
+    os.system('qsub -e /dev/null -o /dev/null -V -q hep.q -l h_rt=3:0:0 -cwd job_prop_plot_b_%(x)s.sh' % vars())
+   
+    # prefit 
+    makeJob('job_prop_plot_prefit_%(x)s.sh' % vars(), 'PostFitShapesFromWorkspace -w %(directory)s/%(year_str)s/%(channel_str)s/ws.root -d %(directory)s/%(year_str)s/%(channel_str)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/multidimfitggH.bkgOnly.bestfit.robustHesse.root:fit_mdf -o shapes_prop_plot_prefit_%(x)s.root  --mass 100 --total-shapes=true --freeze r_ggH=1 \&\> job_prop_plot_prefit_%(x)s.log' % vars())
+    os.system('qsub -e /dev/null -o /dev/null -V -q hep.q -l h_rt=3:0:0 -cwd job_prop_plot_prefit_%(x)s.sh' % vars())
 
 
