@@ -200,6 +200,29 @@ if [[ $MODE == "initial" ]]; then
         rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
     done
 
+    # Perform checks on the produced datacards
+
+    # Run datacard check from Higgs PAG
+    combineTool.py -M T2W \
+        -o ws.root \
+        -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+        --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
+        --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
+        -i ${datacarddir}/restore_binning/ \
+        -m 110 \
+        --X-allow-no-signal --just-check-physics-model
+
+    ValidateDatacards.py ${datacarddir}/restore_binning/combined.txt.cmb \
+        --jsonFile ${datacarddir}/restore_binning/validation_restore_binning.json \
+        --mass 110 --printLevel 1
+
+    # Check number of produced datacards
+    EXPECTED=$(((4+4+2+7)*3))
+    if [[ $(ls ${datacarddir}/combined/cmb/*.txt | wc -l) != $EXPECTED ]]; then
+        echo -e "\033[0;31m[ERROR]\033[0m Not all datacards have been created or written. Please check the logs..."
+        echo "Expected ${EXPECTED} datacards written but found only $(ls ${datacarddir}/combined/cmb/ | wc -l) in the combined directory."
+    fi
+
 elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
