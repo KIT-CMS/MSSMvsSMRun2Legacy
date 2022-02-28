@@ -2483,11 +2483,11 @@ int main(int argc, char **argv) {
 
   std::cout << "[INFO] Writing datacards to " << output_folder << std::endl;
   // We need to do this to make sure the ttbarShape uncertainty is added properly when we use a shapeU
-  //if(!(prop_plot||cbyear_plot)){
-  //    cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
-  //    cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
-  //    cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
-  //} 
+  if(!(prop_plot||cbyear_plot)){
+      cb.GetParameter("CMS_htt_ttbarShape")->set_range(-1.0,1.0);
+      cb.GetParameter("CMS_htt_ttbarShape")->set_err_d(-1.);
+      cb.GetParameter("CMS_htt_ttbarShape")->set_err_u(1.);
+  } 
 
   // Decide, how to write out the datacards depending on --category option
   if(category == "all") {
