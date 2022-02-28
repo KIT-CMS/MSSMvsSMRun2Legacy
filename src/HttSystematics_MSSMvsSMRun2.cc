@@ -582,19 +582,35 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   // Notes: for Hdamp scales t, b, and i components are decorrelated
   // ##########################################################################
 
+  // removed Hdamp uncertainties for categories where even the lnN variations are smaller than the statistical uncertainties on the yields as these cause double minima
+  std::vector<std::string> bins_to_skip = {
+    "em_NbtagGt1_DZetaGt30",
+    "em_NbtagGt1_DZetam10To30",
+    "em_NbtagGt1_DZetam35Tom10",
+    "em_Nbtag0_DZetaGt30_pT_GT200",
+    "em_Nbtag0_DZetaGt30_pT_50To100",
+    "em_Nbtag0_DZetaGt30_pT_0To50",
+    "em_Nbtag0_DZetam10To30_pT_GT200",
+    "tt_Nbtag0_pT_0To50",
+    "et_Nbtag0_MTLt40_pT_GT200",
+  };
+
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
        .process({"ggh_i","ggH_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggX_i"})
+       .bin({bins_to_skip},false)
        .AddSyst(cb, "Hdamp_ggH_i_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
        .process({"ggh_t","ggH_t","ggA_t", "ggH1_t", "ggH2_t", "ggH3_t","ggX_t"})
+       .bin({bins_to_skip},false)
        .AddSyst(cb, "Hdamp_ggH_t_REWEIGHT", "shape", SystMap<>::init(1.00));
 
    cb.cp()
        .channel({"et", "mt", "tt", "em"})
        .process({"ggh_b","ggH_b","ggA_b", "ggH1_b", "ggH2_b", "ggH3_b","ggX_b"})
+       .bin({bins_to_skip},false)
        .AddSyst(cb, "Hdamp_ggH_b_REWEIGHT", "shape", SystMap<>::init(1.00));
 
   // ##########################################################################
@@ -2719,6 +2735,7 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      .channel({"em"})
      .process({"QCD"})
      .AddSyst(cb, "CMS_htt_qcd_2jet_shape2_$ERA", "shape", SystMap<>::init(1.00));
+
   cb.cp()
      .channel({"em"})
      .process({"QCD"})

@@ -18,8 +18,12 @@ for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13
 # plot low and high mass limits on same axis:
 
 # collect limits:
-DIR="Jan12_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
-for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
+DIR="Feb07_all_all_bsm-model-indep"; DIR2="Jan12_mt_tot_all_all_bsm-model-indep"
+#for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200,250}.root CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined.json; done
+
+
+# define as seperate files
+for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DIR}/combined/cmb/higgsCombine.${p}H.v2.AsymptoticLimits.mH{60,80,95,100,120,125,130,140,160,180,200,250}.root  --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowonly.json; combineTool.py -M CollectLimits model_independent_limits/${DIR2}/combined/cmb/higgsCombine.${p}H.AsymptoticLimits.mH{200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500}.root --use-dirs -o model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_highonly.json; done
 
 # make plots
 
@@ -34,13 +38,13 @@ python scripts/significance_plot.py
 **With signal = 100 GeV:**
 
 ```bash
-combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
+combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.m100.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
 ```
 
 **Background only:**
 
 ```bash
-combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX,r_bbH,r_ggH --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Dec20_2D_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.bkgOnly.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
+combineTool.py -m 100 -M MultiDimFit --saveFitResult  --freezeParameters r_qqX,r_ggX,r_bbH,r_ggH --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --redefineSignalPOIs r_ggH -d model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/ws.root --there -n "ggH.bkgOnly.bestfit.robustHesse"  --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustHesse=1
 ```
 
 ## make post-fit / pre-fit plots
@@ -187,6 +191,19 @@ combine -M ChannelCompatibilityCheck \
 --saveFitResult \
 -g htt_em -g htt_et -g htt_mt -g htt_tt \
 -v 2
+
+# to run the toys:
+
+combineTool.py -M ChannelCompatibilityCheck \
+    -d ${datacarddir}/combined/cmb/ws.root \
+    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 --robustFit 1 --stepSize 0.01 \
+    --setParameters r_ggH=0,r_bbH=0 --redefineSignalPOIs r_ggH --setParameterRange r_ggH=-20,20:r_bbH=-0,100 --rMin=-20 \
+    -m ${MASS} \
+    -n .CCC.channel.toys \
+    -v 0 \
+    --there --runMinos=false \
+    -g htt_em -g htt_et -g htt_mt -g htt_tt \
+    -t 2 -s 0:500:1 --job-mode 'SGE' --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" --task-name ChannelCompatibilityCheck.Test.combined-cmb.mH${MASS}
 ```
 
 **By era:**
@@ -258,5 +275,31 @@ hadd -f model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/com
 # make plots
 
 python scripts/plot1DScan.py --obs model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --POI CMS_res_t --exp model_independent_limits/Jan03_newresuncerts_all_all_bsm-model-indep/combined/cmb/higgsCombine.ggH.tres.MultiDimFit.mH100.root --y-max=20 --y-cut=20 --output scan_tres 
+
+```
+
+## make plot with years an channels combined
+
+This script will produce the datacards and histograms rebinned properly, run T2W, anbd the run postfit shapes
+
+```bash
+
+python run_cbyear_plots.py -o Feb11_cbyear_plots
+
+```
+
+Then you can combine these output root files into 1 root file containing all categories with VLQ signal also added for high mass cases
+
+```bash
+
+python scripts/combine_cbyears_shapes.py
+
+```
+
+and then the plots can be produced using:
+
+```bash
+
+for c in em lt tt; do for b in 332 432; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b} -f shapes_cbyears.root --ratio --ratio_range "0.85,1.15" ; done; done 
 
 ```
