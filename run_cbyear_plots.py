@@ -67,7 +67,6 @@ for year in year_perm:
     directory = "model_independent_limits/%(output)s_%(channel)s_%(year)s_%(analysis)s" % vars()
 
     for c in ['em','lt','tt']:
-    for c in ['em']:
       bins = [32,35,432,332]
       #if c == 'em': bins = [33,36,433,333]
       for b in bins:
