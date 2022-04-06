@@ -99,30 +99,47 @@ def check_for_zero_bins(hist):
 
 def get_histogram(rootfile, era, channel, category, process):
     if era == "combined":
-        hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
-        hist.Add(get_histogram(rootfile, "2017", channel, category, process))
-        hist.Add(get_histogram(rootfile, "2018", channel, category, process))
+        if process != "TotalBkg":
+            if category == "300":
+                hist = get_histogram(rootfile, "2016", channel, "301", process).Clone()
+                hist.Add(get_histogram(rootfile, "2016", channel, "302", process))
+                for era in ["2017", "2018"]:
+                    for cat in ["301", "302"]:
+                        hist.Add(get_histogram(rootfile, era, channel, cat, process))
+            else:
+                hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
+                for era in ["2017", "2018"]:
+                    hist.Add(get_histogram(rootfile, era, channel, category, process))
+        else:
+            if rootfile._type == "postfit":
+                hist = rootfile.rootfile.Get("postfit/TotalBkg")
+            else:
+                if category == "300":
+                    hist = get_histogram(rootfile, "2016", channel, "301", process).Clone()
+                    hist.Sumw2()
+                    hist.Add(get_histogram(rootfile, "2016", channel, "302", process))
+                    for era in ["2017", "2018"]:
+                        for cat in ["301", "302"]:
+                            hist.Add(get_histogram(rootfile, era, channel, cat, process))
+                else:
+                    hist = get_histogram(rootfile, "2016", channel, category, process).Clone()
+                    hist.Sumw2()
+                    hist.Add(get_histogram(rootfile, "2017", channel, category, process))
+                    hist.Add(get_histogram(rootfile, "2018", channel, category, process))
     else:
         if channel == "tt" and process == "jetFakes":
             hist = rootfile.get(era, channel, category, process).Clone()
-            hist.Sumw2()
             hist.Add(rootfile.get(era, channel, category, "wFakes"))
         elif channel == "em" and process == "EWK":
             hist = rootfile.get(era, channel, category, "W").Clone()
-            hist.Sumw2()
             hist.Add(rootfile.get(era, channel, category, "VVL"))
         else:
             hist = rootfile.get(era, channel, category, process)
-            hist.Sumw2()
     return hist
 
 
 def main(args):
     #### plot signals
-    if args.background_only:
-        stxs_stage1p1_cats = []
-    else:
-        stxs_stage1p1_cats = [str(100+i) for i in range(5)] + [str(200+i) for i in range(4)]
     print(args)
     if args.gof_variable != None:
         channel_categories = {
@@ -131,6 +148,28 @@ def main(args):
             "tt": ["300"],
             "em": ["301", "302"],
         }
+        if args.era == "combined":
+            if "prefit" in args.input:
+                channel_categories = {
+                    "et": ["300"],
+                    "mt": ["300", "301", "302"],
+                    "tt": ["300"],
+                    "em": ["300", "301", "302"],
+                }
+            else:
+                if "301" in args.input:
+                    channel_categories["mt"] = ["301"]
+                    channel_categories["em"] = ["301"]
+                elif "302" in args.input:
+                    channel_categories["mt"] = ["302"]
+                    channel_categories["em"] = ["302"]
+                else:
+                    channel_categories = {
+                        "et": ["300"],
+                        "mt": ["300"],
+                        "tt": ["300"],
+                        "em": ["300"],
+                    }
     else:
         channel_categories = {
             #"et": ["ztt", "zll", "w", "tt", "ss", "misc"],
@@ -356,7 +395,10 @@ def main(args):
             if args.normalize_by_bin_width:
                 plot.subplot(0).setYlabel("dN/d(%s)"%args.gof_variable)
             else:
-                plot.subplot(0).setYlabel("Events / 10 GeV")
+                if channel == "em":
+                    plot.subplot(0).setYlabel("Events / 5 GeV")
+                else:
+                    plot.subplot(0).setYlabel("Events / 5 GeV")
 
             plot.subplot(2).setYlabel("Data/Exp")
             plot.subplot(2).setGrid()
@@ -414,18 +456,18 @@ def main(args):
                     plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                    plot.DrawText(0.335, 0.80, "low-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.465, 0.80, "medium-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.75, 0.5, "high-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.335, 0.80, "Low-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.465, 0.80, "Medium-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.5, "High-D_{#zeta}", textsize=0.025)
                 elif category in ["302"]:
                     _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
                     _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
                     plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                    plot.DrawText(0.450, 0.8, "low-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.525, 0.8, "medium-p_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.75, 0.45, "high-p_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.450, 0.8, "Low-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.525, 0.8, "Medium-D_{#zeta}", textsize=0.025)
+                    plot.DrawText(0.75, 0.45, "High-D_{#zeta}", textsize=0.025)
                     plot.DrawText(0.305, 0.8, "t#bar{t} CR", textsize=0.025)
             elif channel in ["et", "mt"]:
                 if category in ["300", "301"]:
@@ -459,15 +501,15 @@ def main(args):
                 plot.DrawText(0.7, 0.3,
                               "\chi^{2}/ndf = " + str(round(chi2, 3)))
 
-            plot.add_legend(
-                reference_subplot=2, pos=1, width=0.5, height=0.03)
-            plot.legend(1).add_entry(0, "data_obs", "Data", 'PE')
-            plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
-            plot.legend(1).setNColumns(4)
-            plot.legend(1).Draw()
+            # plot.add_legend(
+            #     reference_subplot=2, pos=1, width=0.5, height=0.03)
+            # plot.legend(1).add_entry(0, "data_obs", "Data", 'PE')
+            # plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
+            # plot.legend(1).setNColumns(4)
+            # plot.legend(1).Draw()
 
             # draw additional labels
-            plot.DrawCMS()
+            plot.DrawCMS(cms_sub="")
             if "2016" in args.era:
                 plot.DrawLumi("36.3 fb^{-1} (2016, 13 TeV)")
             elif "2017" in args.era:
@@ -481,7 +523,7 @@ def main(args):
                 raise Exception
 
             plot.DrawChannelCategoryLabel(
-                "%s, %s" % (channel_dict[channel], category_dict[category]),
+                "%s, %s" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
                 begin_left=None)
 
             # save plot
