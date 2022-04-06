@@ -431,7 +431,7 @@ int main(int argc, char **argv) {
     mssm_ggH_lowmass_signals = ch::JoinStr({mssm_ggH_lowmass_signals_smlike, mssm_ggH_lowmass_signals_scalar, mssm_ggH_lowmass_signals_pseudoscalar});
     mssm_bbH_lowmass_signals = ch::JoinStr({mssm_bbH_lowmass_signals_smlike, mssm_bbH_lowmass_signals_scalar, mssm_bbH_lowmass_signals_pseudoscalar});
   }
-  if (variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
+  if ((variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) && !(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")) {
     mssm_qqH_signals = {"qqX"};
     ggX_signals = {"ggX_t","ggX_b","ggX_i"};
   }
@@ -487,7 +487,7 @@ int main(int argc, char **argv) {
 
   if(do_morph) {
 
-    if(lowmass) {
+    if(lowmass && !(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")) {
       SUSYqqH_masses[2018] = {"95"};
       SUSYqqH_masses[2017] = {"95"};
       SUSYqqH_masses[2016] = {"95"};
@@ -507,21 +507,14 @@ int main(int argc, char **argv) {
       SUSYggH_masses[2016] = SUSYggH_masses[2018];
       SUSYggH_masses[2017] = SUSYggH_masses[2018];
 
-      SUSYbbH_lowmasses[2018] = SUSYbbH_masses[2018]; 
-      SUSYbbH_lowmasses[2017] = SUSYbbH_masses[2018];
-      SUSYbbH_lowmasses[2016] = SUSYbbH_masses[2018]; 
-
-      SUSYggH_lowmasses[2018] = SUSYggH_masses[2018];
-      SUSYggH_lowmasses[2016] = SUSYggH_masses[2018];
-      SUSYggH_lowmasses[2017] = SUSYggH_masses[2018];
-
-      SUSYqqH_masses[2018] = {"95"};
-      SUSYqqH_masses[2017] = {"95"};
-      SUSYqqH_masses[2016] = {"95"};
-
-      ggX_masses[2018] = {"95"};
-      ggX_masses[2017] = {"95"};
-      ggX_masses[2016] = {"95"};
+      if(enable_bsm_lowmass) {
+        SUSYbbH_lowmasses[2018] = SUSYbbH_masses[2018];
+        SUSYbbH_lowmasses[2017] = SUSYbbH_masses[2018];
+        SUSYbbH_lowmasses[2016] = SUSYbbH_masses[2018];
+        SUSYggH_lowmasses[2018] = SUSYggH_masses[2018];
+        SUSYggH_lowmasses[2016] = SUSYggH_masses[2018];
+        SUSYggH_lowmasses[2017] = SUSYggH_masses[2018];
+      }
 
     } else {
 
@@ -533,27 +526,55 @@ int main(int argc, char **argv) {
       SUSYggH_masses[2016] = SUSYggH_masses[2018];
       SUSYggH_masses[2017] = SUSYggH_masses[2018];
 
-      SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
-      SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
-      SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
-
-      SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
-      SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
-      SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+      if(enable_bsm_lowmass) {
+        SUSYbbH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+        SUSYbbH_lowmasses[2017] = SUSYbbH_lowmasses[2018];
+        SUSYbbH_lowmasses[2016] = {"60","80","100","120","125","130","140","160","180","200","250","350","400","450","500","600","800"};  // Missing 300,700
+        SUSYggH_lowmasses[2018] = {"60","80","100","120","125","130","140","160","180","200","250","300","350","400","450","500","600","700","800"};
+        SUSYggH_lowmasses[2016] = SUSYggH_lowmasses[2018];
+        SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
+      }
     }
   } else {
     // dont use mass morphing - need to specify a mass here
     SUSYggH_masses[2016] = {non_morphed_mass};
     SUSYggH_masses[2017] = {non_morphed_mass};
     SUSYggH_masses[2018] = {non_morphed_mass};
-    if (non_morphed_mass!="95") {
-      SUSYbbH_masses[2016] = {non_morphed_mass};
-      SUSYbbH_masses[2017] = {non_morphed_mass};
-      SUSYbbH_masses[2018] = {non_morphed_mass};
-    }
+    SUSYbbH_masses[2016] = {non_morphed_mass};
+    SUSYbbH_masses[2017] = {non_morphed_mass};
+    SUSYbbH_masses[2018] = {non_morphed_mass};
   }
 
-  if(prop_plot || (cbyear_plot && variable!="mt_tot_puppi")) {
+  if(prop_plot) {
+      SUSYbbH_masses[2018] = {"100"};
+      SUSYbbH_masses[2017] = SUSYbbH_masses[2018];
+      SUSYbbH_masses[2016] = SUSYbbH_masses[2018];
+
+      SUSYggH_masses[2018] = {"100"};
+      SUSYggH_masses[2016] = SUSYggH_masses[2018];
+      SUSYggH_masses[2017] = SUSYggH_masses[2018];
+
+      SUSYbbH_lowmasses[2018] = SUSYbbH_masses[2018];
+      SUSYbbH_lowmasses[2017] = SUSYbbH_masses[2018];
+      SUSYbbH_lowmasses[2016] = SUSYbbH_masses[2018];
+
+      SUSYggH_lowmasses[2018] = SUSYggH_masses[2018];
+      SUSYggH_lowmasses[2016] = SUSYggH_masses[2018];
+      SUSYggH_lowmasses[2017] = SUSYggH_masses[2018];
+
+      SUSYqqH_masses[2018] = {};
+      SUSYqqH_masses[2017] = {};
+      SUSYqqH_masses[2016] = {};
+
+      ggX_masses[2018] = {};
+      ggX_masses[2017] = {};
+      ggX_masses[2016] = {};
+
+
+
+  }
+
+  if(/*prop_plot ||*/ (cbyear_plot && variable!="mt_tot_puppi")) {
     SUSYggH_masses[2016] = {"100"};
     SUSYggH_masses[2017] = {"100"};
     SUSYggH_masses[2018] = {"100"};
@@ -586,6 +607,15 @@ int main(int argc, char **argv) {
     ggX_masses[2016] = {};
   }
 
+  if(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional") {
+    SUSYqqH_masses[2018] = {};
+    SUSYqqH_masses[2017] = {};
+    SUSYqqH_masses[2016] = {};
+
+    ggX_masses[2018] = {};
+    ggX_masses[2017] = {};
+    ggX_masses[2016] = {};
+  }
 
   update_vector_by_byparser(SUSYggH_masses[era], mass_susy_ggH, "SUSY ggH");
   update_vector_by_byparser(SUSYbbH_masses[era], mass_susy_qqH, "SUSY qqH");
@@ -658,9 +688,9 @@ int main(int argc, char **argv) {
   }
 
   // Define MSSM model-dependent mass parameters mA, mH, mh
-  RooRealVar mA("mA", "mA", 125., 90., 4000.);
-  RooRealVar mH("mH", "mH", 125., 90., 4000.);
-  RooRealVar mh("mh", "mh", 125., 90., 4000.);
+  RooRealVar mA("mA", "mA", 125., 60., 4000.);
+  RooRealVar mH("mH", "mH", 125., 60., 4000.);
+  RooRealVar mh("mh", "mh", 125., 60., 4000.);
 
   std::string max_lowmass = "60";
   if(SUSYggH_lowmasses.size()>0) max_lowmass = SUSYggH_lowmasses[2018].back(); // this is set the same for all years for the time-being
@@ -1224,7 +1254,7 @@ int main(int argc, char **argv) {
       cb.AddProcesses(SUSYbbH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_bbH_signals, exclude_em_control, true);
       cb.AddProcesses(SUSYggH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_ggH_signals, exclude_em_control, true);
 
-      if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
+      if((variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) && !(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")) {
         cb.AddProcesses(SUSYqqH_masses[era], {"htt"}, {era_tag}, {chn}, mssm_qqH_signals, exclude_em_control, true);
         cb.AddProcesses(ggX_masses[era], {"htt"}, {era_tag}, {chn}, ggX_signals, exclude_em_control, true);
       }
@@ -1367,6 +1397,7 @@ int main(int argc, char **argv) {
     cb.cp().channel({chn}).backgrounds().process({"bbH125"}).ExtractShapes( // "bbH125" needs special treatment because of template name spelling
       input_file_base, "$BIN/bbH_125", "$BIN/bbH_125_$SYSTEMATIC");
 
+
     if(analysis == "sm"){
       cb.cp().channel({chn}).process(ch::JoinStr({sm_signals,main_sm_signals})).process({"bbH125"}, false).ExtractShapes( // These are ggH125, qqH125, WH125, ZH125
         input_file_base, "$BIN/$PROCESS$MASS", "$BIN/$PROCESS$MASS_$SYSTEMATIC");
@@ -1499,7 +1530,7 @@ int main(int argc, char **argv) {
         }
       }
     }
-    if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
+    if((variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) && !(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")) {
       cb.cp().channel({chn}).process(mssm_qqH_signals).ExtractShapes(
         input_file_base, "$BIN/qqH$MASS", "$BIN/qqH$MASS_$SYSTEMATIC");
       cb.cp().channel({chn}).process({"ggX_t"}).ExtractShapes(
@@ -2256,12 +2287,12 @@ int main(int argc, char **argv) {
   };
 
   std::map<std::string, std::string> process_norm_map = {
-    {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
-    {"ggH_t", "prenorm"}, {"ggH_b", "prenorm"}, {"ggH_i", "prenorm"},
-    {"ggA_t", "prenorm"}, {"ggA_b", "prenorm"}, {"ggA_i", "prenorm"},
-    {"ggh_t_lowmass", "prenorm"}, {"ggh_b_lowmass", "prenorm"}, {"ggh_i_lowmass", "prenorm"},
-    {"ggH_t_lowmass", "prenorm"}, {"ggH_b_lowmass", "prenorm"}, {"ggH_i_lowmass", "prenorm"},
-    {"ggA_t_lowmass", "prenorm"}, {"ggA_b_lowmass", "prenorm"}, {"ggA_i_lowmass", "prenorm"},
+    {"ggh_t", "norm"}, {"ggh_b", "norm"}, {"ggh_i", "norm"},
+    {"ggH_t", "norm"}, {"ggH_b", "norm"}, {"ggH_i", "norm"},
+    {"ggA_t", "norm"}, {"ggA_b", "norm"}, {"ggA_i", "norm"},
+    {"ggh_t_lowmass", "norm"}, {"ggh_b_lowmass", "norm"}, {"ggh_i_lowmass", "norm"},
+    {"ggH_t_lowmass", "norm"}, {"ggH_b_lowmass", "norm"}, {"ggH_i_lowmass", "norm"},
+    {"ggA_t_lowmass", "norm"}, {"ggA_b_lowmass", "norm"}, {"ggA_i_lowmass", "norm"},
     {"bbh", "norm"}, {"bbh_lowmass", "norm"},
     {"bbH", "norm"}, {"bbH_lowmass", "norm"},
     {"bbA", "norm"}, {"bbA_lowmass", "norm"}
@@ -2287,11 +2318,19 @@ int main(int argc, char **argv) {
     };
 
     if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
-    process_norm_map = {
-      {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
-      {"ggX_t", "prenorm"}, {"ggX_b", "prenorm"}, {"ggX_i", "prenorm"},
-      {"bbh", "norm"}
-    };
+      if(!(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")){
+        process_norm_map = {
+          {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
+          {"ggX_t", "prenorm"}, {"ggX_b", "prenorm"}, {"ggX_i", "prenorm"},
+          {"bbh", "norm"}
+        };
+    }
+    else {
+        process_norm_map = {
+          {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
+          {"bbh", "norm"}
+        };
+    }
     }
 
 
@@ -2311,9 +2350,9 @@ int main(int argc, char **argv) {
       b_frac->SetName("ggh_b_frac");
       i_frac->SetName("ggh_i_frac");
 
-      RooRealVar Yt("Yt_MSSM_h", "Yt_MSSM_h", 1., -1., 1.);
+      RooRealVar Yt("Yt_MSSM_h", "Yt_MSSM_h", 1., -200., 200.);
       Yt.setConstant(true);
-      RooRealVar Yb("Yb_MSSM_h", "Yb_MSSM_h", 1., 0., 1.);
+      RooRealVar Yb("Yb_MSSM_h", "Yb_MSSM_h", 1., -200., 200.);
       Yb.setConstant(true);
 
       ws.import(MH);
@@ -2366,12 +2405,12 @@ int main(int argc, char **argv) {
     };
 
     process_norm_map = {
-      {"ggH1_t", "prenorm"}, {"ggH1_b", "prenorm"}, {"ggH1_i", "prenorm"},
-      {"ggH2_t", "prenorm"}, {"ggH2_b", "prenorm"}, {"ggH2_i", "prenorm"},
-      {"ggH3_t", "prenorm"}, {"ggH3_b", "prenorm"}, {"ggH3_i", "prenorm"},
-      {"ggH1_t_lowmass", "prenorm"}, {"ggH1_b_lowmass", "prenorm"}, {"ggH1_i_lowmass", "prenorm"},
-      {"ggH2_t_lowmass", "prenorm"}, {"ggH2_b_lowmass", "prenorm"}, {"ggH2_i_lowmass", "prenorm"},
-      {"ggH3_t_lowmass", "prenorm"}, {"ggH3_b_lowmass", "prenorm"}, {"ggH3_i_lowmass", "prenorm"},
+      {"ggH1_t", "norm"}, {"ggH1_b", "norm"}, {"ggH1_i", "norm"},
+      {"ggH2_t", "norm"}, {"ggH2_b", "norm"}, {"ggH2_i", "norm"},
+      {"ggH3_t", "norm"}, {"ggH3_b", "norm"}, {"ggH3_i", "norm"},
+      {"ggH1_t_lowmass", "norm"}, {"ggH1_b_lowmass", "norm"}, {"ggH1_i_lowmass", "norm"},
+      {"ggH2_t_lowmass", "norm"}, {"ggH2_b_lowmass", "norm"}, {"ggH2_i_lowmass", "norm"},
+      {"ggH3_t_lowmass", "norm"}, {"ggH3_b_lowmass", "norm"}, {"ggH3_i_lowmass", "norm"},
       {"bbH1", "norm"}, {"bbH1_lowmass", "norm"},
       {"bbH2", "norm"}, {"bbH2_lowmass", "norm"},
       {"bbH3", "norm"}, {"bbH3_lowmass", "norm"}
@@ -2408,7 +2447,7 @@ int main(int argc, char **argv) {
           ws.factory(TString::Format("expr::%s('@0*@1',%s, %s_frac)", norm_name.c_str(), prenorm_name.c_str(), proc_frac.c_str()));
         }
       }
-    }
+    } 
 
     // Saving workspace with morphed signals
     //morphing_demo.cd();
@@ -2557,16 +2596,45 @@ int main(int argc, char **argv) {
 
     auto bin_set = cb.cp().bin_id({132,232,332,432,133,233,333,433}).bin_set();
 
-    double new_bins[19] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    TH1F proto("proto", "proto", 18, new_bins);
+    //double new_bins[18] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0}; // old- for all pT cats together
+
+    std::map<string, vector<double>> binnings; 
+
+    binnings["htt_et_132"] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_mt_132"] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_tt_132"] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_132"] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_133"] = {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_et_232"] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_mt_232"] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_tt_232"] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_232"] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_233"] = {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_et_332"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_mt_332"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_tt_332"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_332"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_333"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_et_432"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_mt_432"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_tt_432"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_432"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_433"] = {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+
 
     for (auto const& bin : bin_set) {
+
+      std::cout << bin << std::endl;
+
+      auto new_bins = binnings[bin.substr(0, bin.length()-5)];
+      TH1F proto("proto", "proto", new_bins.size()-1, new_bins.data());
+
       ch::CombineHarvester cmb_bin = std::move(cb_cp.cp().bin({bin}));
       TH1F bkg = cmb_bin.cp().backgrounds().GetShape();
       TH1F sig = cmb_bin.cp().signals().process({"ggh_t","ggh_b"}).GetShape(); // just use top only for getting the signal yield otherwise they wont have all been scaled by proper fractions
       TH1F sig_i = cmb_bin.cp().signals().process({"ggh_i"}).GetShape(); // need to get inteference seperatly then scale by negative sign if we scaled this positive previously
        
-      double sig_scale=6.0; // set to best fit value of signal strength for ggH
+      double sig_scale=5.8; // set to best fit value of signal strength for ggH
       sig.Scale(sig_scale);
       sig_i.Scale(sig_scale);
 
@@ -2587,7 +2655,7 @@ int main(int argc, char **argv) {
       cmb_bin.ForEachObs([&](ch::Observation *e) {
         TH1 const * old_h = e->shape();
         TH1F * new_h_ = (TH1F*)old_h->Clone();
-        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        new_h_ = (TH1F*)new_h_->Rebin(new_bins.size()-1,"",new_bins.data());
         double wt = s_sb;
         new_h_->Scale(wt);
         std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
@@ -2599,7 +2667,7 @@ int main(int argc, char **argv) {
       cmb_bin.ForEachProc([&](ch::Process *e) {
         TH1 const * old_h = e->shape();
         TH1F * new_h_ = (TH1F*)old_h->Clone();
-        new_h_ = (TH1F*)new_h_->Rebin(18,"",new_bins);
+        new_h_ = (TH1F*)new_h_->Rebin(new_bins.size()-1,"",new_bins.data());
         double wt = s_sb;
         new_h_->Scale(wt);
         std::unique_ptr<TH1> new_h = ch::make_unique<TH1F>(*(new_h_));
@@ -2618,12 +2686,12 @@ int main(int argc, char **argv) {
         double wt = s_sb;
 
         TH1F * new_hu_ = (TH1F*)old_hu->Clone();
-        new_hu_ = (TH1F*)new_hu_->Rebin(18,"",new_bins);
+        new_hu_ = (TH1F*)new_hu_->Rebin(new_bins.size()-1,"",new_bins.data());
         new_hu_->Scale(wt*val_u);
         std::unique_ptr<TH1> new_hu = ch::make_unique<TH1F>(*(new_hu_));
 
         TH1F * new_hd_ = (TH1F*)old_hd->Clone();
-        new_hd_ = (TH1F*)new_hd_->Rebin(18,"",new_bins);
+        new_hd_ = (TH1F*)new_hd_->Rebin(new_bins.size()-1,"",new_bins.data());
         new_hd_->Scale(wt*val_d);
         std::unique_ptr<TH1> new_hd = ch::make_unique<TH1F>(*(new_hd_));
 
@@ -2633,7 +2701,7 @@ int main(int argc, char **argv) {
     }
       ch::CardWriter writer(output_folder + "/" + era_tag + "/$TAG/$BIN.txt",
                             output_folder + "/" + era_tag + "/$TAG/common/$BIN_input.root");
-      writer.WriteCards("plot_cmb", cb_cp.cp().bin_id({132,232,332,432,133,233,333,433}));
+      //writer.WriteCards("plot_cmb", cb_cp.cp().bin_id({132,232,332,432,133,233,333,433}));
       writer.WriteCards("plot_0to50", cb_cp.cp().bin_id({132,133}));
       writer.WriteCards("plot_50to100", cb_cp.cp().bin_id({232,233}));
       writer.WriteCards("plot_100to200", cb_cp.cp().bin_id({332,333}));
@@ -2654,25 +2722,51 @@ int main(int argc, char **argv) {
     binnings["htt_em_36"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1100.0, 5000.0};
 
     binnings["htt_lt_35"] =  {0.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 250.0, 300.0, 350.0, 400.0, 500.0, 600.0, 700.0, 900.0, 5000.0};
-    binnings["htt_tt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    binnings["htt_tt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    binnings["htt_em_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    binnings["htt_em_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
 
-    binnings["htt_em_433"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    binnings["htt_em_333"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    binnings["htt_em_133"] =  {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_132"] =  {0.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_et_132"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_mt_132"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_lt_132"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_tt_132"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_233"] =  {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_232"] =  {0.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_et_232"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_mt_232"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_lt_232"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_tt_232"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_333"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_et_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_mt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_lt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_tt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_433"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_em_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_et_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_mt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_lt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
+    binnings["htt_tt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0} ;
 
-    binnings["htt_lt_432"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
-    binnings["htt_lt_332"] =  {0.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0, 220.0, 240.0, 260.0, 300.0};
+    if(variable=="m_sv_puppi") {
+
+      binnings["htt_em_35"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+      binnings["htt_em_36"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+      binnings["htt_et_35"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+      binnings["htt_mt_35"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+      binnings["htt_lt_35"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+      binnings["htt_tt_35"] =  {0.0, 60.0, 80.0, 90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 240.0, 300.0} ;
+
+    }
 
     vector<int> bins = {}; 
 
     for (auto chn : chns) {
-      if(variable=="m_sv_VS_pt_tt_splitpT") bins = {332,432};
+      if(variable=="m_sv_VS_pt_tt_splitpT" || variable=="m_sv_puppi") bins = {132,232,332,432,35};
       else bins = {32,35};
 
       if(chn=="em") {
-        if(variable=="m_sv_VS_pt_tt_splitpT") bins = {333,433};
+        if(variable=="m_sv_VS_pt_tt_splitpT"|| variable=="m_sv_puppi") bins = {132,232,332,432,35,133,233,333,433,36};
         else bins = {33,36};
       }
 
@@ -2680,6 +2774,7 @@ int main(int argc, char **argv) {
         string chn_name = chn;
         if (chn == "et" || chn == "mt") chn_name = "lt";
         string bin_name = "htt_"+chn_name+"_"+to_string(bin);
+        if(chn=="em" && (bin==133 || bin==233 || bin==333 || bin==433 || bin==36)) bin_name = "htt_"+chn_name+"_"+to_string(bin-1);
         if(binnings.find(bin_name) == binnings.end()) continue;
         auto new_bins = binnings[bin_name];
         TH1F proto("proto", "proto", new_bins.size()-1, new_bins.data());
@@ -2729,7 +2824,12 @@ int main(int argc, char **argv) {
 
         ch::CardWriter writer(output_folder + "/" + "/$TAG/$BIN.txt",
                               output_folder + "/" + "/$TAG/common/$BIN_input.root");
-        writer.WriteCards(bin_name, cb_cp.cp().channel({chn}).bin_id({bin}));
+
+        if(variable=="mt_tot_puppi") {
+          writer.WriteCards(bin_name+"_mt_tot", cb_cp.cp().channel({chn}).bin_id({bin}));
+        } else {
+          writer.WriteCards(bin_name, cb_cp.cp().channel({chn}).bin_id({bin}));
+        }
       }
     }
   } 

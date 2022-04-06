@@ -260,6 +260,8 @@ def parse_arguments():
     #Ingredients when output of PostFitShapes is already provided
     parser.add_argument('--file', '-f',
                     help='Input file if shape file has already been created')
+    parser.add_argument('--f_bOnly', default='', 
+                    help='Input file if shape file has already been created for b only fit')
     parser.add_argument('--channel',default='',
                     help='Option to specify channel in case it is not obtainable from the shape file name')
     parser.add_argument('--file_dir',default='',
@@ -306,7 +308,8 @@ def parse_arguments():
                     action='store_true', help='')
     parser.add_argument('--proper_errors_uniform', default=False, 
                     action='store_true', help='')
-
+    parser.add_argument('--cms_label',default='',
+                    help='Optional additional string for CMs label')
     return parser.parse_args()
 
 def main(args):
@@ -360,34 +363,37 @@ def main(args):
         plot.ModTDRStyle(r=0.04, l=0.18)
         if args.ratio_range=="":
           args.ratio_range = "0.85,1.15"
+        bin_label = "B-tag" # no sub labels when combing all sub-categories
     if bin_number in ["32","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.4,1.6"
-        if args.channel=='tt': bin_label = "No B-tag"
+        if args.channel=='tt': bin_label = "No b-tag"
         if args.channel in ['mt','et','lt']: 
-          bin_label = "No B-tag"
-          if bin_number=="32": bin_label = "No B-tag, Tight-m_{T}"
-          if bin_number=="33": bin_label = "No B-tag, Loose-m_{T}"
+          bin_label = "No b-tag"
+          if bin_number=="32": bin_label = "No b-tag, Tight-m_{T}"
+          if bin_number=="33": bin_label = "No b-tag, Loose-m_{T}"
         if args.channel in ['em']:
-          bin_label = "No B-tag"
-          if bin_number=="32": bin_label = "No B-tag, High d_{#zeta}"
-          if bin_number=="33": bin_label = "No B-tag, Medium d_{#zeta}"
-          if bin_number=="34": bin_label = "No B-tag, Low d_{#zeta}"
+          bin_label = "No b-tag"
+          if bin_number=="32": bin_label = "No b-tag, High d_{#zeta}"
+          if bin_number=="33": bin_label = "No b-tag, Medium d_{#zeta}"
+          if bin_number=="34": bin_label = "No b-tag, Low d_{#zeta}"
+        bin_label = "B-tag" # no sub labels when combing all sub-categories
 
     if bin_number in ["132","232","332","432","133","233","333","433","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.7,1.3"
-        if args.channel=='tt': bin_label = "No B-tag"
+        if args.channel=='tt': bin_label = "No b-tag"
         if args.channel in ['mt','et','lt']:
-          bin_label = "No B-tag"
-          if bin_number[1:]=="32": bin_label = "No B-tag, Tight-m_{T}"
-          if bin_number[1:]=="33": bin_label = "No B-tag, Loose-m_{T}"
+          bin_label = "No b-tag"
+          if bin_number[1:]=="32": bin_label = "No b-tag, Tight-m_{T}"
+          if bin_number[1:]=="33": bin_label = "No b-tag, Loose-m_{T}"
         if args.channel in ['em']:
-          bin_label = "No B-tag"
-          if bin_number[1:]=="32": bin_label = "No B-tag, High d_{#zeta}"
-          if bin_number[1:]=="33": bin_label = "No B-tag, Medium d_{#zeta}"
-          if bin_number[1:]=="34": bin_label = "No B-tag, Low d_{#zeta}"
+          bin_label = "No b-tag"
+          if bin_number[1:]=="32": bin_label = "No b-tag, High d_{#zeta}"
+          if bin_number[1:]=="33": bin_label = "No b-tag, Medium d_{#zeta}"
+          if bin_number[1:]=="34": bin_label = "No b-tag, Low d_{#zeta}"
 
+        bin_label = "No b-tag" # no sub labels when combing all sub-categories
         if bin_number[0] == '1': bin_label+=', p_{T}^{#tau#tau}<50 GeV'
         if bin_number[0] == '2': bin_label+=', 50#leq p_{T}^{#tau#tau}<100 GeV'
         if bin_number[0] == '3': bin_label+=', 100#leq p_{T}^{#tau#tau}<200 GeV'
@@ -430,6 +436,7 @@ def main(args):
     manual_blind = args.manual_blind
     x_blind_min = args.x_blind_min
     x_blind_max = args.x_blind_max
+    cms_label = args.cms_label
     empty_bin_error = args.empty_bin_error
     extra_pad = float(args.extra_pad)
     custom_x_range = args.custom_x_range
@@ -444,8 +451,11 @@ def main(args):
         outname=args.outname + '_'
     else:
         outname=''
-    
-    
+   
+    if args.file_dir=="htt_tt_232": extra_pad=0.45 
+    if args.file_dir=="htt_em_35": extra_pad=0.55 
+    if '_35' in args.file_dir or '_132' in args.file_dir or '_232' in args.file_dir: cms_label = 'Supplementary'    
+
     if args.file:
         print "Providing shape file: ", args.file, ", with specified subdir name: ", file_dir
         shape_file=args.file
@@ -456,46 +466,51 @@ def main(args):
     #Store plotting information for different backgrounds 
     background_schemes = {
         'mt':[
-                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
-                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
+                backgroundComp("Others",["ZL","VVL","qqH125","bbH125","ggH125"],ROOT.TColor.GetColor("#B0C4DE")),
+                #backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                #backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
-                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                #backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
                 backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes"],ROOT.TColor.GetColor(192, 232, 100)),
-                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                backgroundComp("#tau#tau Bkg.",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
         'et':[
-                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
-                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
+                backgroundComp("Others",["ZL","VVL","qqH125","bbH125","ggH125"],ROOT.TColor.GetColor("#B0C4DE")),
+                #backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                #backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
-                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                #backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
                 backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes"],ROOT.TColor.GetColor(192, 232, 100)),
-                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                backgroundComp("#tau#tau Bkg.",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
         'lt':[
-                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
-                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
+                backgroundComp("Others",["ZL","VVL","qqH125","bbH125","ggH125"],ROOT.TColor.GetColor("#B0C4DE")),
+                #backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                #backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
-                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                #backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
                 backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes"],ROOT.TColor.GetColor(192, 232, 100)),
-                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                backgroundComp("#tau#tau Bkg.",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
         'tt':[
-                backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
-                backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
+                backgroundComp("Others",["ZL","VVL","qqH125","bbH125","ggH125"],ROOT.TColor.GetColor("#B0C4DE")),
+                #backgroundComp("H(125 GeV)#rightarrow#tau#tau",["qqH125","bbH125","ggH125"],ROOT.TColor.GetColor(51,51,230)),
+                #backgroundComp("Diboson",["VVL"],ROOT.TColor.GetColor("#6F2D35")),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
-                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                #backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
                 backgroundComp("Jet#rightarrow#tau_{h}",["jetFakes","wFakes"],ROOT.TColor.GetColor(192, 232, 100)),
-                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                backgroundComp("#tau#tau Bkg.",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
 
 
         'em':[
-                backgroundComp("H(125 GeV)",["qqH125","bbH125","ggH125",'WHWW125','ZHWW125','ggHWW125','qqHWW125'],ROOT.TColor.GetColor(51,51,230)),
+                backgroundComp("Others",["ZL","qqH125","bbH125","ggH125",'WHWW125','ZHWW125','ggHWW125','qqHWW125',"W","VVL"],ROOT.TColor.GetColor("#B0C4DE")),
+                #backgroundComp("H(125 GeV)",["qqH125","bbH125","ggH125",'WHWW125','ZHWW125','ggHWW125','qqHWW125'],ROOT.TColor.GetColor(51,51,230)),
                 backgroundComp("QCD", ["QCD"], ROOT.TColor.GetColor("#ffccff")),
-                backgroundComp("Electroweak",["W","VVL"],ROOT.TColor.GetColor(222, 90, 106)),
+                #backgroundComp("Electroweak",["W","VVL"],ROOT.TColor.GetColor(222, 90, 106)),
                 backgroundComp("t#bar{t}",["TTL"],ROOT.TColor.GetColor("#9999cc")),
-                backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
-                backgroundComp("#mu#rightarrow#tau embedding",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
+                #backgroundComp("Z#rightarrowll",["ZL"],ROOT.TColor.GetColor("#4496c8")),
+                backgroundComp("#tau#tau Bkg.",["EMB"],ROOT.TColor.GetColor("#ffcc66")),
                 ],
 
         }
@@ -703,7 +718,8 @@ def main(args):
     axish[1].GetYaxis().SetTitleOffset(0.5)
     axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
     if not is2D:
-        axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
+        #axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
+        axish[0].GetYaxis().SetTitle("< Events / GeV >")
         axish[0].GetYaxis().SetTitleOffset(1.5)
         axish[1].GetYaxis().SetTitleOffset(1.5)
 
@@ -770,7 +786,8 @@ def main(args):
     pads[1].SetTicks(1)
     #Setup legend
     if not is2D:
-        legend = plot.PositionedLegend(0.35,0.30,3,0.07,0.035)
+        legend = plot.PositionedLegend(0.37,0.30,3,0.02,0.02)
+#def PositionedLegend(width, height, pos, offset, horizontaloffset=None):
         legend.SetTextSize(0.025)
     else:
         legend = PositionedLegendUnrolled(0.13,0.5,7,0.02)
@@ -791,13 +808,13 @@ def main(args):
     legend.AddEntry(bkghist,"Bkg. unc.","f")
     if is2D:
         if not mode == 'prefit':
-          if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"gg#phi @ 5.8 pb (m_{#phi}= 100 GeV)"%vars(),"l")
         else:
-          if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
+          if not args.no_signal: legend.AddEntry(sighist,"gg#phi @ 5.8 pb (m_{#phi}= 100 GeV)"%vars(),"l")
 
     else:
-        #if not args.no_signal: legend.AddEntry(shist_stack,"ggH(100 GeV) @ 6.0 pb"%vars(),"f") # uncomment if showing in the stack
-        if not args.no_signal: legend.AddEntry(sighist,"ggH @ 6.0 pb (m_{H}= 100 GeV)"%vars(),"l")
+        #if not args.no_signal: legend.AddEntry(shist_stack,"gg#phi(100 GeV) @ 5.8 pb"%vars(),"f") # uncomment if showing in the stack
+        if not args.no_signal: legend.AddEntry(sighist,"gg#phi @ 5.8 pb (m_{#phi}= 100 GeV)"%vars(),"l")
     legend.Draw("same")
 
     latex2 = ROOT.TLatex()
@@ -815,7 +832,7 @@ def main(args):
         #latex3.SetTextColor(ROOT.kBlack)
         #latex3.SetTextFont(42)
         #if len(bin_label.split(','))>1: latex3.DrawLatex(0.21,0.84,"{}".format(bin_label.split(',')[1]))
-        textsize=0.027
+        textsize=0.033#0.027
         begin_left=None
         ypos = 0.960 if "_{" in bin_label else 0.955
         latex2 = ROOT.TLatex()
@@ -834,9 +851,8 @@ def main(args):
 
     #CMS and lumi labels
     plot.FixTopRange(pads[0], plot.GetPadYMax(pads[0]), extra_pad if extra_pad>0 else 0.3)
-    extra=''
+    extra=cms_label
     #extra='Preliminary'
-    if 'htt_tt_2018_6_' in file_dir: extra=''
     if not is2D:
         #DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.85, relExtraDX=0.05)
         DrawCMSLogo(pads[0], 'CMS', extra, 11, 0.045, 0.05, 1.0, '', 0.6)
@@ -858,6 +874,7 @@ def main(args):
             sbhist.SetLineWidth(3)
             sbhist_alt.SetLineWidth(3)
 
+
         bkghist_errors = bkghist.Clone()
         #for i in range(1,bkghist_errors.GetNbinsX()+1): bkghist_errors.SetBinContent(i,bkghist.GetBinError(i))
         for i in range(1,bkghist_errors.GetNbinsX()+1): bkghist_errors.SetBinContent(i,1.)
@@ -878,6 +895,29 @@ def main(args):
         ratio_bkghist.Draw("e2same")
         ratio_datahist.Draw("P Z 0 same")
         ratio_sighist.Draw('histsame')
+
+        if args.f_bOnly:
+          bonly_histo_file = ROOT.TFile(args.f_bOnly)
+          bonlyhist = getHistogram(bonly_histo_file,'TotalBkg',file_dir, mode, logx=log_x)[0]      
+          bonlyhist.Scale(1,"width")
+          bonlyhist.SetLineColor(ROOT.kBlue)
+          bonlyhist.SetLineWidth(2)
+          bonlyhist.SetLineStyle(2)
+          ratio_bonlyhist = plot.MakeRatioHist(bonlyhist,bkghist,True,False)
+          ratio_bonlyhist.Draw("histsame")
+          pads[0].cd()
+          legend.AddEntry(bonlyhist, 'Bkg. only fit','l')
+          legend.Draw()
+          #bonlyhist.Draw('histsame')
+          bonlyhist.SetMarkerSize(0) 
+          bonlyhist.Draw('lsame') 
+          stack.Draw("histsame")
+          shist.Draw("histsame ][")
+          bkghist.Draw("e2same")
+          blind_datagraph.SetMarkerSize(1)
+          blind_datagraph.Draw("P Z 0 same")
+          pads[1].cd()
+
         if args.manual_blind: azimov_ratio_datahist.Draw("P Z 0 same")
         pads[1].RedrawAxis("G")
         if is2D:

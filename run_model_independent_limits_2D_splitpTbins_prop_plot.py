@@ -15,7 +15,7 @@ def makeJob(name, command):
 parser = argparse.ArgumentParser()
 parser.add_argument('--channel',help= 'Channel to run limits for', default='all')
 parser.add_argument('--output','-o', help= 'Name of output directory', default='output')
-parser.add_argument('--fit','-f', help= 'Name of directory with fit result', default='output')
+parser.add_argument('--fit','-f', help= 'Name of directory with fit result', default='Feb28')
 parser.add_argument('--year', help= 'Name of input year', default='all')
 parser.add_argument('--all_perm', help= 'Run all permutations of year and channel inputs', default=False)
 args = parser.parse_args()
@@ -48,15 +48,17 @@ else:
   ### Datacard creation ###
   cat_file = 'mssm_classic_categories_2d_to_1d.txt'
   dc_creation_cmd = 'morph_parallel.py --output model_independent_limits/%(output)s_all_all --analysis "%(analysis)s" --eras %(year_text)s --category-list input/%(cat_file)s --variable "m_sv_VS_pt_tt_splitpT" --sm-gg-fractions data/higgs_pt_reweighting_fullRun2_v2.root --parallel 5 --additional-arguments="--prop_plot=true --auto_rebin=1 --manual_rebin=1 --real_data=1 " --sub-analysis "sm-like-light" --hSM-treatment "hSM-in-bg" --categorization="lowmass" --sm-like-hists="sm125" ' % vars()
+  dc_creation_cmd = 'morph_parallel.py --output model_independent_limits/%(output)s_all_all --analysis "%(analysis)s" --eras %(year_text)s --category-list input/%(cat_file)s --variable "m_sv_VS_pt_tt_splitpT" --sm-gg-fractions data/higgs_pt_reweighting_fullRun2_v2.root --parallel 5 --additional-arguments="--prop_plot=true --auto_rebin=1 --manual_rebin=1 --real_data=1 " --sub-analysis "sm-like-light" --hSM-treatment "hSM-in-bg" --categorization="lowmass" --sm-like-hists="sm125" ' % vars()
 
 
   os.system(dc_creation_cmd)
-    
+
+
 
 year='all'
 channel='all'
 
-for x in ["plot_cmb","plot_50to100","plot_100to200","plot_0to50","plot_GT200"]:
+for x in ["plot_50to100","plot_100to200","plot_0to50","plot_GT200"]:
 
     ### Set up channel input ###
     
@@ -72,7 +74,7 @@ for x in ["plot_cmb","plot_50to100","plot_100to200","plot_0to50","plot_GT200"]:
     channel_str='%(x)s' % vars()
     year_str = 'combined' 
 
-    os.system('combineTool.py -M T2W -i %(directory)s/%(year_str)s/%(channel_str)s/' % vars())
+    os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/%(year_str)s/%(channel_str)s -m 100 --parallel 8' % vars())
 
 
     # s+b fit
