@@ -574,7 +574,7 @@ int main(int argc, char **argv) {
 
   }
 
-  if(/*prop_plot ||*/ (cbyear_plot && variable!="mt_tot_puppi")) {
+  if(cbyear_plot && variable!="mt_tot_puppi") {
     SUSYggH_masses[2016] = {"100"};
     SUSYggH_masses[2017] = {"100"};
     SUSYggH_masses[2018] = {"100"};
@@ -2316,22 +2316,7 @@ int main(int argc, char **argv) {
       {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
       {"bbh", "norm"}
     };
-
-    if(variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
-      if(!(analysis == "bsm-model-dep-full" || analysis == "bsm-model-dep-additional")){
-        process_norm_map = {
-          {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
-          {"ggX_t", "prenorm"}, {"ggX_b", "prenorm"}, {"ggX_i", "prenorm"},
-          {"bbh", "norm"}
-        };
-    }
-    else {
-        process_norm_map = {
-          {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
-          {"bbh", "norm"}
-        };
-    }
-    }
+  }
 
 
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
