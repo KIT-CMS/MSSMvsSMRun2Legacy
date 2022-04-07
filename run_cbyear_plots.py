@@ -8,6 +8,7 @@ parser.add_argument('--channel',help= 'Channel to run limits for', default='all'
 parser.add_argument('--output','-o', help= 'Name of output directory', default='output')
 parser.add_argument('--year', help= 'Name of input year', default='all')
 parser.add_argument('--all_perm', help= 'Run all permutations of year and channel inputs', default=False)
+parser.add_argument('--bOnly', help= 'Use b-only fit result', action='store_true')
 args = parser.parse_args()
 
 channel = args.channel
@@ -63,23 +64,45 @@ for year in year_perm:
     cat_file = 'mssm_classic_categories_2d_to_1d.txt'
     dc_creation_cmd = 'morph_parallel.py --output model_independent_limits/%(output)s_all_all --analysis "%(analysis)s" --eras %(year_text)s --category-list input/%(cat_file)s --variable "m_sv_VS_pt_tt_splitpT" --sm-gg-fractions data/higgs_pt_reweighting_fullRun2_v2.root --parallel 5 --additional-arguments="--auto_rebin=1 --manual_rebin=1 --real_data=1 --cbyear_plot=true " --sub-analysis "sm-like-light" --hSM-treatment "hSM-in-bg" --categorization="lowmass" --sm-like-hists="sm125" ' % vars()
     os.system(dc_creation_cmd)
-    
+   
+    cat_file_btag = 'mssm_classic_categories_btag.txt'
+    dc_creation_cmd = 'morph_parallel.py --output model_independent_limits/%(output)s_all_all --analysis "%(analysis)s" --eras %(year_text)s --category-list input/%(cat_file_btag)s --variable "m_sv_puppi" --sm-gg-fractions data/higgs_pt_reweighting_fullRun2_v2.root --parallel 5 --additional-arguments="--auto_rebin=1 --manual_rebin=1 --real_data=1 --cbyear_plot=true " --sub-analysis "sm-like-light" --hSM-treatment "hSM-in-bg" --categorization="lowmass" --sm-like-hists="sm125" ' % vars()
+    os.system(dc_creation_cmd)
+ 
     directory = "model_independent_limits/%(output)s_%(channel)s_%(year)s_%(analysis)s" % vars()
 
     for c in ['em','lt','tt']:
-      bins = [32,35,432,332]
-      #if c == 'em': bins = [33,36,433,333]
+      bins = [32,35,132,232,332,432]
+      if c == 'em': bins += [33,36]
+      bins = [35] # remove after
       for b in bins:
+
+
         if b in [32,35,33,36]: 
           mass = 1200
-          fit_directory="model_independent_limits/Jan12_mt_tot_all_all_bsm-model-indep/"
-          freeze='--freeze r_bbH=0.00306'
-        else: 
-          mass = 100
-          fit_directory="model_independent_limits/Feb10_all_all_bsm-model-indep/"
-          freeze='--freeze r_bbH=5.758'
+          fit_directory="model_independent_limits/Feb28_mt_tot_all_all_bsm-model-indep/"
+          freeze='--freeze r_bbH=0.0030584,r_ggH=0.0030584'
+          outfile= 'shapes_cbyears_%(c)s_%(b)s_mt_tot.root' % vars()
+          fitfile = 'multidimfitggH.m%(mass)s.bestfit.robustHesse.root' % vars()
+          if args.bOnly: 
+            outfile= 'shapes_cbyears_bOnly_%(c)s_%(b)s_mt_tot.root' % vars()
+            fitfile = 'multidimfitggH.bkgOnly.bestfit.robustHesse.root' % vars()
+          print 'Doing (mt_tot) bin: htt_%(c)s_%(b)s' % vars()
+          os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/htt_%(c)s_%(b)s -m %(mass)s --parallel 8' % vars())
+        os.system('PostFitShapesFromWorkspace -w %(directory)s/htt_%(c)s_%(b)s/ws.root -d %(directory)s/htt_%(c)s_%(b)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/%(fitfile)s:fit_mdf -o %(outfile)s --skip-prefit=true  --mass %(mass)s --total-shapes=true --postfit %(freeze)s' % vars())
 
-        print 'Doing bin: htt_%(c)s_%(b)s' % vars()
-        os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/htt_%(c)s_%(b)s -m %(mass)s --parallel 8' % vars())
-        os.system('PostFitShapesFromWorkspace -w %(directory)s/htt_%(c)s_%(b)s/ws.root -d %(directory)s/htt_%(c)s_%(b)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/multidimfitggH.m%(mass)s.bestfit.robustHesse.root:fit_mdf -o shapes_cbyears_%(c)s_%(b)s.root --skip-prefit=true  --mass %(mass)s --total-shapes=true --postfit %(freeze)s' % vars())
+        if b not in [32,33,36]: 
+          mass = 100
+          fit_directory="model_independent_limits/Feb28_all_all_bsm-model-indep/"
+          freeze='--freeze r_bbH=5.801,r_ggH=5.801'
+          outfile= 'shapes_cbyears_%(c)s_%(b)s.root' % vars()
+          fitfile = 'multidimfitggH.m%(mass)s.bestfit.robustHesse.root' % vars()
+          if args.bOnly:
+            outfile= 'shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars()
+            fitfile = 'multidimfitggH.bkgOnly.bestfit.robustHesse.root' % vars()
+
+          print 'Doing bin: htt_%(c)s_%(b)s' % vars()
+          os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/htt_%(c)s_%(b)s -m %(mass)s --parallel 8' % vars())
+        os.system('PostFitShapesFromWorkspace -w %(directory)s/htt_%(c)s_%(b)s/ws.root -d %(directory)s/htt_%(c)s_%(b)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/%(fitfile)s:fit_mdf -o %(outfile)s --skip-prefit=true  --mass %(mass)s --total-shapes=true --postfit %(freeze)s' % vars())
+
 
