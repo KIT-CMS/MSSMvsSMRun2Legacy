@@ -170,8 +170,8 @@ for proc in ['gg','bb']:
   latex2.SetTextAlign(12)
   latex2.SetTextFont(42)
   latex2.SetTextSize(0.04)
-  latex2.DrawLatex(0.19,0.9, 'Low-mass')
-  latex2.DrawLatex(0.45,0.9, 'High-mass')
+  latex2.DrawLatex(0.19,0.91, 'Low-mass')
+  latex2.DrawLatex(0.45,0.91, 'High-mass')
 
   latex2.SetTextSize(0.05)
   latex2.DrawLatex(0.8,0.17, '%(proc)s#phi' % vars())

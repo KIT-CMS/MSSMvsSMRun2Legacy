@@ -84,6 +84,27 @@ void ConvertShapesToLnN (ch::CombineHarvester& cb, string name) {
   });
 }
 
+bool HasOppSignBins(TH1 const* h) {
+  bool has_oppsign = false;
+  int sign = (h->Integral()>0) ? 1 : -1;
+  for (int i = 1; i <= h->GetNbinsX(); ++i) {
+    if (h->GetBinContent(i)*sign < 0.) {
+      has_oppsign = true;
+    }
+  }
+  return has_oppsign;
+}
+
+void ZeroOppSignBins(TH1 *h) {
+  // determines the overall sign of the histogram and then zeros bins with different signs
+  int sign = (h->Integral()>0) ? 1 : -1;
+  for (int i = 1; i <= h->GetNbinsX(); ++i) {
+    if (h->GetBinContent(i)*sign < 0.) {
+      h->SetBinContent(i, 0.);
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   typedef vector<string> VString;
   typedef vector<pair<int, string>> Categories;
@@ -2172,6 +2193,34 @@ int main(int argc, char **argv) {
     }
   });
 
+  ch::CombineHarvester procs_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i"});
+
+  // now do the equivalent for ggX_i samples because the morphing does not support cases where the histogram bins have different signs
+  procs_i.ForEachProc([](ch::Process *p) {
+    if (HasOppSignBins(p->shape())) {
+      std::cout << "[WARNING] Fixing negative bins for process: \n ";
+      std::cout << ch::Process::PrintHeader << *p << "\n";
+      auto newhist = p->ClonedShape();
+      ZeroOppSignBins(newhist.get());
+      p->set_shape(std::move(newhist), false);
+    }
+  });
+
+  procs_i.ForEachSyst([](ch::Systematic *s) {
+    if (s->type().find("shape") == std::string::npos)
+      return;
+    if (HasOppSignBins(s->shape_u()) ||
+        HasOppSignBins(s->shape_d())) {
+      std::cout << "[WARNING] Fixing negative bins for systematic: \n ";
+      std::cout << ch::Systematic::PrintHeader << *s << "\n";
+      auto newhist_u = s->ClonedShapeU();
+      auto newhist_d = s->ClonedShapeD();
+      ZeroOppSignBins(newhist_u.get());
+      ZeroOppSignBins(newhist_d.get());
+      s->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
+    }
+  });
+
   // Replacing observation with the sum of the backgrounds (Asimov data)
   // useful to be able to check this, so don't do the replacement
   // for these
@@ -2317,7 +2366,7 @@ int main(int argc, char **argv) {
       {"bbh", "norm"}
     };
   }
-
+ 
 
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
@@ -2373,7 +2422,6 @@ int main(int argc, char **argv) {
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
     }
     fractions_sm.Close();
-  }
 
   if(sub_analysis == "cpv")
   {

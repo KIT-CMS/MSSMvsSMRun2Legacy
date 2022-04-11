@@ -351,10 +351,10 @@ elif [[ $MODE == "submit" && $ANALYSISTYPE == "couplings" ]]; then
   # job setup creation
   ############
   cd ${defaultdir}/limits_${MODEL}/jobs
-  MASS="100"
-  for MASS in "100"; do 
+  for MASS in 60 80 95 100 120 125 130 140 160 180 200; do 
 
-    combineTool.py -m "${MASS}" -M MultiDimFit --setParameterRanges Yt_H=0,0.7:Yb_H=-2.0,2.0 --freezeParameters r,Yt_A,Yb_A --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_H,Yb_H \
+    combineTool.py -m "${MASS}" -M MultiDimFit  --freezeParameters r,Yt_A,Yb_A --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_H,Yb_H \
+  --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/ys_boundaries.json \
   -d ${datacarddir}/combined/cmb/${wsoutput} \
   -n ".Yt_H_vs_Yb_H" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
   --job-mode 'SGE' \
@@ -362,7 +362,8 @@ elif [[ $MODE == "submit" && $ANALYSISTYPE == "couplings" ]]; then
   --task-name "Ys_scan_mH${MASS}" \
   --algo grid --points 4000 --split-points 5 --alignEdges 1
 
-    combineTool.py -m "${MASS}" -M MultiDimFit --setParameterRanges Yt_A=0,0.7:Yb_A=-2.0,2.0 --freezeParameters r,Yt_H,Yb_H --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_A,Yb_A \
+    combineTool.py -m "${MASS}" -M MultiDimFit --freezeParameters r,Yt_H,Yb_H --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_A,Yb_A \
+  --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/ys_boundaries.json \
   -d ${datacarddir}/combined/cmb/${wsoutput} \
   -n ".Yt_A_vs_Yb_A" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
   --job-mode 'SGE' \
