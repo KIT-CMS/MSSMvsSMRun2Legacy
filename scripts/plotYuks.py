@@ -95,8 +95,8 @@ hists.SetContour(255)
 
 extra=0.
 
-if int(args.mass) in [80,100,160,180,200]: extra=0.5
-if int(args.mass) in [95]: extra=1.0
+if int(args.mass) in [100,160,180,200]: extra=0.5
+if int(args.mass) in [80,95]: extra=1.0
 
 axis = ROOT.TH2D(hists.GetName(),hists.GetName(),hists.GetXaxis().GetNbins(),0,hists.GetXaxis().GetXmax()-0.1,hists.GetYaxis().GetNbins(),hists.GetYaxis().GetXmin(),hists.GetYaxis().GetXmax()+extra)
 axis.Reset()
