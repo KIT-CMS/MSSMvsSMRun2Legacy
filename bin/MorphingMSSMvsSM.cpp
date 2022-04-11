@@ -2496,10 +2496,10 @@ int main(int argc, char **argv) {
   else if(!do_morph && analysis == "bsm-model-indep" && !(prop_plot||cbyear_plot)){
 
    // TODO: for high masses, this makes only a little difference, but why required? Problem with negative value below?
-   double Tfrac = ws.function("ggh_t_frac")->getVal();
-   double Bfrac = ws.function("ggh_b_frac")->getVal();
-   double Ifrac = ws.function("ggh_i_frac")->getVal();
-   //double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
+   //double Tfrac = ws.function("ggh_t_frac")->getVal();
+   //double Bfrac = ws.function("ggh_b_frac")->getVal();
+   //double Ifrac = ws.function("ggh_i_frac")->getVal();
+   double Tfrac=1., Bfrac=0., Ifrac=0.; // use t-only when no morphing option is used
    if (Ifrac<0.) {
      Ifrac=fabs(Ifrac);
      // set a constant rate parameter = -1 for the interference
