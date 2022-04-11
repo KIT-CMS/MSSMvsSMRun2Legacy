@@ -2365,8 +2365,6 @@ int main(int argc, char **argv) {
       {"ggh_t", "prenorm"}, {"ggh_b", "prenorm"}, {"ggh_i", "prenorm"},
       {"bbh", "norm"}
     };
-  }
- 
 
     std::cout << "[INFO] Adding aditional terms for mssm ggh NLO reweighting.\n";
     // Assuming sm fractions of t, b and i contributions of 'ggh' in model-independent analysis
@@ -2422,6 +2420,7 @@ int main(int argc, char **argv) {
       ws.import(*i_frac, RooFit::RecycleConflictNodes());
     }
     fractions_sm.Close();
+  }
 
   if(sub_analysis == "cpv")
   {
