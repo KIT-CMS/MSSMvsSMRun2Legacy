@@ -40,10 +40,15 @@ parser.add_argument(
 parser.add_argument(
     '--debug-output', '-d', help="""If specified, write the contour TH2s and
     TGraphs into this output ROOT file""")
+parser.add_argument(
+    '--add-3sigma-contour', action='store_true', help="""Add 3 sigma contour to plots of likelihood
+    scans.""")
+parser.add_argument(
+    "--interpolate-missing", action="store_true", help="""Interpolate missing values in the scan.""")
 args = parser.parse_args()
 
 #Create canvas and TH2D for each component
-plot.ModTDRStyle(width=600, l=0.12)
+plot.ModTDRStyle(width=600, l=0.13, r=0.08)
 ROOT.gStyle.SetNdivisions(510, 'XYZ')
 plot.SetBirdPalette()
 canv = ROOT.TCanvas(args.output, args.output)
@@ -61,8 +66,9 @@ graph = plot.TGraph2DFromTree(
 best = plot.TGraphFromTree(
     limit, "r_ggH", "r_bbH", 'deltaNLL == 0')
 plot.RemoveGraphXDuplicates(best)
+# hists = plot.TH2FromTGraph2D(graph, method='BinCenterAligned')
 hists = plot.TH2FromTGraph2D(graph, method='BinCenterAligned')
-plot.fastFillTH2(hists, graph,interpolateMissing=False)
+plot.fastFillTH2(hists, graph,interpolateMissing=args.interpolate_missing)
 if args.bg_exp:
     limit_bg = plot.MakeTChain(args.bg_exp, 'limit')
     best_bg = plot.TGraphFromTree(
@@ -92,12 +98,23 @@ else:
 axis = ROOT.TH2D(hists.GetName(),hists.GetName(),hists.GetXaxis().GetNbins(),0,x_axis_max,hists.GetYaxis().GetNbins(),0,y_axis_max)
 axis.Reset()
 axis.GetXaxis().SetTitle(args.x_title)
-axis.GetXaxis().SetLabelSize(0.025)
-axis.GetYaxis().SetLabelSize(0.025)
+axis.GetXaxis().SetLabelSize(0.035)
+axis.GetYaxis().SetLabelSize(0.035)
 axis.GetYaxis().SetTitle(args.y_title)
+axis.GetXaxis().SetTitleSize(0.055)
+axis.GetYaxis().SetTitleSize(0.055)
+# Set ticks also on upper x and right y axis
+for pad in pads:
+    pad.SetTickx()
+    pad.SetTicky()
+ROOT.TGaxis.SetMaxDigits(3)
+# ROOT.TGaxis.SetExponentOffset(-0.025, -0.05, "X")
+# ROOT.TGaxis.SetExponentOffset(-0.037, -0.06, "X")
 
 cont_1sigma = plot.contourFromTH2(hists, ROOT.Math.chisquared_quantile_c(1 - 0.68, 2), 10, frameValue=20)
 cont_2sigma = plot.contourFromTH2(hists, ROOT.Math.chisquared_quantile_c(1 - 0.95, 2), 10, frameValue=20)
+if args.add_3sigma_contour:
+    cont_3sigma = plot.contourFromTH2(hists, ROOT.Math.chisquared_quantile_c(1 - 0.997, 2), 10, frameValue=20)
 
 if debug is not None:
     debug.WriteTObject(hists, 'hist')
@@ -105,6 +122,9 @@ if debug is not None:
         debug.WriteTObject(cont, 'cont_1sigma_%i' % i)
     for i, cont in enumerate(cont_2sigma):
         debug.WriteTObject(cont, 'cont_2sigma_%i' % i)
+    if args.add_3sigma_contour:
+        for i, cont in enumerate(cont_3sigma):
+            debug.WriteTObject(cont, 'cont_3sigma_%i' % i)
 
 if args.sm_exp or args.bg_exp:
     legend = plot.PositionedLegend(0.5, 0.25, 3, 0.015)
@@ -115,6 +135,21 @@ legend.SetFillStyle(0)
 
 pads[0].cd()
 axis.Draw()
+if args.add_3sigma_contour:
+    for i, p in enumerate(cont_3sigma):
+          p.SetLineStyle(1)
+          p.SetLineWidth(2)
+          p.SetLineColor(ROOT.kBlack)
+          p.SetFillColor(ROOT.kCyan-10)
+          p.SetFillStyle(1001)
+          p.Draw("F SAME")
+          p.Draw("L SAME")
+          try:
+              legend.AddEntry(cont_1sigma[0], "68% CL", "F")
+          except IndexError:
+              print("Problems with legend..")
+              pass
+
 for i, p in enumerate(cont_2sigma):
       p.SetLineStyle(1)
       p.SetLineWidth(2)
@@ -123,7 +158,14 @@ for i, p in enumerate(cont_2sigma):
       p.SetFillStyle(1001)
       p.Draw("F SAME")
       p.Draw("L SAME")
-      legend.AddEntry(cont_1sigma[0], "68% CL", "F")
+      try:
+          if args.add_3sigma_contour:
+              legend.AddEntry(cont_2sigma[0], "95% CL", "F")
+          else:
+              legend.AddEntry(cont_1sigma[0], "68% CL", "F")
+      except IndexError:
+          print("Problems with legend..")
+          pass
 
 for i, p in enumerate(cont_1sigma):
       p.SetLineStyle(1)
@@ -133,7 +175,14 @@ for i, p in enumerate(cont_1sigma):
       p.SetFillStyle(1001)
       p.Draw("F SAME")
       p.Draw("L SAME")
-      legend.AddEntry(cont_2sigma[0], "95% CL", "F")
+      try:
+          if args.add_3sigma_contour:
+              legend.AddEntry(cont_3sigma[0], "99.7% CL", "F")
+          else:
+              legend.AddEntry(cont_2sigma[0], "95% CL", "F")
+      except IndexError:
+          print("Problems with legend..")
+          pass
 
 best.SetMarkerStyle(34)
 best.SetMarkerSize(3)
