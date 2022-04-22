@@ -43,7 +43,7 @@ if [[ $MODEL == "mh125" ]]; then
     scenario_label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=60.0
@@ -53,7 +53,7 @@ elif [[ $MODEL == "mh125_lc" ]]; then
     scenario_label="M_{h}^{125}(#tilde{#chi}) scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=60.0
@@ -63,7 +63,7 @@ elif [[ $MODEL == "mh125_ls" ]]; then
     scenario_label="M_{h}^{125}(#tilde{#tau}) scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=60.0
@@ -73,7 +73,7 @@ elif [[ $MODEL == "mh125_align" ]]; then
     scenario_label="M_{h}^{125}(alignment) scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=3.0
     y_max=12.0
@@ -83,7 +83,7 @@ elif [[ $MODEL == "mHH125" ]]; then
     scenario_label="M_{H}^{125} scenario (h,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-heavy"
     sm_like_mass="m_H"
-    x_title='m_{H^{#plus}} [GeV]'
+    x_title='m_{H^{#plus}} (GeV)'
     mass_histogram_title="m_{H}"
     y_min=5.0
     y_max=6.0
@@ -93,7 +93,7 @@ elif [[ $MODEL == "mh1125_CPV" ]]; then
     scenario_label="M_{h_{1}}^{125}(CPV) scenario (^{}h_{2},^{}h_{3}#rightarrow#tau#tau)"
     sub_analysis="cpv"
     sm_like_mass="m_H1"
-    x_title='m_{H^{#plus}} [GeV]'
+    x_title='m_{H^{#plus}} (GeV)'
     mass_histogram_title="m_{^{}h_{1}}"
     y_min=1.0
     y_max=20.0
@@ -104,7 +104,7 @@ elif [[ $MODEL == "mh125_muneg_1" ]]; then
     scenario_label="M_{h}^{125 ^{}#mu_{1}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=4.0
     y_max=56.0
@@ -114,7 +114,7 @@ elif [[ $MODEL == "mh125_muneg_2" ]]; then
     scenario_label="M_{h}^{125 ^{}#mu_{2}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=5.0
     y_max=30.0
@@ -124,7 +124,7 @@ elif [[ $MODEL == "mh125_muneg_3" ]]; then
     scenario_label="M_{h}^{125 ^{}#mu_{3}#minus} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=6.0
     y_max=20.0
@@ -135,7 +135,7 @@ elif [[ $MODEL == "mh125EFT" ]]; then
     scenario_label="M_{h,EFT}^{125} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=10.0
@@ -145,7 +145,7 @@ elif [[ $MODEL == "mh125EFT_lc" ]]; then
     scenario_label="M_{h,EFT}^{125}(#tilde{#chi}) scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=10.0
@@ -156,7 +156,7 @@ elif [[ $MODEL == "hMSSM" ]]; then
     scenario_label="hMSSM scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=60.0
@@ -166,7 +166,7 @@ else
     scenario_label="M_{h}^{125} scenario (H,A#rightarrow#tau#tau)"
     sub_analysis="sm-like-light"
     sm_like_mass="m_h"
-    x_title='m_{A} [GeV]'
+    x_title='m_{A} (GeV)'
     mass_histogram_title="m_{h}"
     y_min=1.0
     y_max=60.0
@@ -206,6 +206,7 @@ if [[ $MODE == "initial" ]]; then
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
     elif [[ $ANALYSISTYPE == "classic_lowmass" ]]; then
+        # no b-tag categories from low mass analysis
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -218,6 +219,7 @@ if [[ $MODE == "initial" ]]; then
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_2d_to_1d.txt \
             --variable m_sv_VS_pt_tt_splitpT \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_lowmass.txt
+        # b-tag categories from low-mass analysis
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -230,6 +232,7 @@ if [[ $MODE == "initial" ]]; then
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_1d_btag.txt \
             --variable m_sv_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_btag.txt
+        # ttbar control region from high-mass analysis used
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -436,7 +439,7 @@ elif [[ $MODE == "collect" ]]; then
     # limit plot
     ############
     if [[ $ANALYSISTYPE == "classic" ]]; then
-        title="Classic categorisation 138 fb^{-1} (13 TeV)"
+        title="Standard categorisation 138 fb^{-1} (13 TeV)"
     elif [[ $ANALYSISTYPE == "classic_lowmass" ]]; then
         title="Low-mass categorisation 138 fb^{-1} (13 TeV)"
     else

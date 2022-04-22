@@ -9,18 +9,165 @@ if [[ $TAG == "auto" ]]; then
 fi
 
 
-defaultdir=analysis/$TAG
+defaultdir=analysis_2022_02_28/$TAG
 analysis="bsm-model-indep"
 hSM_treatment="hSM-in-bg"
+# hSM_treatment="no-hSM-in-bg"
 categorization="classic"
 sm_like_hists="bsm"
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
 [[ ! -d ${defaultdir}/limits/condor ]] && mkdir -p ${defaultdir}/limits/condor
 [[ ! -d ${defaultdir}/limits_ind/condor ]] && mkdir -p ${defaultdir}/limits_ind/condor
-defaultdir=$(readlink -f analysis/$TAG)
+defaultdir=$(readlink -f analysis_2022_02_28/$TAG)
 datacarddir=${defaultdir}/datacards_${analysis}
-freeze="MH=200,r_ggH=0.0,r_bbH=0.0"
+freeze="MH=1200,r_ggH=0.005,r_bbH=0.0015"
+identifier_toy_submit=$(date +%Y_%m_%d)
+[[ -z $3 ]] || identifier_toy_submit=$3
+
+xrange () {
+    [ "$#" != 1 ] && exit
+    case $1 in
+        "250")
+            echo 0.12
+            ;;
+        "300")
+            echo 0.08
+            ;;
+        "350")
+            echo 0.05
+            ;;
+        "400")
+            echo 0.05
+            ;;
+        "450")
+            echo 0.05
+            ;;
+        "500")
+            echo 0.03
+            ;;
+        "600")
+            echo 0.014
+            ;;
+        "700")
+            echo 0.01
+            ;;
+        "800")
+            echo 0.008
+            ;;
+        "900")
+            echo 0.01
+            ;;
+        "1000")
+            echo 0.01
+            ;;
+        "1200")
+            echo 0.007
+            ;;
+        "1400")
+            echo 0.005
+            ;;
+        "1600")
+            echo 0.003
+            ;;
+        "1800")
+            echo 0.0018
+            ;;
+        "2000")
+            echo 0.0014
+            ;;
+        "2300")
+            echo 0.001
+            ;;
+        "2600")
+            echo 0.0008
+            ;;
+        "2900")
+            echo 0.0006
+            ;;
+        "3200")
+            echo 0.0005
+            ;;
+        "3500")
+            echo 0.0005
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+}
+
+yrange () {
+    [ "$#" != 1 ] && exit
+    case $1 in
+        "250")
+            echo 0.12
+            ;;
+        "300")
+            echo 0.08
+            ;;
+        "350")
+            echo 0.06
+            ;;
+        "400")
+            echo 0.05
+            ;;
+        "450")
+            echo 0.06
+            ;;
+        "500")
+            echo 0.045
+            ;;
+        "600")
+            echo 0.022
+            ;;
+        "700")
+            echo 0.012
+            ;;
+        "800")
+            echo 0.008
+            ;;
+        "900")
+            echo 0.006
+            ;;
+        "1000")
+            echo 0.005
+            ;;
+        "1200")
+            echo 0.003
+            ;;
+        "1400")
+            echo 0.002
+            ;;
+        "1600")
+            echo 0.0016
+            ;;
+        "1800")
+            echo 0.0014
+            ;;
+        "2000")
+            echo 0.0012
+            ;;
+        "2300")
+            echo 0.001
+            ;;
+        "2600")
+            echo 0.0008
+            ;;
+        "2900")
+            echo 0.0006
+            ;;
+        "3200")
+            echo 0.0006
+            ;;
+        "3500")
+            echo 0.0006
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+}
 
 if [[ $MODE == "initial" ]]; then
     ############
@@ -52,6 +199,29 @@ if [[ $MODE == "initial" ]]; then
         mkdir -p ${datacarddir}/${ERA}/cmb/
         rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
     done
+
+    # Perform checks on the produced datacards
+
+    # Run datacard check from Higgs PAG
+    combineTool.py -M T2W \
+        -o ws.root \
+        -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+        --PO '"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"' \
+        --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' \
+        -i ${datacarddir}/restore_binning/ \
+        -m 110 \
+        --X-allow-no-signal --just-check-physics-model
+
+    ValidateDatacards.py ${datacarddir}/restore_binning/combined.txt.cmb \
+        --jsonFile ${datacarddir}/restore_binning/validation_restore_binning.json \
+        --mass 110 --printLevel 1
+
+    # Check number of produced datacards
+    EXPECTED=$(((4+4+2+7)*3))
+    if [[ $(ls ${datacarddir}/combined/cmb/*.txt | wc -l) != $EXPECTED ]]; then
+        echo -e "\033[0;31m[ERROR]\033[0m Not all datacards have been created or written. Please check the logs..."
+        echo "Expected ${EXPECTED} datacards written but found only $(ls ${datacarddir}/combined/cmb/ | wc -l) in the combined directory."
+    fi
 
 elif [[ $MODE == "ws" ]]; then
     ############
