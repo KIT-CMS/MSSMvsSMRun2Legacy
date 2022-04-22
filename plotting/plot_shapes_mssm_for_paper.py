@@ -189,7 +189,7 @@ def main(args):
         "et": "e#tau_{h}",
         "mm": "#mu#mu",
         "mt": "#mu#tau_{h}",
-        "lt": "#mu#tau_{h}+e#tau_{h}",
+        "lt": "#mu_{}#tau_{h}+e_{}#tau_{h}",
         # "lt": "#ell#tau_{h}",
         "tt": "#tau_{h}#tau_{h}"
     }
@@ -204,10 +204,10 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b-tag Tight-m_{T}",
-                "33": "No b-tag Loose-m_{T}",
-                "35": "b-tag Tight-m_{T}",
-                "36": "b-tag Loose-m_{T}",
+                "32": "No b tag Tight-m_{T}",
+                "33": "No b tag Loose-m_{T}",
+                "35": "b tag Tight-m_{T}",
+                "36": "b tag Loose-m_{T}",
                 },
             "mt": {
                 "1": "2D ggH/qqH category",
@@ -216,10 +216,10 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b-tag Tight-m_{T}",
-                "33": "No b-tag Loose-m_{T}",
-                "35": "b-tag Tight-m_{T}",
-                "36": "b-tag Loose-m_{T}",
+                "32": "No b tag Tight-m_{T}",
+                "33": "No b tag Loose-m_{T}",
+                "35": "b tag Tight-m_{T}",
+                "36": "b tag Loose-m_{T}",
                 },
             "lt": {
                 "1": "2D ggH/qqH category",
@@ -228,33 +228,33 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b-tag Tight-m_{T}",
-                "33": "No b-tag Loose-m_{T}",
-                "35": "b-tag Tight-m_{T}",
-                "36": "b-tag Loose-m_{T}",
+                "32": "No b tag Tight-m_{T}",
+                "33": "No b tag Loose-m_{T}",
+                "35": "b tag Tight-m_{T}",
+                "36": "b tag Loose-m_{T}",
                 },
             "tt": {
                 "1": "2D ggH/qqH category",
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b-tag",
-                "35": "b-tag",
+                "32": "No b tag",
+                "35": "b tag",
                 },
             "em": {
                 "1": "2D ggH/qqH category",
-                "2": "d_{#zeta} < -35 GeV",
+                "2": "D_{#scale[0.75]{#zeta}} < -35 GeV",
                 "13": "tt",
                 "14": "qcd",
                 "16": "misc",
                 "19": "diboson",
                 "20": "Genuine #tau",
-                "32": "No b-tag, High-D_{#zeta}",
-                "33": "No b-tag, Medium-D_{#zeta}",
-                "34": "No b-tag, Low-D_{#zeta}",
-                "35": "b-tag, High-D_{#zeta}",
-                "36": "b-tag, Medium-D_{#zeta}",
-                "37": "b-tag, Low-D_{#zeta}",
+                "32": "No b tag, High-D_{#scale[0.70]{#zeta}}",
+                "33": "No b tag, Medium-D_{#scale[0.70]{#zeta}}",
+                "34": "No b tag, Low-D_{#scale[0.70]{#zeta}}",
+                "35": "b tag, High-D_{#scale[0.70]{#zeta}}",
+                "36": "b tag, Medium-D_{#scale[0.70]{#zeta}}",
+                "37": "b tag, Low-D_{#scale[0.70]{#zeta}}",
                 },
 
         }
@@ -558,6 +558,8 @@ def main(args):
                 else:
                     plot.subplot(2).setYlims(0.7, 2.2)
 
+            ROOT.TGaxis.SetMaxDigits(4)
+
             if args.linear != True:
                 # plot.subplot(1).setYlims(1.e-4, split_dict[channel])
                 plot.subplot(1).setYlims(min(1.e-3, plot.subplot(1).get_hist("data_obs").GetMinimum()/10., plot.subplot(1).get_hist("total_bkg").GetMinimum()/10.), split_dict[channel])
@@ -580,8 +582,8 @@ def main(args):
                     plot.subplot(2).setXlabel("SVFit m_{#tau#tau} (GeV)")
             if args.normalize_by_bin_width:
                 if int(category) > 30 or int(category) == 2:
-                    # plot.subplot(0).setYlabel("dN/dm_{T}^{tot} (1/GeV)")
-                    plot.subplot(0).setYlabel("< Events / GeV >")
+                    plot.subplot(0).setYlabel("dN/dm_{T}^{tot} (1/GeV)")
+                    # plot.subplot(0).setYlabel("< Events / GeV >")
                 else:
                     plot.subplot(0).setYlabel("dN/dm_{#tau#tau} (1/GeV)")
             else:
@@ -599,8 +601,8 @@ def main(args):
             #plot.scaleYTitleSize(0.8)
             plot.scaleYLabelSize(0.8)
             #plot.scaleXLabelOffset(2.0)
-            plot.scaleYTitleOffset(1.05)
 
+            plot.scaleYTitleOffset(1.05)
 
             if channel == "em":
                 if category == "32":
@@ -720,6 +722,7 @@ def main(args):
                 else:
                     plot.legend(0).add_entry(0 if args.linear else 1, "mssm_sig", "#splitline{H #rightarrow #tau#tau}{#splitline{(m_{A}= %s GeV,}{ tan #beta = %s)}}" %(args.mass, args.tanbeta), 'l')
             plot.legend(0).setNColumns(2)
+            # plot.legend(0).scaleTextSize(1.05)
             plot.legend(0).Draw()
 
 
@@ -760,10 +763,11 @@ def main(args):
                 plot.legend(1).setNColumns(5)
                 if args.b_only_fit is not None:
                     plot.legend(1).setNColumns(6)
+            # plot.legend(1).scaleTextSize(1.05)
             plot.legend(1).Draw()
 
             # draw additional labels
-            plot.DrawCMS(cms_sub="Supplementary")
+            plot.DrawCMS(cms_sub="")
             if "2016" in args.era:
                 plot.DrawLumi("36.3 fb^{-1} (2016, 13 TeV)")
             elif "2017" in args.era:
@@ -778,7 +782,7 @@ def main(args):
 
             posChannelCategoryLabelLeft = None
             plot.DrawChannelCategoryLabel(
-                "%s, %s" % (channel_dict[channel], category_dict[channel][category]),
+                "#font[42]{%s, %s}" % (channel_dict[channel], category_dict[channel][category]),
                 begin_left=posChannelCategoryLabelLeft)
 
             # save plot
