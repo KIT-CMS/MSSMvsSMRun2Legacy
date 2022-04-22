@@ -199,8 +199,8 @@ def main(args):
     if args.gof_variable != None:
         category_dict = {
                 "300": "inclusive",
-                "301": "No b-tag",
-                "302": "b-tag",
+                "301": "No b tag",
+                "302": "b tag",
         }
     else:
         category_dict = {
@@ -442,7 +442,7 @@ def main(args):
                 plot.add_legend(width=0.25, height=0.35)
                 plot.legend(0).setNColumns(1)
             else:
-                plot.add_legend(width=0.3, height=0.35)
+                plot.add_legend(width=0.25, height=0.35)
                 plot.legend(0).setNColumns(1)
             plot.legend(0).add_entry(0, "data_obs", "Observed", 'PE')
             for process in legend_bkg_processes:
@@ -451,9 +451,10 @@ def main(args):
                         0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV").replace("EMB", "EMBFull")], 'f')
                 except:
                     pass
-            # plot.legend(0).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
-            plot.legend(0).add_entry(0, "total_bkg", "Background uncertainty", 'f')
+            plot.legend(0).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
+            # plot.legend(0).add_entry(0, "total_bkg", "Background uncertainty", 'f')
 
+            plot.legend(0).scaleTextSize(1.175)
             plot.legend(0).Draw()
 
             if channel == "em":
@@ -544,7 +545,7 @@ def main(args):
                 raise Exception
 
             plot.DrawChannelCategoryLabel(
-                "%s, %s" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
+                "#font[42]{%s, %s}" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
                 begin_left=None)
 
             # save plot
