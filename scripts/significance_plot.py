@@ -174,5 +174,5 @@ for proc in ['gg','bb']:
   latex2.DrawLatex(0.45,0.91, 'High-mass')
 
   latex2.SetTextSize(0.05)
-  latex2.DrawLatex(0.8,0.17, '%(proc)s#phi' % vars())
+  latex2.DrawLatex(0.2,0.17, '%(proc)s#phi#rightarrow#tau#tau' % vars())
   c.Print('significance_plot_%(proc)sH.pdf' % vars())
