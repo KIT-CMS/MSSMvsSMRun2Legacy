@@ -89,7 +89,7 @@ def main(args):
 
     canv = ROOT.TCanvas("canv")
     # Create the plot object.
-    axis_label = "#sigma#font[42]{{({}#phi)}}#upoint#font[52]{{B}}#font[42]{{(#phi#rightarrow#tau#tau)}} (pb)".format("gg" if "gg" in args.poi else "bb")
+    axis_label = "#sigma#font[42]{{({}#phi)}}#font[52]{{B}}#font[42]{{(#phi#rightarrow#tau#tau)}} (pb)".format("gg" if "gg" in args.poi else "bb")
     frame = ROOT.TH2F("frame",
                       ";{};".format(axis_label),
                       1,
