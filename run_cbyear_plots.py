@@ -72,29 +72,27 @@ for year in year_perm:
     directory = "model_independent_limits/%(output)s_%(channel)s_%(year)s_%(analysis)s" % vars()
 
     for c in ['em','lt','tt']:
-      bins = [32,35,132,232,332,432]
-      if c == 'em': bins += [33,36]
-      bins = [35] # remove after
+      bins = [32,33,34,35,36,37,132,232,332,432]
       for b in bins:
 
 
-        if b in [32,35,33,36]: 
+        if b in [32,33,34,35,36,37]: 
           mass = 1200
-          fit_directory="model_independent_limits/Feb28_mt_tot_all_all_bsm-model-indep/"
-          freeze='--freeze r_bbH=0.0030584,r_ggH=0.0030584'
+          fit_directory="model_independent_limits/Apr08_mt_tot_all_all_bsm-model-indep/"
+          freeze='--freeze r_bbH=0.001,r_ggH=0.0031'
           outfile= 'shapes_cbyears_%(c)s_%(b)s_mt_tot.root' % vars()
           fitfile = 'multidimfitggH.m%(mass)s.bestfit.robustHesse.root' % vars()
-          if args.bOnly: 
+          if args.bOnly: # only do b-only for mt_tot
             outfile= 'shapes_cbyears_bOnly_%(c)s_%(b)s_mt_tot.root' % vars()
             fitfile = 'multidimfitggH.bkgOnly.bestfit.robustHesse.root' % vars()
-          print 'Doing (mt_tot) bin: htt_%(c)s_%(b)s' % vars()
-          os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/htt_%(c)s_%(b)s -m %(mass)s --parallel 8' % vars())
-        os.system('PostFitShapesFromWorkspace -w %(directory)s/htt_%(c)s_%(b)s/ws.root -d %(directory)s/htt_%(c)s_%(b)s/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/%(fitfile)s:fit_mdf -o %(outfile)s --skip-prefit=true  --mass %(mass)s --total-shapes=true --postfit %(freeze)s' % vars())
+            print 'Doing (mt_tot) bin: htt_%(c)s_%(b)s_mt_tot' % vars()
+            os.system('combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO '"'"'"map=^.*/ggh_(i|t|b).?$:r_ggH[0,0,200]"'"'"' --PO '"map=^.*/bbh$:r_bbH[0,0,200]"' --PO '"map=^.*/qqX$:r_qqX[0]"' --PO '"'"'"map=^.*/ggX_(i|t|b).?$:r_ggX[0,0,200]"'"'"'  -i %(directory)s/htt_%(c)s_%(b)s_mt_tot -m %(mass)s --parallel 8' % vars())
+            os.system('PostFitShapesFromWorkspace -w %(directory)s/htt_%(c)s_%(b)s_mt_tot/ws.root -d %(directory)s/htt_%(c)s_%(b)s_mt_tot/combined.txt.cmb --fitresult %(fit_directory)s/combined/cmb/%(fitfile)s:fit_mdf -o %(outfile)s --skip-prefit=true  --mass %(mass)s --total-shapes=true --postfit %(freeze)s' % vars())
 
-        if b not in [32,33,36]: 
+        if b in [132,232,332,432,35]: 
           mass = 100
-          fit_directory="model_independent_limits/Feb28_all_all_bsm-model-indep/"
-          freeze='--freeze r_bbH=5.801,r_ggH=5.801'
+          fit_directory="model_independent_limits/Apr08_all_all_bsm-model-indep/"
+          freeze='--freeze r_bbH=5.834,r_ggH=5.834'
           outfile= 'shapes_cbyears_%(c)s_%(b)s.root' % vars()
           fitfile = 'multidimfitggH.m%(mass)s.bestfit.robustHesse.root' % vars()
           if args.bOnly:

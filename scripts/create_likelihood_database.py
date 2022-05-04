@@ -101,17 +101,19 @@ def convert_graph_to_dataframe(graph):
     getxy = operator.itemgetter(0,1)
     existing_points = map(getxy, points)
     # we want to ignore edge values when interpolating since these can get set to 0
+    # at the moment we only ignore the upper edges as the lower edges don't seem to have the same issues
     x_vals_trim = x_vals
     y_vals_trim = y_vals
     x_vals_trim.remove(max(x_vals_trim))
-    x_vals_trim.remove(min(x_vals_trim))
     y_vals_trim.remove(max(y_vals_trim))
-    y_vals_trim.remove(min(y_vals_trim))
     missing = set(itertools.product(x_vals_trim, y_vals_trim)) - set(existing_points)
     logger.info("Found {} missing entries in scan".format(len(missing)))
     if len(missing) > 0:
         logger.info("Will set their values to the interpolated ones...")
-    miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
+    #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
+    # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
+    miss_entries = map(lambda x: (x[0], x[1], (graph.Interpolate(*x)<=0)*graph.GetHistogram().Interpolate(*x) + (graph.Interpolate(*x)>0)*graph.Interpolate(*x)), missing)
+        
 
     # Build dataframe from the uniqe x and y values
     df = pd.DataFrame(data=points,

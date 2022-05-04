@@ -8,8 +8,8 @@ parser.add_argument('--bOnly', help= 'Use b-only fit result', action='store_true
 args = parser.parse_args()
 
 
-if args.bOnly: fout = ROOT.TFile('shapes_cbyears_bOnly.root','RECREATE')
-else: fout = ROOT.TFile('shapes_cbyears.root','RECREATE')
+if args.bOnly: fout = ROOT.TFile('shapes_cbyears_bOnly_v2.root','RECREATE')
+else: fout = ROOT.TFile('shapes_cbyears_v2.root','RECREATE')
 
 cb_procs = ['TotalBkg',	'TotalProcs', 'TotalSig', 'data_obs']
 
@@ -35,14 +35,20 @@ dir_map = {
 for c in ['lt','tt','em']:
   #bins = [32,35,432,332]
   bins = [35,432,332,232,132]
-  #if c=='em': bins=[33,36,332,432]
+  if args.bOnly: 
+    bins+=['32_mt_tot','35_mt_tot']
+    if c in ['lt','em']: bins+=['33_mt_tot','36_mt_tot']
+    if c in ['em']: bins+=['34_mt_tot','37_mt_tot']
   for b in bins:
 
     out_dir = 'htt_%(c)s_%(b)s_postfit' % vars()
     fout.mkdir(out_dir)
 
-    fin = ROOT.TFile('shapes_cbyears_%(c)s_%(b)s.root' % vars())
     if args.bOnly: fin = ROOT.TFile('shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars())
+    else: fin = ROOT.TFile('shapes_cbyears_%(c)s_%(b)s.root' % vars())
+
+    print fin, 'shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars()
+
 
     if c == 'lt': chans = ['mt','et']
     else: chans = [c]
@@ -64,7 +70,8 @@ for c in ['lt','tt','em']:
            indir = 'htt_%(chan)s_%(b)s_%(y)s_postfit' % vars()
            htemp = fin.Get('%(indir)s/%(x)s' % vars())
            if chan =='em':
-             b_=b+1
+             if isinstance(b,str) and 'mt_tot' in b: b_= '%i_mt_tot' % (int(b.split('_')[0])+1)
+             else: b_=b+1
              indir2 = 'htt_%(chan)s_%(b_)s_%(y)s_postfit' % vars()
              htemp2 = fin.Get('%(indir2)s/%(x)s' % vars())
              if isinstance(htemp2,ROOT.TH1D) or isinstance(htemp2,ROOT.TH1F): htemp.Add(htemp2)
