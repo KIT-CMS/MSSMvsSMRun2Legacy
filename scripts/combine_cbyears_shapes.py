@@ -8,8 +8,8 @@ parser.add_argument('--bOnly', help= 'Use b-only fit result', action='store_true
 args = parser.parse_args()
 
 
-if args.bOnly: fout = ROOT.TFile('shapes_cbyears_bOnly_v2.root','RECREATE')
-else: fout = ROOT.TFile('shapes_cbyears_v2.root','RECREATE')
+if args.bOnly: fout = ROOT.TFile('shapes_cbyears_bOnly.root','RECREATE')
+else: fout = ROOT.TFile('shapes_cbyears.root','RECREATE')
 
 cb_procs = ['TotalBkg',	'TotalProcs', 'TotalSig', 'data_obs']
 
