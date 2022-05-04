@@ -22,13 +22,19 @@ dir_map = {
   'tt_32' : 'tt_Nbtag0',
   'tt_35' : 'tt_NbtagGt1',
   'mt_32' : 'mt_Nbtag0_MTLt40',
+  'mt_33' : 'mt_Nbtag0_MT40To70',
   'mt_35' : 'mt_NbtagGt1_MTLt40',
+  'mt_36' : 'mt_NbtagGt1_MT40To70',
   'et_32' : 'et_Nbtag0_MTLt40',
+  'et_33' : 'et_Nbtag0_MT40To70',
   'et_35' : 'et_NbtagGt1_MTLt40',
-  'em_33' : 'em_Nbtag0_DZetam10To30',
+  'et_36' : 'et_NbtagGt1_MT40To70',
   'em_32' : 'em_Nbtag0_DZetaGt30',
-  'em_36' : 'em_NbtagGt1_DZetam10To30',
+  'em_33' : 'em_Nbtag0_DZetam10To30',
+  'em_34' : 'em_Nbtag0_DZetam35Tom10',
   'em_35' : 'em_NbtagGt1_DZetaGt30',
+  'em_36' : 'em_NbtagGt1_DZetam10To30',
+  'em_37' : 'em_NbtagGt1_DZetam35Tom10',
 }
 
 
@@ -67,11 +73,12 @@ for c in ['lt','tt','em']:
       h.SetName(x)
       for y in [2016, 2017, 2018]:
         for chan in chans:
-           indir = 'htt_%(chan)s_%(b)s_%(y)s_postfit' % vars()
+           if isinstance(b,str) and 'mt_tot' in str(b): b_=b.replace('_mt_tot','')
+           else: b_ = b
+           indir = 'htt_%(chan)s_%(b_)s_%(y)s_postfit' % vars()
            htemp = fin.Get('%(indir)s/%(x)s' % vars())
-           if chan =='em':
-             if isinstance(b,str) and 'mt_tot' in b: b_= '%i_mt_tot' % (int(b.split('_')[0])+1)
-             else: b_=b+1
+           if chan =='em' and 'mt_tot' not in str(b):
+             b_=b+1
              indir2 = 'htt_%(chan)s_%(b_)s_%(y)s_postfit' % vars()
              htemp2 = fin.Get('%(indir2)s/%(x)s' % vars())
              if isinstance(htemp2,ROOT.TH1D) or isinstance(htemp2,ROOT.TH1F): htemp.Add(htemp2)
@@ -81,7 +88,7 @@ for c in ['lt','tt','em']:
       h.Write()
 
     # for high mass categories we also add 1 TeV VLQ signal scales to bestfit point (gU=1.2)
-    if b not in [33,36] or True: continue
+    if not (isinstance(b,str) and 'mt_tot' in b): continue
     h1 = fin.Get('postfit/data_obs').Clone()
     h2 = fin.Get('postfit/data_obs').Clone()
     h1.Reset()
@@ -96,7 +103,8 @@ for c in ['lt','tt','em']:
       for chan in chans:
          print 'shapes/%(y)s/%(chan)s/vlq.inputs-mssm-vs-sm-Run%(y)s-mt_tot_puppi.root' % vars()
          fin_vlq = ROOT.TFile('shapes/%(y)s/%(chan)s/vlq.inputs-mssm-vs-sm-Run%(y)s-mt_tot_puppi.root' % vars())
-         indir = dir_map['%(chan)s_%(b)s' % vars()]
+         b_ = b.replace('_mt_tot','')
+         indir = dir_map['%(chan)s_%(b_)s' % vars()]
          htemp1 = fin_vlq.Get('%(indir)s/VLQ_betaRd33_0_matched_M_1000' % vars())
          htemp2 = fin_vlq.Get('%(indir)s/VLQ_betaRd33_0_matched_interference_M_1000' % vars())
          print '%(indir)s/VLQ_betaRd33_0_matched_M_1000' % vars()
