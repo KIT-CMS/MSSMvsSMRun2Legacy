@@ -8,9 +8,65 @@
 #include "CombineHarvester/CombineTools/interface/TFileIO.h"
 #include "CombineHarvester/CombineTools/interface/Logging.h"
 
+namespace po = boost::program_options;
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
+
+  // Setup program options
+  std::string datacard   = "";
+  std::string workspace  = "";
+  std::string category     = "";
+  std::string signal_mass_name = "";
+  std::vector<unsigned int> signal_masses;
+  std::vector<std::string> parameters_of_interest;
+  std::string data       = "data_obs";
+
+  po::options_description help_config("Help");
+  help_config.add_options()
+    ("help,h", "produce help message");
+
+  po::options_description config("Configuration");
+  config.add_options()
+    ("workspace,w",
+      po::value<string>(&workspace)->required(),
+      "The input ROOT file containing the workspace [REQUIRED]")
+    ("datacard,d",
+      po::value<string>(&datacard)->required(),
+      "The input datacard to be used for restoring the binning. Please note, that the input files mentioned in the datacard should also be accessible [REQUIRED]")
+    ("category,c ",
+      po::value<string>(&cat)->required(),
+      "The name of the category [REQUIRED]")
+    ("signal-mass-name,m",
+      po::value<string>(&signal_mass_name)->required(),
+      "The name of the mass parameter in the workspace [REQUIRED]")
+    ("signal-masses,M ",
+      po::value<std::vector<unsigned int>>(&signal_masses)->required(),
+      "The list of signal mass values to be considered [REQUIRED]")
+    ("poi-list,P ",
+      po::value<std::vector<std::string>>(&parameters_of_interest)->required(),
+      "The list of parameters of interest and the values they should be given. Each element should be of the following structure: name_value [REQUIRED]")
+    ("data",
+      po::value<string>(&data)->default_value(data),
+      "The name of observed, measured data");
+
+  po::variables_map vm;
+
+  // First check if the user has set the "--help" or "-h" option, and if so
+  // just prin the usage information and quit
+  po::store(po::command_line_parser(argc, argv)
+    .options(help_config).allow_unregistered().run(), vm);
+  po::notify(vm);
+  if (vm.count("help")) {
+    std::cout << config << std::endl;
+    return 1;
+  }
+
+  // Parse the main config options
+  po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
+  po::notify(vm);
+
   // Need this to read combine workspaces
   gSystem->Load("libHiggsAnalysisCombinedLimit");
 
