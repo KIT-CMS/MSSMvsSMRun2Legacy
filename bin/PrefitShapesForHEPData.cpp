@@ -14,8 +14,16 @@ int main(int argc, char* argv[]) {
   // Need this to read combine workspaces
   gSystem->Load("libHiggsAnalysisCombinedLimit");
 
-  auto inputfile = TFile::Open("ws_htt_tt_35_2018.root", "read");
+  // Get workspace of the analysis category htt_tt_35_2018
+  std::string category_name = "htt_tt_35_2018";
+  auto inputfile = TFile::Open(("ws_" + category_name +  ".root").c_str(), "read");
   RooWorkspace *ws = (RooWorkspace*)inputfile->Get("w");
+
+  // Getting datacard + input root file for restoring the binning
+  ch::CombineHarvester cmb_card;
+  cmb_card.SetFlag("workspaces-use-clone",true);
+  cmb_card.ParseDatacard((category_name + ".txt").c_str(), "", "", "", 0, "125");
+  TH1F reference_binning = cmb_card.cp().GetObservedShape();
 
   // Create CH instance and parse the workspace
   ch::CombineHarvester cmb;
@@ -45,6 +53,7 @@ int main(int argc, char* argv[]) {
     out->mkdir("data_obs");
     out->cd("data_obs");
     auto data_obs = cmb_bin.cp().GetObservedShape();
+    data_obs = ch::RestoreBinning(data_obs, reference_binning);
     data_obs.SetName("data_obs");
     data_obs.SetTitle("data_obs");
     data_obs.Write();
@@ -58,6 +67,7 @@ int main(int argc, char* argv[]) {
       out->cd(bg.c_str());
       ch::CombineHarvester cmb_bin_bgproc = cmb_bin_bg.cp().process({bg});
       auto bg_shape = cmb_bin_bgproc.cp().GetShape();
+      bg_shape = ch::RestoreBinning(bg_shape, reference_binning);
       bg_shape.SetName(bg.c_str());
       bg_shape.SetTitle(bg.c_str());
       bg_shape.Write();
@@ -77,6 +87,7 @@ int main(int argc, char* argv[]) {
           syst.set_val(1);
           cmb_bin_bgproc.cp().UpdateParameters({syst});
           auto bg_shape_syst_up = cmb_bin_bgproc.cp().GetShape();
+          bg_shape_syst_up = ch::RestoreBinning(bg_shape_syst_up, reference_binning);
           //std::cout << "\tUpdated integral of background (upward): " << bg_shape_syst_up.Integral() << std::endl;
           std::string up_name = bg + "_" + syst.name() + "_Up";
           bg_shape_syst_up.SetName(up_name.c_str());
@@ -84,6 +95,7 @@ int main(int argc, char* argv[]) {
           syst.set_val(-1);
           cmb_bin_bgproc.cp().UpdateParameters({syst});
           auto bg_shape_syst_down = cmb_bin_bgproc.cp().GetShape();
+          bg_shape_syst_down = ch::RestoreBinning(bg_shape_syst_down, reference_binning);
           //std::cout << "\tUpdated integral of background (downward): " << bg_shape_syst_down.Integral() << std::endl;
           std::string down_name = bg + "_" + syst.name() + "_Down";
           bg_shape_syst_down.SetName(down_name.c_str());
@@ -135,6 +147,7 @@ int main(int argc, char* argv[]) {
       for (auto sig : sigs){
         ch::CombineHarvester cmb_bin_sigproc = cmb_bin_sig.cp().process({sig});
         auto sig_shape = cmb_bin_sigproc.cp().GetShape();
+        sig_shape = ch::RestoreBinning(sig_shape, reference_binning);
         std::string sig_name = sig + "_" + std::to_string(m);
         out->mkdir(sig_name.c_str());
         out->cd(sig_name.c_str());
@@ -158,6 +171,7 @@ int main(int argc, char* argv[]) {
             syst.set_val(1);
             cmb_bin_sigproc.cp().UpdateParameters({syst});
             auto sig_shape_syst_up = cmb_bin_sigproc.cp().GetShape();
+            sig_shape_syst_up = ch::RestoreBinning(sig_shape_syst_up, reference_binning);
             //std::cout << "\tUpdated integral of signal (upward): " << sig_shape_syst_up.Integral() << std::endl;
             std::string up_name = sig_name + "_" + syst.name() + "_Up";
             sig_shape_syst_up.SetName(up_name.c_str());
@@ -165,6 +179,7 @@ int main(int argc, char* argv[]) {
             syst.set_val(-1);
             cmb_bin_sigproc.cp().UpdateParameters({syst});
             auto sig_shape_syst_down = cmb_bin_sigproc.cp().GetShape();
+            sig_shape_syst_down = ch::RestoreBinning(sig_shape_syst_down, reference_binning);
             //std::cout << "\tUpdated integral of signal (downward): " << sig_shape_syst_down.Integral() << std::endl;
             std::string down_name = sig_name + "_" + syst.name() + "_Down";
             sig_shape_syst_down.SetName(down_name.c_str());
