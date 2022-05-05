@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
       bg_shape.SetTitle(bg.c_str());
       bg_shape.Write();
       unsigned int n_bins = bg_shape.GetNbinsX();
-      std::cout << "Background: " << bg << ", nominal yield: " << bg_shape.Integral() << std::endl;
+      //std::cout << "Background: " << bg << ", nominal yield: " << bg_shape.Integral() << std::endl;
       auto systematics = cmb_bin_bgproc.cp().GetParameters();
       for (auto syst : systematics) {
         if (0 == syst.err_d() && 0 == syst.err_u())
@@ -89,17 +89,13 @@ int main(int argc, char* argv[]) {
           auto bg_shape_syst_up = cmb_bin_bgproc.cp().GetShape();
           bg_shape_syst_up = ch::RestoreBinning(bg_shape_syst_up, reference_binning);
           //std::cout << "\tUpdated integral of background (upward): " << bg_shape_syst_up.Integral() << std::endl;
-          std::string up_name = bg + "_" + syst.name() + "_Up";
-          bg_shape_syst_up.SetName(up_name.c_str());
-          bg_shape_syst_up.SetTitle(up_name.c_str());
+          std::string up_name;
           syst.set_val(-1);
           cmb_bin_bgproc.cp().UpdateParameters({syst});
           auto bg_shape_syst_down = cmb_bin_bgproc.cp().GetShape();
           bg_shape_syst_down = ch::RestoreBinning(bg_shape_syst_down, reference_binning);
           //std::cout << "\tUpdated integral of background (downward): " << bg_shape_syst_down.Integral() << std::endl;
-          std::string down_name = bg + "_" + syst.name() + "_Down";
-          bg_shape_syst_down.SetName(down_name.c_str());
-          bg_shape_syst_down.SetTitle(down_name.c_str());
+          std::string down_name;
           syst.set_val(0);
           cmb_bin_bgproc.cp().UpdateParameters({syst});
 
@@ -109,17 +105,50 @@ int main(int argc, char* argv[]) {
           bg_shape_copy_up->Divide(&bg_shape_syst_up);
           TH1F* bg_shape_copy_down = (TH1F*) bg_shape.Clone();
           bg_shape_copy_down->Divide(&bg_shape_syst_down);
+          std::vector<float> up_vals; up_vals.reserve(n_bins);
+          std::vector<float> down_vals; down_vals.reserve(n_bins);
           for(unsigned int i=1; i <= n_bins; i++){
             //std::cout << "\t\tBin: " << i << " ContentUp: " << bg_shape_copy_up->GetBinContent(i) << " ContentDown: " << bg_shape_copy_down->GetBinContent(i) << std::endl;
-            if(bg_shape_copy_up->GetBinContent(i) != 1 || bg_shape_copy_down->GetBinContent(i) != 1){
-              valid_systematic = true;
-              break;
-            }
+              up_vals.push_back(bg_shape_copy_up->GetBinContent(i));
+              down_vals.push_back(bg_shape_copy_down->GetBinContent(i));
+              if(valid_systematic == false && (up_vals.back() != 1 || down_vals.back() != 1)){
+                valid_systematic = true;
+              }
+          }
+
+          // Determine type of systematic
+          /*
+          for (auto val : up_vals){
+            std::cout << val << " ";
+          }
+          std::cout << "\n";
+          for (auto val : down_vals){
+            std::cout << val << " ";
+          }
+          std::cout << "\n";
+          */
+          bool up_vals_equal = std::all_of(up_vals.begin(), up_vals.end(), [&] (float test){return std::abs(test - up_vals[0]) < 1e-6;});
+          bool down_vals_equal = std::all_of(down_vals.begin(), down_vals.end(), [&] (float test){return std::abs(test - down_vals[0]) < 1e-6;});
+          if(up_vals_equal && down_vals_equal){
+            up_name = bg + "_norm_" + syst.name() + "_Up";
+            down_name = bg + "_norm_" + syst.name() + "_Down";
+          }
+          else if (std::string(syst.name()).find("prop") == std::string::npos){
+            up_name = bg + "_shape_" + syst.name() + "_Up";
+            down_name = bg + "_shape_" + syst.name() + "_Down";
+          }
+          else {
+            up_name = bg + "_" + syst.name() + "_Up";
+            down_name = bg + "_" + syst.name() + "_Down";
           }
 
           // If a proper uncertainty, write systematic variations to output
           if (valid_systematic){
+            bg_shape_syst_up.SetName(up_name.c_str());
+            bg_shape_syst_up.SetTitle(up_name.c_str());
             bg_shape_syst_up.Write();
+            bg_shape_syst_down.SetName(down_name.c_str());
+            bg_shape_syst_down.SetTitle(down_name.c_str());
             bg_shape_syst_down.Write();
           }
           else {
@@ -155,7 +184,7 @@ int main(int argc, char* argv[]) {
         sig_shape.SetTitle(sig_name.c_str());
         sig_shape.Write();
         unsigned int n_bins = sig_shape.GetNbinsX();
-        std::cout << "Signal: " << sig_name << ", nominal yield: " << sig_shape.Integral() << std::endl;
+        //std::cout << "Signal: " << sig_name << ", nominal yield: " << sig_shape.Integral() << std::endl;
 
         auto systematics = cmb_bin_sigproc.cp().GetParameters();
         for (auto syst : systematics){
@@ -173,17 +202,13 @@ int main(int argc, char* argv[]) {
             auto sig_shape_syst_up = cmb_bin_sigproc.cp().GetShape();
             sig_shape_syst_up = ch::RestoreBinning(sig_shape_syst_up, reference_binning);
             //std::cout << "\tUpdated integral of signal (upward): " << sig_shape_syst_up.Integral() << std::endl;
-            std::string up_name = sig_name + "_" + syst.name() + "_Up";
-            sig_shape_syst_up.SetName(up_name.c_str());
-            sig_shape_syst_up.SetTitle(up_name.c_str());
+            std::string up_name;
             syst.set_val(-1);
             cmb_bin_sigproc.cp().UpdateParameters({syst});
             auto sig_shape_syst_down = cmb_bin_sigproc.cp().GetShape();
             sig_shape_syst_down = ch::RestoreBinning(sig_shape_syst_down, reference_binning);
             //std::cout << "\tUpdated integral of signal (downward): " << sig_shape_syst_down.Integral() << std::endl;
-            std::string down_name = sig_name + "_" + syst.name() + "_Down";
-            sig_shape_syst_down.SetName(down_name.c_str());
-            sig_shape_syst_down.SetTitle(down_name.c_str());
+            std::string down_name;
             syst.set_val(0);
             cmb_bin_sigproc.cp().UpdateParameters({syst});
 
@@ -193,17 +218,50 @@ int main(int argc, char* argv[]) {
             sig_shape_copy_up->Divide(&sig_shape_syst_up);
             TH1F* sig_shape_copy_down = (TH1F*) sig_shape.Clone();
             sig_shape_copy_down->Divide(&sig_shape_syst_down);
+            std::vector<float> up_vals; up_vals.reserve(n_bins);
+            std::vector<float> down_vals; down_vals.reserve(n_bins);
             for(unsigned int i=1; i <= n_bins; i++){
               //std::cout << "\t\tBin: " << i << " ContentUp: " << sig_shape_copy_up->GetBinContent(i) << " ContentDown: " << sig_shape_copy_down->GetBinContent(i) << std::endl;
-              if(sig_shape_copy_up->GetBinContent(i) != 1 || sig_shape_copy_down->GetBinContent(i) != 1){
+              up_vals.push_back(sig_shape_copy_up->GetBinContent(i));
+              down_vals.push_back(sig_shape_copy_down->GetBinContent(i));
+              if(valid_systematic == false && (up_vals.back() != 1 || down_vals.back() != 1)){
                 valid_systematic = true;
-                break;
               }
+            }
+
+            // Determine type of systematic
+            /*
+            for (auto val : up_vals){
+              std::cout << val << " ";
+            }
+            std::cout << "\n";
+            for (auto val : down_vals){
+              std::cout << val << " ";
+            }
+            std::cout << "\n";
+            */
+            bool up_vals_equal = std::all_of(up_vals.begin(), up_vals.end(), [&] (float test){return std::abs(test - up_vals[0]) < 1e-6;});
+            bool down_vals_equal = std::all_of(down_vals.begin(), down_vals.end(), [&] (float test){return std::abs(test - down_vals[0]) < 1e-6;});
+            if(up_vals_equal && down_vals_equal){
+              up_name = sig_name + "_norm_" + syst.name() + "_Up";
+              down_name = sig_name + "_norm_" + syst.name() + "_Down";
+            }
+            else if (std::string(syst.name()).find("prop") == std::string::npos){
+              up_name = sig_name + "_shape_" + syst.name() + "_Up";
+              down_name = sig_name + "_shape_" + syst.name() + "_Down";
+            }
+            else {
+              up_name = sig_name + "_" + syst.name() + "_Up";
+              down_name = sig_name + "_" + syst.name() + "_Down";
             }
 
             // If a proper uncertainty, write systematic variations to output
             if (valid_systematic){
+              sig_shape_syst_up.SetName(up_name.c_str());
+              sig_shape_syst_up.SetTitle(up_name.c_str());
               sig_shape_syst_up.Write();
+              sig_shape_syst_down.SetName(down_name.c_str());
+              sig_shape_syst_down.SetTitle(down_name.c_str());
               sig_shape_syst_down.Write();
             }
             else {
