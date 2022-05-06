@@ -3,8 +3,8 @@
 
 import argparse
 import os
+import CombineHarvester.CombineTools.plotting as plot
 import json
-
 import ROOT
 ROOT.gROOT.SetBatch()
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -88,9 +88,17 @@ def main(args):
     print(channels)
 
     canv = ROOT.TCanvas("canv")
+    canv.SetLeftMargin(0.2)
+    canv.SetBottomMargin(0.13)
+    canv.SetGridx(1)
+    canv.SetTickx(1)
+    canv.SetTicky(1)
+
     # Create the plot object.
     axis_label = "#sigma#font[42]{{({}#phi)}}#font[52]{{B}}#font[42]{{(#phi#rightarrow#tau#tau)}} (pb)".format("gg" if "gg" in args.poi else "bb")
     frame = ROOT.TH2F("frame",
+#                      ";best fit {};".format(args.poi.replace("_ggH", "_{ggH}")),
+                      ";best fit g_{U}^{4};",
                       ";{};".format(axis_label),
                       1,
                       # res_poi.getVal() + 5*res_poi.getAsymErrorLo(),
@@ -114,7 +122,11 @@ def main(args):
         points.SetPointError(i, -ri.getAsymErrorLo(), ri.getAsymErrorHi(), 0, 0)
         print("Alternate fit: ", ch_, ri.getVal())
         frame.GetYaxis().SetBinLabel(i+1, label_dict[ch_.replace(prefix, "")])
-
+        if ch_.replace(prefix, "") == "btag":
+          frame.GetYaxis().SetBinLabel(i+1, "b-tag")
+        elif ch_.replace(prefix, "") == "nobtag":
+          frame.GetYaxis().SetBinLabel(i+1, "no b-tag")
+        
     if "htt" not in channels[0]:
         frame.GetYaxis().SetRangeUser(0, num_chans+0.5)
     points.SetLineColor(ROOT.kBlack)
@@ -148,6 +160,14 @@ def main(args):
     ROOT.gPad.SetTicky()
     ROOT.gPad.RedrawAxis()
 
+    #legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
+    # legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
+    #legend = ROOT.TLegend(0.2, 0.7, 0.5, 0.9)
+    legend = ROOT.TLegend(0.55, 0.65, 0.85, 0.85)
+    #legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
+    legend.AddEntry(globalFitLine, "Global Best Fit", "l")
+    legend.AddEntry(globalFitBand, "Global Best Fit #pm 1 #sigma", "f")
+    legend.SetBorderSize(0)
     if "htt" not in channels[0]:
         # l = 0.14, r = 0.04
         legend = ROOT.TLegend(0.25, 0.80, 0.85, 0.88)
@@ -174,6 +194,17 @@ def main(args):
     latex2.SetNDC()
     latex2.SetTextAngle(0)
     latex2.SetTextColor(ROOT.kBlack)
+    latex2.SetTextSize(0.035)
+    begin_left = 0.245
+    #latex2.DrawLatex(begin_left, 0.360, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    latex2.DrawLatex(0.55, 0.52, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    latex2.DrawLatex(0.55, 0.6, "VLQ BM 1: m_{U} = 1 TeV")
+
+    #plot.DrawCMSLogo(canv, "CMS", "Supplementary", 1, 0.045, 0.035, 1.2,  cmsTextSize = 0.5)
+    plot.DrawCMSLogo(canv, "CMS", "Supplementary", 1, 0.115, -0.064, 5,  cmsTextSize = 0.5)
+    plot.DrawTitle(canv, "138 fb^{-1} (13 TeV)", 3, textSize=0.45, textOffset=0.3)
+    plot.DrawTitle(canv, "", 1, textSize=0.7, textOffset=0.3)
+
     latex2.SetTextSize(extra_ts)
     begin_left = 0.200
     begin_right = 0.68
