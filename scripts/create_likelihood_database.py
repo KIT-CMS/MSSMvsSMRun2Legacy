@@ -113,7 +113,6 @@ def convert_graph_to_dataframe(graph):
     #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
     # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
     miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)), missing)
-        
 
     # Build dataframe from the uniqe x and y values
     df = pd.DataFrame(data=points,
