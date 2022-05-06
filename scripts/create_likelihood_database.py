@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--x-var", "-x",
                         default="r_ggH",
                         help="Name of the POI to include as x variable")
-    parser.add_argument("--y_var", "-y",
+    parser.add_argument("--y-var", "-y",
                         default="r_bbH",
                         help="Name of the POI to include as y variable")
     return parser.parse_args()
