@@ -80,9 +80,9 @@ for proc in ['gg','bb']:
       masses = [250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000,2300,2600,2900,3200,3500]
     for m in masses:
       if key == 'lowmass':
-        f = ROOT.TFile("model_independent_limits/Feb07_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.v2.Significance.mH%(m)s.root" % vars())
+        f = ROOT.TFile("model_independent_limits/Apr04_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.v2.Significance.mH%(m)s.root" % vars())
       else: 
-        f = ROOT.TFile("model_independent_limits/Jan12_mt_tot_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.Significance.mH%(m)s.root" % vars())
+        f = ROOT.TFile("model_independent_limits/Apr04_mt_tot_all_all_bsm-model-indep/combined/cmb/higgsCombine.%(proc)sH.Significance.mH%(m)s.root" % vars())
       t = f.Get('limit')
       for event in t:
         limit_dict[key]["significance"].SetPoint(limit_dict[key]["significance"].GetN(),m,event.limit)
@@ -112,7 +112,7 @@ for proc in ['gg','bb']:
       limit_dict[key]["p_value"].SetMarkerColor(colour[key])
       limit_dict[key]["p_value"].SetMarkerStyle(15)
       limit_dict[key]["p_value"].SetMaximum(1)
-      limit_dict[key]["p_value"].SetMinimum(0.0004)
+      limit_dict[key]["p_value"].SetMinimum(0.0001)
   
       l = ROOT.TLegend(0.40,0.15,0.87,0.4)
       l.SetFillStyle(0)
@@ -159,7 +159,8 @@ for proc in ['gg','bb']:
   
 
   plot.DrawTitle(c, '138 fb^{-1} (13 TeV)', 3)
-  plot.DrawCMSLogo(c, 'CMS', '', 1, 0.045, 0.05, 1.0, '', 0.9)
+  plot.DrawCMSLogo(c, 'CMS', 'Supplementary', 0, 0.15, 0, 0, '', 0.9)
+  #plot.DrawCMSLogo(c, 'CMS', 'Preliminary', 0, 0.15, 0, 0, '', 0.9)
  
   line2 =  ROOT.TLine(225.,limit_dict["lowmass"]["p_value"].GetMinimum(),225,1.)
   line2.Draw()
@@ -169,9 +170,9 @@ for proc in ['gg','bb']:
   latex2.SetTextAlign(12)
   latex2.SetTextFont(42)
   latex2.SetTextSize(0.04)
-  latex2.DrawLatex(0.19,0.9, 'Low-mass')
-  latex2.DrawLatex(0.45,0.9, 'High-mass')
+  latex2.DrawLatex(0.19,0.91, 'Low-mass')
+  latex2.DrawLatex(0.45,0.91, 'High-mass')
 
   latex2.SetTextSize(0.05)
-  latex2.DrawLatex(0.8,0.16, '%(proc)s#phi' % vars())
+  latex2.DrawLatex(0.8,0.17, '%(proc)s#phi' % vars())
   c.Print('significance_plot_%(proc)sH.pdf' % vars())

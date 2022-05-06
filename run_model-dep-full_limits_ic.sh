@@ -6,10 +6,8 @@ MODE=$2
 MODEL=$3
 ANALYSISTYPE=$4
 HSMTREATMENT=$5
-GRIDUSER=$6
-CYCLES=$7
-OLDFILES=$8
-[[ -z $8 ]] && OLDFILES=0
+OLDFILES=$6
+[[ -z $6 ]] && OLDFILES=0
 
 if [[ $ANALYSISTYPE == "classic" ]]; then
     analysis="bsm-model-dep-full"
@@ -19,29 +17,20 @@ if [[ $ANALYSISTYPE == "classic" ]]; then
     if [[ $TAG == "auto" ]]; then
         TAG="cmb_classic"
     fi
-elif [[ $ANALYSISTYPE == "classic_lowmass" ]]; then
+elif [[ $ANALYSISTYPE == "lowmass" ]]; then
     analysis="bsm-model-dep-full"
     sm_like_hists="sm125"
     replace_with_sm125=1
     categorization="lowmass"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_classic_lowmass"
+        TAG="cmb_lowmass"
     fi
-elif [[ $ANALYSISTYPE == "with-sm-ml" ]]; then
-    analysis="bsm-model-dep-full"
+elif [[ $ANALYSISTYPE == "couplings" ]]; then
+    analysis="bsm-model-dep-additional"
     sm_like_hists="sm125"
-    replace_with_sm125=1
-    categorization="with-sm-ml"
+    categorization="lowmass"
     if [[ $TAG == "auto" ]]; then
-        TAG="cmb_with_ml"
-    fi
-elif [[ $ANALYSISTYPE == "sm-ml-only" ]]; then
-    analysis="bsm-model-dep-full"
-    sm_like_hists="sm125"
-    replace_with_sm125=1
-    categorization="sm-ml-only"
-    if [[ $TAG == "auto" ]]; then
-        TAG="cmb_sm_ml_only"
+        TAG="cmb_couplings"
     fi
 else
     analysis="bsm-model-dep-full"
@@ -190,6 +179,11 @@ else
     y_max=60.0
 fi
 
+if [[ $MODEL == "couplings" ]]; then
+    wsoutput="ws_couplings.root"
+    sub_analysis="sm-like-light"
+fi
+
 if [[ $OLDFILES == 1 ]]; then
     wsoutput=${wsoutput/.root/_old.root}
     modelfile=${modelfile/.root/_old.root}
@@ -200,7 +194,7 @@ defaultdir="analysis/$TAG"
 defaultdir=$(readlink -f ${defaultdir})
 [[ ! -d ${defaultdir} ]] && mkdir -p ${defaultdir}
 [[ ! -d ${defaultdir}/logs ]] && mkdir -p ${defaultdir}/logs
-[[ ! -d ${defaultdir}/limits_${MODEL}/condor ]] && mkdir -p ${defaultdir}/limits_${MODEL}/condor
+[[ ! -d ${defaultdir}/limits_${MODEL}/jobs ]] && mkdir -p ${defaultdir}/limits_${MODEL}/jobs
 
 datacarddir=${defaultdir}/datacards_${analysis}
 taskname="${analysis}_${TAG}_${MODEL}_1"
@@ -223,7 +217,8 @@ if [[ $MODE == "initial" ]]; then
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
             --variable mt_tot_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-    elif [[ $ANALYSISTYPE == "classic_lowmass" ]]; then
+    elif [[ $ANALYSISTYPE == "lowmass" || $ANALYSISTYPE == "couplings" ]]; then
+
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -231,11 +226,12 @@ if [[ $MODE == "initial" ]]; then
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 " \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_2d_to_1d.txt \
             --variable m_sv_VS_pt_tt_splitpT \
-            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_lowmass.txt
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_nobtag.txt
+
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -243,11 +239,12 @@ if [[ $MODE == "initial" ]]; then
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 " \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_1d_btag.txt \
             --variable m_sv_puppi \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_btag.txt
+
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -255,12 +252,14 @@ if [[ $MODE == "initial" ]]; then
             --categorization ${categorization} \
             --sm-like-hists ${sm_like_hists} \
             --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 " \
             --eras 2016,2017,2018 \
             --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories_cr.txt \
             --variable mt_tot_puppi \
-            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_cr.txt
-    elif [[ $ANALYSISTYPE == "with-sm-ml" || $ANALYSISTYPE == "sm-ml-only" ]]; then
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log_ttbar.txt
+
+
+    else
         morph_parallel.py --output ${defaultdir}/datacards \
             --analysis ${analysis} \
             --sub-analysis ${sub_analysis} \
@@ -275,20 +274,18 @@ if [[ $MODE == "initial" ]]; then
             --sm \
             --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_sm_log.txt
 
-        if [[ $ANALYSISTYPE == "with-sm-ml" ]]; then
-            morph_parallel.py --output ${defaultdir}/datacards \
-                --analysis ${analysis} \
-                --sub-analysis ${sub_analysis} \
-                --hSM-treatment $HSMTREATMENT  \
-                --categorization ${categorization} \
-                --sm-like-hists ${sm_like_hists} \
-                --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
-                --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
-                --eras 2016,2017,2018 \
-                --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
-                --variable mt_tot_puppi \
-                --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
-        fi
+        morph_parallel.py --output ${defaultdir}/datacards \
+            --analysis ${analysis} \
+            --sub-analysis ${sub_analysis} \
+            --hSM-treatment $HSMTREATMENT  \
+            --categorization ${categorization} \
+            --sm-like-hists ${sm_like_hists} \
+            --sm-gg-fractions ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2.root \
+            --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --split_sm_signal_cat=1 --enable_bsm_lowmass=1" \
+            --eras 2016,2017,2018 \
+            --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_new_categories.txt \
+            --variable mt_tot_puppi \
+            --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_mssm_log.txt
     fi
 
     ############
@@ -318,7 +315,12 @@ elif [[ $MODE == "ws" ]]; then
     ############
     # workspace creation
     ############
-    if [[ $OLDFILES == 0 ]]; then
+    if [[ $ANALYSISTYPE == "couplings" ]]; then
+        combineTool.py -M T2W -o ${wsoutput} \
+        -P CombineHarvester.MSSMvsSMRun2Legacy.YtYbScan:YtYbScan \
+        --PO XS-Workspace=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/xs_lowmass_yb_yt.root \
+        -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
+    elif [[ $OLDFILES == 0 ]]; then
         combineTool.py -M T2W -o ${wsoutput} \
         -P CombineHarvester.MSSMvsSMRun2Legacy.MSSMvsSM:MSSMvsSM \
         --PO filePrefix=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/ \
@@ -344,20 +346,46 @@ elif [[ $MODE == "ws" ]]; then
         --PO sm-predictions=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/sm_predictions_13TeV.json \
         -i ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/workspace_${MODEL}.txt
     fi
+elif [[ $MODE == "submit" && $ANALYSISTYPE == "couplings" ]]; then
+  ############
+  # job setup creation
+  ############
+  cd ${defaultdir}/limits_${MODEL}/jobs
+  for MASS in 60 80 95 100 120 125 130 140 160 180 200; do 
 
-elif [[ $MODE == "setup" ]]; then
+    combineTool.py -m "${MASS}" -M MultiDimFit  --freezeParameters r,Yt_A,Yb_A --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_H,Yb_H \
+  --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/ys_boundaries.json \
+  -d ${datacarddir}/combined/cmb/${wsoutput} \
+  -n ".Yt_H_vs_Yb_H" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
+  --job-mode 'SGE' \
+  --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
+  --task-name "Ys_scan_mH${MASS}" \
+  --algo grid --points 4000 --split-points 5 --alignEdges 1
+
+    combineTool.py -m "${MASS}" -M MultiDimFit --freezeParameters r,Yt_H,Yb_H --setParameters mA=${MASS},mH=${MASS},r=1,Yt_H=0,Yb_H=0,Yt_A=0,Yb_A=0 --redefineSignalPOIs Yt_A,Yb_A \
+  --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/ys_boundaries.json \
+  -d ${datacarddir}/combined/cmb/${wsoutput} \
+  -n ".Yt_A_vs_Yb_A" --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
+  --job-mode 'SGE' \
+  --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
+  --task-name "Ys_scan_mA${MASS}" \
+  --algo grid --points 4000 --split-points 5 --alignEdges 1
+
+  done
+
+elif [[ $MODE == "submit" ]]; then
 
     ############
     # job setup creation
     ############
-    cd ${defaultdir}/limits_${MODEL}/condor
+    cd ${defaultdir}/limits_${MODEL}/jobs
     if [[ $HSMTREATMENT == "hSM-in-bg" ]]; then
         combineTool.py -M AsymptoticGrid \
         ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
         -d ${datacarddir}/combined/cmb/${wsoutput} \
-        --job-mode 'condor' \
+        --job-mode 'SGE' \
+        --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
         --task-name $taskname \
-        --dry-run \
         --redefineSignalPOI r \
         --setParameterRanges r=0,1 \
         --setParameters r=1,x=1 \
@@ -369,9 +397,9 @@ elif [[ $MODE == "setup" ]]; then
         combineTool.py -M AsymptoticGrid \
         ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
         -d ${datacarddir}/combined/cmb/${wsoutput} \
-        --job-mode 'condor' \
+        --job-mode 'SGE' \
+        --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
         --task-name $taskname \
-        --dry-run \
         --redefineSignalPOI x \
         --setParameterRanges x=0,1 \
         --setParameters r=1 \
@@ -381,139 +409,33 @@ elif [[ $MODE == "setup" ]]; then
         --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}.txt
     fi
 
-elif [[ $MODE == "submit" ]]; then
-    ############
-    # job submission
-    ############
-    cd ${defaultdir}/limits_${MODEL}/condor
-    condor_submit condor_${taskname}.sub
+elif [[ $MODE == "resubmit" ]]; then
 
-elif [[ $MODE == "submit-local" ]]; then
-    ############
-    # job submission
-    ############
-    cp scripts/run_limits_locally.py ${defaultdir}/limits_${MODEL}/condor
-    cd ${defaultdir}/limits_${MODEL}/condor
-    python run_limits_locally.py --cores 20 --taskname condor_${taskname}.sh
-
-elif [[ $MODE == "hybrid-lhc" ]]; then
-
-    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
-    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
-
-    jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
-    if [[ $HSMTREATMENT == "hSM-in-bg" ]]; then
-        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}_newsigmodel.json
-    elif [[ $HSMTREATMENT == "no-hSM-in-bg" ]]; then
-        jsonfile=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json
-    fi
-
-    combineTool.py -M HybridNewGrid \
-    ${jsonfile} \
-    --cycles $CYCLES \
-    -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'crab3' \
-    --task-name ${taskname}_hybrid_lhc \
-    --cminDefaultMinimizerStrategy 0 \
-    --cminDefaultMinimizerTolerance 0.01 \
-    --X-rtd MINIMIZER_analytic \
-    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
-    cd -
-
-elif [[ $MODE == "hybrid-tev" ]]; then
-
-    mkdir -p ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
-    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
-
-    combineTool.py -M HybridNewGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_TEV_${MODEL}.json \
-    --cycles $CYCLES \
-    -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'crab3' \
-    --task-name ${taskname}_hybrid_tev \
-    --cminDefaultMinimizerStrategy 0 \
-    --cminDefaultMinimizerTolerance 0.01 \
-    --X-rtd MINIMIZER_analytic \
-    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
-    cd -
-
-elif [[ $MODE == "collect-hybrid-lhc" ]]; then
-
-    cd ${defaultdir}/limits_${MODEL}_hybrid_lhc/condor
-
-    combineTool.py -M HybridNewGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
-    --cycles 0 \
-    --output \
-    -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'interactive' \
-    --task-name ${taskname}_hybrid_lhc_finished \
-    --cminDefaultMinimizerStrategy 0 \
-    --cminDefaultMinimizerTolerance 0.01 \
-    --X-rtd MINIMIZER_analytic \
-    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_lhc.txt
-    cd -
-
-elif [[ $MODE == "collect-hybrid-tev" ]]; then
-
-    cd ${defaultdir}/limits_${MODEL}_hybrid_tev/condor
-
-    combineTool.py -M HybridNewGrid \
-    ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_hybrid_grid_LHC_${MODEL}.json \
-    --cycles 0 \
-    --output \
-    -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'interactive' \
-    --task-name ${taskname}_hybrid_tev_finished \
-    --cminDefaultMinimizerStrategy 0 \
-    --cminDefaultMinimizerTolerance 0.01 \
-    --X-rtd MINIMIZER_analytic \
-    -v1 | tee -a ${defaultdir}/logs/job_setup_${MODEL}_hybrid_tev.txt
-    cd -
-
-elif [[ $MODE == "submit-gc" ]]; then
-    ############
-    # job submission
-    ############
-    gcworkdir=${defaultdir}/limits_${MODEL}/gc_condor
-    mkdir -p ${gcworkdir}
-    python scripts/build_gc_job.py \
-        --combine-script ${defaultdir}/limits_${MODEL}/condor/condor_${taskname}.sh \
-        --workspace ${datacarddir}/combined/cmb/${wsoutput} \
-        --workdir ${gcworkdir} \
-        --tag ${taskname} \
-        --se-path /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}
-
-    ${CMSSW_BASE}/src/grid-control/go.py ${gcworkdir}/${taskname}.conf -Gc -m 3
-
-elif [[ $MODE == "delete-crashed-jobs" ]]; then
-    ############
-    # job submission
-    ############
-    cd ${defaultdir}/limits_${MODEL}/condor
-    find . -size -4k | grep root > wrong_files.txt
-    while read p; do
-    echo "Deleting ${p}"
-    rm ${p}
-    done < wrong_files.txt
-
-elif [[ $MODE == "copy-results-gc" ]]; then
-    ############
-    # job submission
-    ############
-    rsync -avhP /storage/gridka-nrg/${GRIDUSER}/gc_storage/combine/${taskname}/output/ ${defaultdir}/limits_${MODEL}/condor
+   cd ${defaultdir}/limits_${MODEL}/jobs
+   # if jog does exist then resubmit
+   for job in $(ls *.sh); do
+     log=${job/.sh/_%J.log}
+     if test -f "${log}"; then continue; fi
+     echo Log missing, resubmitting $job 
+     #qsub -o ${defaultdir}/limits_${MODEL}/jobs/$log -q hep.q -l h_rt=3:0:0 $job
+     qsub -o ${defaultdir}/limits_${MODEL}/jobs/$log -q hep.q -l h_rt=10:0:0 $job
+   done
+   # if log exists but it didn't finish then resubmit
+   for out in $(grep -irL "Done in" *.log); do 
+     job=${out/_%J.log/.sh}
+     echo resubmitting $job 
+     #qsub -o ${defaultdir}/limits_${MODEL}/jobs/$out -q hep.q -l h_rt=3:0:0 $job
+     qsub -o ${defaultdir}/limits_${MODEL}/jobs/$out -q hep.q -l h_rt=10:0:0 $job
+   done 
 
 elif [[ $MODE == "collect" ]]; then
     ############
     # job collection
     ############
-    cd ${defaultdir}/limits_${MODEL}/condor
+    cd ${defaultdir}/limits_${MODEL}/jobs
     combineTool.py -M AsymptoticGrid \
     ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_asymptotic_grid_${MODEL}.json \
     -d ${datacarddir}/combined/cmb/${wsoutput} \
-    --job-mode 'condor' \
-    --task-name $taskname2 \
-    --dry-run \
     --redefineSignalPOI x \
     --setParameterRanges x=0,1 \
     --setParameters r=1 \
@@ -522,7 +444,6 @@ elif [[ $MODE == "collect" ]]; then
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs_${MODEL}.txt
 
-    # # condor_submit condor_${taskname2}.sub
     cp asymptotic_grid.root ..
     cd ${defaultdir}/limits_${MODEL}/
 
@@ -530,13 +451,7 @@ elif [[ $MODE == "collect" ]]; then
     # limit plot
     ############
     if [[ $ANALYSISTYPE == "classic" ]]; then
-        title="Standard categorisation 138 fb^{-1} (13 TeV)"
-    elif [[ $ANALYSISTYPE == "sm-ml-only" ]]; then
-        title="SM categories only 138 fb^{-1} (13 TeV)"
-    elif [[ $ANALYSISTYPE == "classic_lowmass" ]]; then
-        title="Low-mass categorisation 138 fb^{-1} (13 TeV)"
-    elif [[ $ANALYSISTYPE == "with-sm-ml" ]]; then
-        title="138 fb^{-1} (13 TeV)"
+        title="Classic categorisation 138 fb^{-1} (13 TeV)"
     else
         title="138 fb^{-1} (13 TeV)"
     fi
@@ -555,4 +470,33 @@ elif [[ $MODE == "collect" ]]; then
         --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${modelname} \
         --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt
     done
+elif [[ $MODE == "plot" ]]; then
+    cd ${defaultdir}/limits_${MODEL}/
+
+    ############
+    # limit plot
+    ############
+    if [[ $ANALYSISTYPE == "classic" ]]; then
+        title="Classic categorisation 138 fb^{-1} (13 TeV)"
+    else
+        title="138 fb^{-1} (13 TeV)"
+    fi
+    modelname=${MODEL}_13.root
+    [[ $OLDFILES == 1 ]] && modelname="${MODEL}_13_old.root"
+    for label in "Preliminary" ""; do
+        ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/scripts/plotLimitGridMod.py asymptotic_grid.root \
+        --scenario-label="${scenario_label}" \
+        --output ${TAG}_${MODEL}_${label} \
+        --title-right="${title}" \
+        --cms-sub=${label} \
+        --contours="exp-2,exp-1,exp0,exp+1,exp+2,obs" \
+        --y-range ${y_min},${y_max} \
+        --mass_histogram ${sm_like_mass} \
+        --mass_histogram_title ${mass_histogram_title} \
+        --model_file=${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/data/${modelname} \
+#        --extra_contour_file=/vols/cms/dw515/MSSMLowMass/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/MH125_contours.root \
+#        --extra_contour_style=2,2,2,2,2,2,2 \
+        --x-title "${x_title}" 2>&1 | tee -a ${defaultdir}/logs/plot_grid_${MODEL}.txt 
+    done
+
 fi

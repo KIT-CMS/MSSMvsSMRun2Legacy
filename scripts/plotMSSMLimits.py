@@ -211,7 +211,7 @@ def RemovePoints(graph_set, high=True):
       if high and key =='obs' and x < 250: g_clone.RemovePoint(i)
       elif high and key !='obs' and x < 250:
         x_bound=225.
-        x_bound+=1.4*shift
+        x_bound+=1.0*shift
         #x_bound=200
         if x==200:
           y_new = g_clone.Eval(x_bound)
@@ -348,7 +348,6 @@ for i, src in enumerate(args.input):
         legend.AddEntry(graphs[-1], '', 'PL')
 
 
-
 if args.process == "gg#phi":
     axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#upoint#font[42]{BR}#font[42]{(#phi#rightarrow#tau#tau)} [pb]')
 elif args.process == "bb#phi":
@@ -363,7 +362,6 @@ elif args.process == "vector_leptoquark":
     else:
       t.DrawLatex(-0.05, 5.2, "g_{U}")
     axis[0].SetNdivisions(8, "X")
-      
 
     #t1 = ROOT.TLatex()
     #t1.SetTextColor(ROOT.kBlack)
@@ -372,6 +370,9 @@ elif args.process == "vector_leptoquark":
     #t1.DrawLatex(0.8, 4.5, "#kappa = 0")
     #t1.DrawLatex(0.8, 4.1, "With interference")
 
+axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(gg#phi)}#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
+if args.process == "bb#phi":
+    axis[0].GetYaxis().SetTitle('95% CL limit on #sigma#font[42]{(bb#phi)}#font[52]{B}#font[42]{(#phi#rightarrow#tau#tau)} (pb)')
 if args.y_title is not None:
     axis[0].GetYaxis().SetTitle(args.y_title)
 axis[0].GetXaxis().SetTitle(args.x_title)
@@ -503,25 +504,41 @@ else:
   plot.DrawTitle(pads[0], args.title_left, 1)
 
 plot.DrawTitle(pads[0], args.title_right % vars(), 3)
-plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 1, 0.045, 0.05, 1.0, '', 0.9)
+#plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 1, 0.045, 0.05, 1.0, '', 0.9)
+plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 0, 0.15, 0, 0, '', 0.9)
+#  plot.DrawCMSLogo(c, 'CMS', 'Preliminary', 0, 0.15, 0, 0, '', 0.9)
 
 #plot.DrawCMSLogo(pads[0], 'CMS', args.cms_sub, 11, 0.045, 0.035, 1.2, '', 0.8)
 #plot.DrawTitle(pads[0], args.title_right, 3)
 #plot.DrawTitle(pads[0], args.title_left, 1)
 
+
+latex2 = ROOT.TLatex()
+latex2.SetNDC()
+latex2.SetTextAngle(0)
+latex2.SetTextAlign(12)
+latex2.SetTextFont(42)
+latex2.SetTextSize(0.04)
+
 if args.low_high_split:
 
   line =  ROOT.TLine(225.,hobj.GetMinimum(),225,hobj.GetMaximum())
   line.Draw()
-  latex2 = ROOT.TLatex()
-  latex2.SetNDC()
-  latex2.SetTextAngle(0)
-  latex2.SetTextAlign(12)
-  latex2.SetTextFont(42)
-  latex2.SetTextSize(0.04)
   latex2.DrawLatex(0.19,0.17, 'Low-mass')
   latex2.DrawLatex(0.45,0.17, 'High-mass')
-  latex2.SetTextSize(0.05)
+  #latex2.SetTextSize(0.05)
+
+if 'freezebbH' in args.output:
+  latex2.DrawLatex(0.48,0.62, 'bb#phi set to zero')
+
+if 'freezeggH' in args.output:
+  latex2.DrawLatex(0.48,0.62, 'gg#phi set to zero')
+
+if 'Tonly' in args.output:
+  latex2.DrawLatex(0.48,0.62, 't quark only')
+
+if 'Bonly' in args.output:
+  latex2.DrawLatex(0.48,0.62, 'b quark only')
 
 canv.Print('.pdf')
 canv.Print('.png')

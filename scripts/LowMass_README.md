@@ -27,7 +27,7 @@ for p in gg bb; do combineTool.py -M CollectLimits model_independent_limits/${DI
 
 # make plots
 
-for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13 TeV)" --process "${p}#phi" --y-axis-min 0.0001 --y-axis-max 1000.0 --show exp,obs model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowandhigh_combined_cmb.json  --output mssm_model-independent_combined_${p}H_cmb  --logy --logx --low_high_split; done
+for p in gg bb; do plotMSSMLimits.py --cms-sub "" --title-right "138 fb^{-1} (13 TeV)" --process "${p}#phi" --y-axis-min 0.0001 --y-axis-max 1000.0 --show exp,obs model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_lowonly_cmb.json model_independent_limits/${DIR}/combined/cmb/mssm_${p}H_highonly_cmb.json  --output mssm_model-independent_combined_${p}H_cmb  --logy --logx --low_high_split; done
 
 # plot significances
 python scripts/significance_plot.py
@@ -284,7 +284,7 @@ This script will produce the datacards and histograms rebinned properly, run T2W
 
 ```bash
 
-python run_cbyear_plots.py -o Feb11_cbyear_plots
+python run_cbyear_plots.py -o Feb28_cbyear_plots
 
 ```
 

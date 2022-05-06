@@ -130,9 +130,15 @@ def get_histogram(rootfile, era, channel, category, process):
         if channel == "tt" and process == "jetFakes":
             hist = rootfile.get(era, channel, category, process).Clone()
             hist.Add(rootfile.get(era, channel, category, "wFakes"))
+        elif channel == "mt" and process == "EWK":
+            hist = rootfile.get(era, channel, category, "VVL").Clone()
+            hist.Add(rootfile.get(era, channel, category, "ggH125"))
+            hist.Add(rootfile.get(era, channel, category, "qqH125"))
         elif channel == "em" and process == "EWK":
             hist = rootfile.get(era, channel, category, "W").Clone()
             hist.Add(rootfile.get(era, channel, category, "VVL"))
+            hist.Add(rootfile.get(era, channel, category, "ggH125"))
+            hist.Add(rootfile.get(era, channel, category, "qqH125"))
         else:
             hist = rootfile.get(era, channel, category, process)
     return hist
@@ -193,8 +199,8 @@ def main(args):
     if args.gof_variable != None:
         category_dict = {
                 "300": "inclusive",
-                "301": "No b-tag",
-                "302": "b-tag",
+                "301": "No b tag",
+                "302": "b tag",
         }
     else:
         category_dict = {
@@ -231,7 +237,7 @@ def main(args):
     split_dict = {c: split_value for c in ["et", "mt", "tt", "em"]}
 
     bkg_processes = [
-        "ggH125", "qqH125", "VVL", "TTL", "ZL", "jetFakes", "EMB"
+        "EWK", "ZL", "TTL", "jetFakes", "EMB"
     ]
     if not args.fake_factor and args.embedding:
         bkg_processes = [
@@ -267,7 +273,7 @@ def main(args):
             print "Plot for category: ",category
             rootfile = rootfile_parser.Rootfile_parser(args.input)
             if channel == "em" and args.embedding:
-                bkg_processes = ["ggH125", "qqH125", "TTL", "QCD", "EWK", "ZL", "EMB"]
+                bkg_processes = ["EWK", "ZL","TTL", "QCD", "EMB"]
             elif channel == "em" and not args.embedding:
                 bkg_processes = ["VVL", "W", "TTL", "ZL", "QCD", "ZTT"]
             else:
@@ -400,7 +406,7 @@ def main(args):
                 else:
                     plot.subplot(0).setYlabel("Events / 5 GeV")
 
-            plot.subplot(2).setYlabel("Data/Exp")
+            plot.subplot(2).setYlabel("Obs./Exp.")
             plot.subplot(2).setGrid()
 
             #plot.scaleXTitleSize(0.8)
@@ -436,17 +442,19 @@ def main(args):
                 plot.add_legend(width=0.25, height=0.35)
                 plot.legend(0).setNColumns(1)
             else:
-                plot.add_legend(width=0.3, height=0.35)
+                plot.add_legend(width=0.25, height=0.35)
                 plot.legend(0).setNColumns(1)
-            plot.legend(0).add_entry(0, "data_obs", "Data", 'PE')
+            plot.legend(0).add_entry(0, "data_obs", "Observed", 'PE')
             for process in legend_bkg_processes:
                 try:
                     plot.legend(0).add_entry(
-                        0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV")], 'f')
+                        0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV").replace("EMB", "EMBFull")], 'f')
                 except:
                     pass
             plot.legend(0).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
+            # plot.legend(0).add_entry(0, "total_bkg", "Background uncertainty", 'f')
 
+            plot.legend(0).scaleTextSize(1.175)
             plot.legend(0).Draw()
 
             if channel == "em":
@@ -456,9 +464,23 @@ def main(args):
                     plot.add_line(xmin=-35, xmax=-35, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin=-10, xmax=-10, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
                     plot.add_line(xmin= 30, xmax= 30, ymin=0, ymax=_ymax_low, linestyle=7, color=ROOT.kBlack)
-                    plot.DrawText(0.335, 0.80, "Low-D_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.465, 0.80, "Medium-D_{#zeta}", textsize=0.025)
-                    plot.DrawText(0.75, 0.5, "High-D_{#zeta}", textsize=0.025)
+                    # plot.DrawText(0.335, 0.80, "Low-D_{#zeta}", textsize=0.030)
+                    # plot.DrawText(0.465, 0.80, "Medium-D_{#zeta}", textsize=0.025)
+                    label2 = ROOT.TLatex()
+                    plot.subplot(0)._pad.cd()
+                    label2.SetNDC(False)
+                    label2.SetTextAngle(0)
+                    label2.SetTextAlign(22)
+                    label2.SetTextColor(ROOT.kBlack)
+                    label2.SetTextSize(0.030)
+                    if category in ["301"]:
+                        label2.DrawLatex(-22.5, 105000, "Low-D_{#zeta}")
+                        label2.DrawLatex(10, 105000, "Medium-D_{#zeta}")
+                        plot.DrawText(0.75, 0.5, "High-D_{#zeta}", textsize=0.030)
+                    else:
+                        label2.DrawLatex(-22.5, 125000, "Low-D_{#zeta}")
+                        label2.DrawLatex(10, 125000, "Medium-D_{#zeta}")
+                        plot.DrawText(0.75, 0.5, "High-D_{#zeta}", textsize=0.030)
                 elif category in ["302"]:
                     _ymax_low = max(1.05 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
                     _ymax_high = max(0.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(), split_dict[channel] * 2)
@@ -523,7 +545,7 @@ def main(args):
                 raise Exception
 
             plot.DrawChannelCategoryLabel(
-                "%s, %s" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
+                "#font[42]{%s, %s}" % (channel_dict[channel], category_dict[category]) if category != "300" else "%s" % channel_dict[channel],
                 begin_left=None)
 
             # save plot

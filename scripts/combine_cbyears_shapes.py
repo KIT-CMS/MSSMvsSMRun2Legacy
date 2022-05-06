@@ -1,7 +1,15 @@
 import ROOT
 import array
 
-fout = ROOT.TFile('shapes_cbyears.root','RECREATE')
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--bOnly', help= 'Use b-only fit result', action='store_true')
+args = parser.parse_args()
+
+
+if args.bOnly: fout = ROOT.TFile('shapes_cbyears_bOnly.root','RECREATE')
+else: fout = ROOT.TFile('shapes_cbyears.root','RECREATE')
 
 cb_procs = ['TotalBkg',	'TotalProcs', 'TotalSig', 'data_obs']
 
@@ -25,14 +33,16 @@ dir_map = {
 
 
 for c in ['lt','tt','em']:
-  bins = [32,35,432,332]
-  if c=='em': bins=[33,36,433,333,332,432,32,35]
+  #bins = [32,35,432,332]
+  bins = [35,432,332,232,132]
+  #if c=='em': bins=[33,36,332,432]
   for b in bins:
 
     out_dir = 'htt_%(c)s_%(b)s_postfit' % vars()
     fout.mkdir(out_dir)
 
     fin = ROOT.TFile('shapes_cbyears_%(c)s_%(b)s.root' % vars())
+    if args.bOnly: fin = ROOT.TFile('shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars())
 
     if c == 'lt': chans = ['mt','et']
     else: chans = [c]
@@ -53,13 +63,18 @@ for c in ['lt','tt','em']:
         for chan in chans:
            indir = 'htt_%(chan)s_%(b)s_%(y)s_postfit' % vars()
            htemp = fin.Get('%(indir)s/%(x)s' % vars())
+           if chan =='em':
+             b_=b+1
+             indir2 = 'htt_%(chan)s_%(b_)s_%(y)s_postfit' % vars()
+             htemp2 = fin.Get('%(indir2)s/%(x)s' % vars())
+             if isinstance(htemp2,ROOT.TH1D) or isinstance(htemp2,ROOT.TH1F): htemp.Add(htemp2)
            if isinstance(htemp,ROOT.TH1D) or isinstance(htemp,ROOT.TH1F): h.Add(htemp)
 
       fout.cd(out_dir)
       h.Write()
 
     # for high mass categories we also add 1 TeV VLQ signal scales to bestfit point (gU=1.2)
-    if b not in [32,35,33,36]: continue
+    if b not in [33,36] or True: continue
     h1 = fin.Get('postfit/data_obs').Clone()
     h2 = fin.Get('postfit/data_obs').Clone()
     h1.Reset()
