@@ -10,10 +10,7 @@ analysis="vector_leptoquark"
 hSM_treatment="hSM-in-bg"
 categorization="classic"
 sm_like_hists="bsm"
-#sub_analyses="betaRd33_0 betaRd33_minus1 betaRd33_0_offdiag0"
-sub_analyses="betaRd33_0"
-#sub_analyses="betaRd33_minus1 betaRd33_0_offdiag0"
-#sub_analyses="betaRd33_0_offdiag0"
+sub_analyses="betaRd33_0 betaRd33_minus1 betaRd33_0_offdiag0"
 MASS=$3
 #gU=1.21
 gU=2.52
@@ -38,12 +35,11 @@ for sub_analysis in $sub_analyses; do
           --categorization ${categorization} \
           --sm-like-hists ${sm_like_hists} \
           --eras 2016,2017,2018 \
-          --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_nobtag_categories.txt \
+          --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
           --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1" \
           --variable mt_tot_puppi \
           --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_vlq_log.txt
 
- 
       ############
       # combining outputs
       ############
@@ -57,7 +53,41 @@ for sub_analysis in $sub_analyses; do
           mkdir -p ${datacarddir}/${ERA}/cmb/
           rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
       done
-  
+ 
+
+  elif [[ $MODE == "initial-split" ]]; then
+
+      morph_parallel.py --output ${defaultdir}/datacards \
+          --analysis ${analysis} \
+          --sub-analysis ${sub_analysis} \
+          --hSM-treatment ${hSM_treatment} \
+          --categorization ${categorization} \
+          --sm-like-hists ${sm_like_hists} \
+          --eras 2016,2017,2018 \
+          --category-list ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_classic_categories.txt \
+          --additional-arguments "--auto_rebin=1 --real_data=1 --manual_rebin=1 --vlq_split=1" \
+          --variable mt_tot_puppi \
+          --parallel 10 2>&1 | tee -a ${defaultdir}/logs/morph_vlq_log.txt
+
+
+
+      ############
+      # combining outputs
+      ############
+      mkdir -p ${datacarddir}/combined/cmb/
+      rsync -av --progress ${datacarddir}/201?/htt_*/* ${datacarddir}/combined/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+      for ERA in 2016 2017 2018; do
+          for CH in et mt tt em; do
+              mkdir -p ${datacarddir}/${ERA}/${CH}/
+              rsync -av --progress ${datacarddir}/${ERA}/htt_${CH}*/* ${datacarddir}/${ERA}/${CH}/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+          done
+          mkdir -p ${datacarddir}/${ERA}/cmb/
+          rsync -av --progress ${datacarddir}/${ERA}/htt_*/* ${datacarddir}/${ERA}/cmb/ 2>&1 | tee -a ${defaultdir}/logs/copy_datacards.txt
+      done
+
+
+
+ 
   elif [[ $MODE == "ws" ]]; then
       ############
       # workspace creation
@@ -65,6 +95,17 @@ for sub_analysis in $sub_analyses; do
   
       combineTool.py -M T2W -o "ws.root" \
       -P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
+      -i ${datacarddir}/combined/cmb/ \
+      -m ${MASS} --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
+
+  elif [[ $MODE == "ws-split" ]]; then
+      ############
+      # workspace creation
+      ############
+
+      combineTool.py -M T2W -o "ws.root" \
+      -P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
+      --PO vlq_split \
       -i ${datacarddir}/combined/cmb/ \
       -m ${MASS} --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
 
@@ -101,6 +142,19 @@ for sub_analysis in $sub_analyses; do
       -i ${datacarddir}/combined/cmb/ \
       -m 1000 --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
 
+  elif [[ $MODE == "ws-ccc-split" ]]; then
+      ############
+      # workspace creation
+      ############
+
+      combineTool.py -M T2W -o "ws.root" \
+      -P CombineHarvester.MSSMvsSMRun2Legacy.VLQ:VLQ \
+      --PO mu \
+      --PO vlq_split \
+      -i ${datacarddir}/combined/cmb/ \
+      -m 1000 --parallel 4 | tee -a ${defaultdir}/logs/workspace_vlq.txt
+
+
   elif [[ $MODE == "make-asimov" ]]; then
       combineTool.py -m "500,1000,2000,3000,4000,5000" \
       -M GenerateOnly -t -1 \
@@ -114,8 +168,7 @@ for sub_analysis in $sub_analyses; do
 
  
   elif [[ $MODE == "submit" ]]; then 
-      #combineTool.py -m "500,1000,2000,3000,4000,5000" \
-      combineTool.py -m "2000" \
+      combineTool.py -m "1000,2000,3000,4000,5000" \
       -M AsymptoticLimits \
       --setParameters gU=0,lumi_scale=1 \
       --redefineSignalPOIs gU \
@@ -123,7 +176,7 @@ for sub_analysis in $sub_analyses; do
       --there -n ".limit" \
       --job-mode "SGE" \
       --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
-      --task-name vlq_${sub_analysis}_full_cmb \
+      --task-name vlq_${sub_analysis}_full_cmb_${1} \
       --X-rtd MINIMIZER_analytic \
       --rAbsAcc 0 \
       --rRelAcc 0.0005 \
@@ -136,7 +189,7 @@ for sub_analysis in $sub_analyses; do
 
       combineTool.py \
       -M AsymptoticGrid \
-      ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/vlq_asymptotic_grid_test.json \
+      ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/vlq_asymptotic_grid.json \
       --redefineSignalPOIs r \
       --setParameterRanges r=0,1 \
       --setParameters r=1,lumi_scale=1 \
@@ -148,12 +201,14 @@ for sub_analysis in $sub_analyses; do
       --cminDefaultMinimizerStrategy 0 \
       -v 1
 
+      cd ../../../../../
+
   elif [[ $MODE == "collect-grid" ]]; then
       cd ${datacarddir}/combined/cmb
 
       combineTool.py \
       -M AsymptoticGrid \
-      ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/vlq_asymptotic_grid_test.json \
+      ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/vlq_asymptotic_grid.json \
       --redefineSignalPOIs r \
       --setParameterRanges r=0,1 \
       --setParameters r=1,lumi_scale=1 \
@@ -170,17 +225,17 @@ for sub_analysis in $sub_analyses; do
       cd ../../../../../
   elif [[ $MODE == "plot-grid" ]]; then
       if [[ ${sub_analysis} == "betaRd33_0" ]]; then
-        scenario_label="VLQ benchmark 1"
+        scenario_label="VLQ BM 1"
       elif [[ ${sub_analysis} == "betaRd33_minus1" ]]; then
-        scenario_label="VLQ benchmark 2"
+        scenario_label="VLQ BM 2"
       elif [[ ${sub_analysis} == "betaRd33_0_offdiag0" ]]; then
-        scenario_label="VLQ benchmark 3"
+        scenario_label="VLQ BM 3"
       fi
 
       if [[ ${sub_analysis} != "betaRd33_0_offdiag0" ]]; then
         plotLimitGrid.py ${datacarddir}/combined/cmb/asymptotic_grid_${sub_analysis}.root \
         --title-left="${scenario_label}" \
-        --cms-sub="" \
+        --cms-sub="Preliminary" \
         --output vlq_${sub_analysis}_grid \
         --title-right="138 fb^{-1} (13 TeV)" \
         --contours="exp0,exp-1,exp-2,exp+1,exp+2,obs" \
@@ -195,7 +250,7 @@ for sub_analysis in $sub_analyses; do
       else
         plotLimitGrid.py ${datacarddir}/combined/cmb/asymptotic_grid_${sub_analysis}.root \
         --title-left="${scenario_label}" \
-        --cms-sub="" \
+        --cms-sub="Preliminary" \
         --output vlq_${sub_analysis}_grid \
         --title-right="138 fb^{-1} (13 TeV)" \
         --contours="exp0,exp-1,exp-2,exp+1,exp+2,obs" \
@@ -206,24 +261,11 @@ for sub_analysis in $sub_analyses; do
         --no_morph \
         --convert_GeV_to_TeV \
         --remove_contours_below "1"
-
-        #plotLimitGrid.py ${datacarddir}/combined/cmb/asymptotic_grid_${sub_analysis}.root \
-        #--title-left="${scenario_label}" \
-        #--cms-sub="" \
-        #--output vlq_${sub_analysis}_grid \
-        #--title-right="138 fb^{-1} (13 TeV)" \
-        #--contours="exp0,exp-1,exp-2,exp+1,exp+2,obs" \
-        #--y-range 0.0,6.0 \
-        #--x-title "m_{U} (TeV)" \
-        #--y-title "g_{U}" \
-        #--bin-method "BinCenterAligned" \
-        #--convert_GeV_to_TeV 
       fi
 
 
 
   elif [[ $MODE == "submit-extrap-run3" ]]; then
-      # need a new directory for this
       combineTool.py -m "500,1000,2000,3000,4000,5000" \
       -M AsymptoticLimits \
       -t -1 \
@@ -243,7 +285,6 @@ for sub_analysis in $sub_analyses; do
 
  
   elif [[ $MODE == "submit-extrap-hllhc" ]]; then
-      # need a new directory for this
       combineTool.py -m "500,1000,2000,3000,4000,5000" \
       -M AsymptoticLimits \
       -t -1 \
@@ -263,9 +304,6 @@ for sub_analysis in $sub_analyses; do
 
 
   elif [[ $MODE == "significance" ]]; then
-      ############
-      # job setup creation
-      ############
       combineTool.py -m "500,1000,2000,3000,4000,5000" \
       -M Significance \
       --setParameters gU=0,lumi_scale=1 \
@@ -306,41 +344,6 @@ for sub_analysis in $sub_analyses; do
       --use-dirs \
       -o ${datacarddir}/combined/cmb/vlq_${sub_analysis}.json
    
-      #plotMSSMLimits_backup.py --cms-sub "Preliminary" \
-      #--title-right "138 fb^{-1} (13 TeV)" \
-      #--x-title "M_{U} [TeV]"\
-      #--y-axis-min 0.0 \
-      #--y-axis-max 6.0 \
-      #--show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
-      #--process "vector_leptoquark" \
-      #--subprocess "${sub_analysis}" \
-      #--add-exp-line-from-json "{\"EXO-19-016 Total Expected\":\"input/total_expected_kappa_1.json\",\"EXO-19-016 Nonres Expected\":\"input/nonres_expected_kappa_1.json\"}" \
-      #--add-obs-line-from-json "{\"EXO-19-016 Total Observed\":\"input/total_observed_kappa_1.json\",\"EXO-19-016 Nonres Observed\":\"input/nonres_observed_kappa_1.json\"}" \
-      #--output vlq_${sub_analysis}_cmb_exo_kapp_1
-
-      #plotMSSMLimits.py --cms-sub "Preliminary" \
-      #--title-right "138 fb^{-1} (13 TeV)" \
-      #--x-title "M_{U} [TeV]"\
-      #--y-axis-min 0.0 \
-      #--y-axis-max 6.0 \
-      #--show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
-      #--process "vector_leptoquark" \
-      #--subprocess "${sub_analysis}" \
-      #--add-exp-line-from-json "{\"3000 fb^{-1}\":\"analysis/1911_HLLHC_no_interference_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\",\"500 fb^{-1}\":\"analysis/1911_Run3_no_interference_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\"}" \
-      #--output vlq_${sub_analysis}_cmb
-
-
-      #plotMSSMLimits.py --cms-sub "Preliminary" \
-      #--title-right "138 fb^{-1} (13 TeV)" \
-      #--x-title "M_{U} [TeV]"\
-      #--y-axis-min 0.0 \
-      #--y-axis-max 6.0 \
-      #--show obs,exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
-      #--process "vector_leptoquark" \
-      #--subprocess "${sub_analysis}" \
-      #--add-exp-line-from-json "{\"3000 fb^{-1}\":\"analysis/2610_HLLHC_lumiscale_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\",\"500 fb^{-1}\":\"analysis/2610_run3_lumiscale_v2_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\"}" \
-      #--output vlq_${sub_analysis}_cmb
-
       plotMSSMLimits_backup.py --cms-sub "Preliminary" \
       --title-right "138 fb^{-1} (13 TeV)" \
       --x-title "M_{U} [TeV]"\
@@ -364,20 +367,6 @@ for sub_analysis in $sub_analyses; do
       --output vlq_${sub_analysis}_cmb_no_extrap
 
 
-#
-#      plotMSSMLimits.py --cms-sub "Preliminary" \
-#      --title-right "138 fb^{-1} (13 TeV)" \
-#      --x-title "M_{U} [TeV]"\
-#      --y-axis-min 0.0 \
-#      --y-axis-max 4.5 \
-#      --show exp ${datacarddir}/combined/cmb/vlq_${sub_analysis}_cmb.json \
-#      --process "vector_leptoquark" \
-#      --subprocess "${sub_analysis}" \
-#      --add-exp-line-from-json "{\"500 fb^{-1}\":\"analysis/2610_run3_lumiscale_v2_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\",\"3000 fb^{-1}\":\"analysis/2610_HLLHC_lumiscale_${sub_analysis}/datacards_vector_leptoquark/combined/cmb/vlq_${sub_analysis}_cmb.json\"}" \
-#      --convert-gU-to_lambda \
-#      --output vlq_${sub_analysis}_cmb_lambda
-
-
   elif [[ $MODE == "ws-grid" ]]; then
       ############
       # workspace creation
@@ -398,16 +387,6 @@ for sub_analysis in $sub_analyses; do
       -m $MASS \
       --setParameters gU=0,lumi_scale=1 \
       --redefineSignalPOIs gU  -v 0
-
-      #combineTool.py -M Impacts -d ${datacarddir}/combined/cmb/ws.root \
-      #--X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-      #--robustFit 1 --doFits \
-      #-m $MASS \
-      #--setParameters gU=0,lumi_scale=1 \
-      #--redefineSignalPOIs gU \
-      #--job-mode "SGE" \
-      #--prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
-      #--task-name ${taskname} --merge 5
 
 
   elif [[ $MODE == "signal-strength" ]]; then
@@ -467,49 +446,49 @@ for sub_analysis in $sub_analyses; do
       --there \
       -v 1
 
+  elif [[ $MODE == "multidim-fit" ]]; then
+
+      cd ${datacarddir}/combined/cmb
+
+      combineTool.py -M MultiDimFit \
+      -m $MASS \
+      --points=10 --algo=grid \
+      --redefineSignalPOIs gU \
+      --setParameterRanges gU=0.6,2 \
+      --setParameters betaLstau=0.8,gU=0.6 \
+      --freezeParameters betaLstau \
+      --X-rtd MINIMIZER_analytic \
+      --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
+      -d ws.root \
+      -n "2DScan" 
+
+      cd ../../../../../
+
   elif [[ $MODE == "fit-for-scan" ]]; then
 
       cd ${datacarddir}/combined/cmb
 
-      #combine -M MultiDimFit \
-      #-m $MASS \
-      #--setParameters gU=0.8885,lumi_scale=3.62  \
-      #-t -1 --freezeParameters gU \
-      #--redefineSignalPOIs gU \
-      #--X-rtd MINIMIZER_analytic \
-      #--cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
-      #--robustHesse 1 \
-      #-d ${datacarddir}/combined/cmb/ws.root \
-      #--points=30 --fastScan --algo=grid --rMin=0 --rMax=3 \
-      #-n "Scan"
-
-      combine -M MultiDimFit \
-      -m $MASS \
+     combineTool.py -M MultiDimFit \
+      -m "1000,2000,3000,4000,5000" \
       --redefineSignalPOIs gU \
+      --setParameters gU=0 \
       --X-rtd MINIMIZER_analytic \
       --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
       --robustHesse 1 \
       -d ws.root \
-      --points=30 --fastScan --algo=grid --rMin=0 --rMax=2 \
-      -n "Scan"
+      --points=200 --fastScan --algo=grid --rMin=0 --rMax=10 \
+      -n "Scan" \
+      --job-mode "SGE" \
+      --prefix-file ic --sub-opts "-q hep.q -l h_rt=3:0:0" \
+      --task-name vlq_${sub_analysis}_full_cmb_multdimfit 
 
-      cd ../../../../../
+     cd ../../../../../
+
 
   elif [[ $MODE == "fit-for-scan-asimov" ]]; then
 
       cd ${datacarddir}/combined/cmb
 
-      #combine -M MultiDimFit \
-      #-m $MASS \
-      #--setParameters gU=0.8885,lumi_scale=3.62  \
-      #-t -1 --freezeParameters gU \
-      #--redefineSignalPOIs gU \
-      #--X-rtd MINIMIZER_analytic \
-      #--cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.1 \
-      #--robustHesse 1 \
-      #-d ${datacarddir}/combined/cmb/ws.root \
-      #--points=30 --fastScan --algo=grid --rMin=0 --rMax=3 \
-      #-n "Scan"
 
       if [[ $MASS == "500" ]]; then
         combine -M MultiDimFit \
@@ -544,7 +523,36 @@ for sub_analysis in $sub_analyses; do
 
 
   elif [[ $MODE == "lkld-plot" ]]; then
-    ../CombineTools/scripts/plot1DScan.py ${datacarddir}/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root --POI gU  --y-cut=8 --output=${datacarddir}/combined/cmb/scan_$MASS
+
+    if [[ $sub_analysis == "betaRd33_0" ]]; then
+      #2203_lkld_betaRd33_0
+      ../CombineTools/scripts/plot1DScan.py ${datacarddir}/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root \
+      --POI gU \
+      --others analysis/2503_lkld_nobtag_betaRd33_0/datacards_vector_leptoquark/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root:"No b tag":6 analysis/2503_lkld_btag_betaRd33_0/datacards_vector_leptoquark/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root:"b tag":8 \
+      --output=${datacarddir}/combined/cmb/scan_${sub_analysis}_$MASS \
+      --translate input/translate_poi.json \
+      --main-label="Combined" \
+      --title-left "VLQ BM 1: m_{U} = ${MASS:0:1} TeV" \
+      --title-right "138 fb^{-1} (13 TeV)" \
+      --y-cut=16 \
+      --y-max=16 \
+      --logo-sub "Supplementary"
+    fi
+    if [[ $sub_analysis == "betaRd33_minus1" ]]; then
+      #3003_lkld_betaRd33_0
+      ../CombineTools/scripts/plot1DScan.py ${datacarddir}/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root \
+      --POI gU \
+      --others analysis/3003_lkld_nobtag_betaRd33_minus1/datacards_vector_leptoquark/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root:"No b tag":6 analysis/3003_lkld_btag_betaRd33_minus1/datacards_vector_leptoquark/combined/cmb/higgsCombineScan.MultiDimFit.mH${MASS}.root:"b tag":8 \
+      --output=${datacarddir}/combined/cmb/scan_${sub_analysis}_$MASS \
+      --translate input/translate_poi.json \
+      --main-label="Combined" \
+      --title-left "VLQ BM 2: m_{U} = ${MASS:0:1} TeV" \
+      --title-right "138 fb^{-1} (13 TeV)" \
+      --y-cut=20 \
+      --y-max=20 \
+      --logo-sub "Supplementary"
+    fi
+
 
 
   elif [[ $MODE == "prefit-plots" ]]; then
@@ -684,17 +692,36 @@ for sub_analysis in $sub_analyses; do
       -d ${datacarddir}/combined/cmb/ws.root \
       -m $MASS \
       --setParameters lumi_scale=1 \
+      --setParameterRanges mu=-1,4 \
+      --redefineSignalPOIs mu \
+      --X-rtd MINIMIZER_analytic \
+      --X-rtd FITTER_NEW_CROSSING_ALGO \
+      --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
+      --robustFit 1 --stepSize 0.001 \
+      -n .CCC.btag_$1 \
+      --saveFitResult \
+      -g btag -g nobtag  \
+      -v 1
+
+  elif [[ $MODE == "ccc-btag-split" ]]; then
+
+      ulimit -s unlimited
+
+      combine -M ChannelCompatibilityCheckRegexGroup \
+      -d ${datacarddir}/combined/cmb/ws.root \
+      -m $MASS \
+      --setParameters lumi_scale=1,betaLstau=0.19 \
+      --freezeParameters betaLstau \
       --setParameterRanges mu=-2,20 \
       --redefineSignalPOIs mu \
       --X-rtd MINIMIZER_analytic \
       --X-rtd FITTER_NEW_CROSSING_ALGO \
       --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 \
       --robustFit 1 --stepSize 0.01 \
-      -n .CCC.btag \
+      -n .CCC.btag_$1 \
       --saveFitResult \
       -g btag -g nobtag  \
       -v 1
-
 
 
   elif [[ $MODE == "plot-ccc-channel" ]]; then
@@ -712,11 +739,13 @@ for sub_analysis in $sub_analyses; do
       -r m6,14
 
   elif [[ $MODE == "plot-ccc-btag" ]]; then
-      python plotting/plot_ccc.py \
-      higgsCombine.CCC.btag.ChannelCompatibilityCheckRegexGroup.mH${MASS}.root \
-      -o ChannelCompatibilityCheck_FitResults_mH${MASS}_btag \
+      pwd
+      python plotting/plot_ccc_new.py \
+      higgsCombine.CCC.btag_${1}.ChannelCompatibilityCheckRegexGroup.mH${MASS}.root \
+      -o ChannelCompatibilityCheck_FitResults_mH${MASS}_btag_$1 \
       -p mu \
-      -r m10,35
+      -r m2,2 \
+      --legend-position=0
 
   fi
 done

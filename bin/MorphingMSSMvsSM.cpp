@@ -118,6 +118,7 @@ int main(int argc, char **argv) {
   bool lowmass = false;
   bool prop_plot = false;
   bool cbyear_plot = false;
+  bool vlq_split = false;
 
   vector<string> mass_susy_ggH({}), mass_susy_qqH({}), parser_bkgs({}), parser_bkgs_em({}), parser_sm_signals({}), parser_main_sm_signals({});
 
@@ -173,6 +174,7 @@ int main(int argc, char **argv) {
       ("enable_bsm_lowmass", po::value<bool>(&enable_bsm_lowmass)->default_value(enable_bsm_lowmass))
       ("prop_plot", po::value<bool>(&prop_plot)->default_value(false))
       ("cbyear_plot", po::value<bool>(&cbyear_plot)->default_value(false))
+      ("vlq_split", po::value<bool>(&vlq_split)->default_value(false))
       ("help", "produce help message");
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
@@ -435,7 +437,12 @@ int main(int argc, char **argv) {
   }
   else if(analysis == "vector_leptoquark")
   {
-      vlq_signals = {"VLQ_" + sub_analysis + "_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"};
+      if(vlq_split) {
+        vlq_signals = {"bbToVLQ_" + sub_analysis + "_matched_M","bbToVLQ_"+sub_analysis+"_matched_interference_M","ssToVLQ_" + sub_analysis + "_matched_M","ssToVLQ_"+sub_analysis+"_matched_interference_M","bsToVLQ_" + sub_analysis + "_matched_M"};
+      }
+      else {
+        vlq_signals = {"VLQ_" + sub_analysis + "_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"};
+      }
   }
   else if (variable=="m_sv_puppi" || variable=="m_sv_VS_pt_tt_splitpT" || lowmass) {
     mssm_qqH_signals = {"qqX"};
@@ -558,7 +565,7 @@ int main(int argc, char **argv) {
       SUSYggH_lowmasses[2017] = SUSYggH_lowmasses[2018];
 
       //vlq_masses = {"500","1000","2000","3000","4000","5000"};
-      vlq_masses = {"2000"};
+      vlq_masses = {"1000","2000","3000","4000","5000"};
 
     }
   } else {
@@ -1749,12 +1756,12 @@ int main(int argc, char **argv) {
 
   ch::CombineHarvester procs_no_i;
   if(prop_plot || cbyear_plot) procs_no_i = cb.cp();
-  else procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i","VLQ_"+sub_analysis+"_matched_interference_M"}, false);
+  else procs_no_i = cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i","VLQ_"+sub_analysis+"_matched_interference_M","bbToVLQ_"+sub_analysis+"_matched_interference_M","ssToVLQ_"+sub_analysis+"_matched_interference_M"}, false);
 
   if(prop_plot||cbyear_plot){
      // for prop_plot option if the inteference is negative we scale it positive and then add a rate parameter which will scale it negative again in the end 
 
-     cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i","VLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process *p) {
+     cb.cp().process({"ggH_i","ggh_i","ggA_i", "ggH1_i", "ggH2_i", "ggH3_i","ggH_i_lowmass","ggh_i_lowmass","ggA_i_lowmass", "ggH1_i_lowmass", "ggH2_i_lowmass", "ggH3_i_lowmass","ggX_i","VLQ_"+sub_analysis+"_matched_interference_M","bbToVLQ_"+sub_analysis+"_matched_interference_M","ssToVLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process *p) {
        if(p->rate() <= 0.0){
          std::cout << "[WARNING] Setting mssm inteference signal with negative yield to positive: \n ";
          std::cout << ch::Process::PrintHeader << *p << "\n";
@@ -1973,8 +1980,17 @@ int main(int argc, char **argv) {
   if(analysis == "vector_leptoquark"){
     for (string y : {"2016","2017","2018"}) {
       std::cout << "Converting VLQ systematics to lnN" << std::endl;
-      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
-      ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+      if(vlq_split) {
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"bbToVLQ_"+sub_analysis+"_matched_M","bbToVLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"bbToVLQ_"+sub_analysis+"_matched_M","bbToVLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"bsToVLQ_"+sub_analysis+"_matched_M"}), "CMS_htt_eff_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"bsToVLQ_"+sub_analysis+"_matched_M"}), "CMS_htt_mistag_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ssToVLQ_"+sub_analysis+"_matched_M","ssToVLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"ssToVLQ_"+sub_analysis+"_matched_M","ssToVLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+      } else {
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_eff_b_"+y);
+        ConvertShapesToLnN (cb.cp().bin_id(mssm_bins).process({"VLQ_"+sub_analysis+"_matched_M","VLQ_"+sub_analysis+"_matched_interference_M"}), "CMS_htt_mistag_b_"+y);
+      }
     }
   }
 
@@ -2398,15 +2414,30 @@ int main(int argc, char **argv) {
   if(analysis == "vector_leptoquark")
   {
    // Make yield positive for ease in physics model
-    cb.cp().process({"VLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process * proc) {
-       proc->set_rate(proc->rate()*-1);
-    });
-    mass_var = {
-      {"VLQ_"+sub_analysis+"_matched_M", &MH}, {"VLQ_"+sub_analysis+"_matched_interference_M", &MH}
-    };
-    process_norm_map = {
-      {"VLQ_"+sub_analysis+"_matched_M", "norm"}, {"VLQ_"+sub_analysis+"_matched_interference_M", "norm"}
-    };
+    if(vlq_split) {
+      cb.cp().process({"bbToVLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process * proc) {
+         proc->set_rate(proc->rate()*-1);
+      });
+      cb.cp().process({"ssToVLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process * proc) {
+         proc->set_rate(proc->rate()*-1);
+      });
+      mass_var = {
+        {"bbToVLQ_"+sub_analysis+"_matched_M", &MH}, {"bbToVLQ_"+sub_analysis+"_matched_interference_M", &MH}, {"ssToVLQ_"+sub_analysis+"_matched_M", &MH}, {"ssToVLQ_"+sub_analysis+"_matched_interference_M", &MH},{"bsToVLQ_"+sub_analysis+"_matched_M", &MH}
+      };
+      process_norm_map = {
+        {"bbToVLQ_"+sub_analysis+"_matched_M", "norm"}, {"bbToVLQ_"+sub_analysis+"_matched_interference_M", "norm"}, {"ssToVLQ_"+sub_analysis+"_matched_M", "norm"}, {"ssToVLQ_"+sub_analysis+"_matched_interference_M", "norm"}, {"sbToVLQ_"+sub_analysis+"_matched_M", "norm"}
+      };
+    } else {
+      cb.cp().process({"VLQ_"+sub_analysis+"_matched_interference_M"}).ForEachProc([&](ch::Process * proc) {
+         proc->set_rate(proc->rate()*-1);
+      });
+      mass_var = {
+        {"VLQ_"+sub_analysis+"_matched_M", &MH}, {"VLQ_"+sub_analysis+"_matched_interference_M", &MH}
+      };
+      process_norm_map = {
+        {"VLQ_"+sub_analysis+"_matched_M", "norm"}, {"VLQ_"+sub_analysis+"_matched_interference_M", "norm"}
+      };
+    }
 
     ws.import(MH);
   }

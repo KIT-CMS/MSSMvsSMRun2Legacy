@@ -3,7 +3,7 @@
 
 import argparse
 import os
-
+import CombineHarvester.CombineTools.plotting as plot
 import ROOT
 ROOT.gROOT.SetBatch()
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -69,9 +69,13 @@ def main(args):
     canv.SetLeftMargin(0.2)
     canv.SetBottomMargin(0.13)
     canv.SetGridx(1)
+    canv.SetTickx(1)
+    canv.SetTicky(1)
+
     # Create the plot object.
     frame = ROOT.TH2F("frame",
-                      ";best fit {};".format(args.poi.replace("_ggH", "_{ggH}")),
+#                      ";best fit {};".format(args.poi.replace("_ggH", "_{ggH}")),
+                      ";best fit g_{U}^{4};",
                       1,
                       # res_poi.getVal() + 5*res_poi.getAsymErrorLo(),
                       args.frame_range[0],
@@ -89,7 +93,10 @@ def main(args):
         points.SetPoint(i, ri.getVal(), i+0.5)
         points.SetPointError(i, -ri.getAsymErrorLo(), ri.getAsymErrorHi(), 0, 0)
         print("Alternate fit: ", ch_, ri.getVal())
-        frame.GetYaxis().SetBinLabel(i+1, ch_.replace(prefix, ""))
+        if ch_.replace(prefix, "") == "btag":
+          frame.GetYaxis().SetBinLabel(i+1, "b-tag")
+        elif ch_.replace(prefix, "") == "nobtag":
+          frame.GetYaxis().SetBinLabel(i+1, "no b-tag")
 
     points.SetLineColor(ROOT.kBlack)
     points.SetLineWidth(3)
@@ -113,12 +120,14 @@ def main(args):
     globalFitLine.Draw("same")
     points.Draw("P SAME")
 
-    legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
+    #legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
     # legend = ROOT.TLegend(0.6, 0.13, 0.9, 0.33)
     #legend = ROOT.TLegend(0.2, 0.7, 0.5, 0.9)
-    # legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
+    legend = ROOT.TLegend(0.55, 0.65, 0.85, 0.85)
+    #legend = ROOT.TLegend(0.2, 0.13, 0.5, 0.33)
     legend.AddEntry(globalFitLine, "Global Best Fit", "l")
     legend.AddEntry(globalFitBand, "Global Best Fit #pm 1 #sigma", "f")
+    legend.SetBorderSize(0)
     legend.Draw()
 
     limit_tree = infile.Get("limit")
@@ -127,10 +136,17 @@ def main(args):
     latex2.SetNDC()
     latex2.SetTextAngle(0)
     latex2.SetTextColor(ROOT.kBlack)
-    latex2.SetTextSize(0.04)
+    latex2.SetTextSize(0.035)
     begin_left = 0.245
-    # latex2.DrawLatex(begin_left, 0.360, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
-    latex2.DrawLatex(begin_left, 0.640, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    #latex2.DrawLatex(begin_left, 0.360, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    latex2.DrawLatex(0.55, 0.52, "#chi^{{2}}-like = {:.3f}".format(limit_tree.limit))
+    latex2.DrawLatex(0.55, 0.6, "VLQ BM 1: m_{U} = 1 TeV")
+
+    #plot.DrawCMSLogo(canv, "CMS", "Supplementary", 1, 0.045, 0.035, 1.2,  cmsTextSize = 0.5)
+    plot.DrawCMSLogo(canv, "CMS", "Supplementary", 1, 0.115, -0.064, 5,  cmsTextSize = 0.5)
+    plot.DrawTitle(canv, "138 fb^{-1} (13 TeV)", 3, textSize=0.45, textOffset=0.3)
+    plot.DrawTitle(canv, "", 1, textSize=0.7, textOffset=0.3)
+
 
     # Draw mass of Higgs boson outside of frame
     if args.mass is not None:

@@ -9,6 +9,7 @@ class VLQ(PhysicsModel):
         self.interference = True
         self.grid = False
         self.mu = False
+        self.vlq_split = False
 
     def setPhysicsOptions(self, physOptions):
         for po in physOptions:
@@ -18,6 +19,9 @@ class VLQ(PhysicsModel):
                 self.grid = True
             if po.startswith("mu"):
                 self.mu = True
+            if po.startswith("vlq_split"):
+                self.vlq_split = True
+
 
     def doParametersOfInterest(self):
         """Create POI and other parameters, and define the POI set."""
@@ -35,8 +39,9 @@ class VLQ(PhysicsModel):
         self.modelBuilder.doVar('gU[0,0,10]')
         poiNames.append('gU')
 
-        #self.modelBuilder.doVar('r_ggH[0,0,10]')
-        #poiNames.append('r_ggH')
+        if self.vlq_split:
+          self.modelBuilder.doVar('betaLstau[0,0,1]')
+          poiNames.append('betaLstau')
 
 
         if self.mu:
@@ -45,18 +50,37 @@ class VLQ(PhysicsModel):
 
         self.modelBuilder.doSet('POI', ','.join(poiNames))
 
-        #reweight_file = "/vols/cms/gu18/CH_unblinding/CMSSW_10_2_25/src/CombineHarvester/MSSMvsSMRun2Legacy/data/higgs_pt_reweighting_fullRun2_v2.root"
-        #rf = ROOT.TFile(reweight_file)
-        #w = rf.Get("w")
-        #w.var("Yb_MSSM_H").setVal(1)
-        #w.var("Yt_MSSM_H").setVal(1)
-        #w.var("mH").setVal(1200)
-        #Yt_scale = w.function("ggH_t_MSSM_frac").getVal()
-        #Yb_scale = w.function("ggH_b_MSSM_frac").getVal()
-        #Yi_scale = w.function("ggH_i_MSSM_frac").getVal()
-        #self.modelBuilder.factory_('expr::ggH_t_scale("{}*@0", r_ggH)'.format(Yt_scale))
-        #self.modelBuilder.factory_('expr::ggH_b_scale("{}*@0", r_ggH)'.format(Yb_scale))
-        #self.modelBuilder.factory_('expr::ggH_i_scale("{}*@0", r_ggH)'.format(Yi_scale))
+        if self.vlq_split:
+          if not self.mu:
+            if self.grid:
+              self.modelBuilder.factory_('expr::bbgU2("-{}*@0*@0*@1", gU, r)'.format(scale))
+              self.modelBuilder.factory_('expr::bbgU4("@0*@0*@0*@0*@1", gU, r)')
+              self.modelBuilder.factory_('expr::bsgU4("@0*@0*@0*@0*@1*(@2/0.19)*(@2/0.19)", gU, r, betaLstau)')
+              self.modelBuilder.factory_('expr::ssgU2("-{}*@0*@0*@1*(@2/0.19)*(@2/0.19)*(@2/0.19)*(@2/0.19)", gU, r, betaLstau)'.format(scale))
+              self.modelBuilder.factory_('expr::ssgU4("@0*@0*@0*@0*@1*(@2/0.19)*(@2/0.19)", gU, r, betaLstau)')
+
+            else:
+              self.modelBuilder.factory_('expr::bbgU2("-{}*@0*@0", gU)'.format(scale))
+              self.modelBuilder.factory_('expr::bbgU4("@0*@0*@0*@0", gU)')
+              self.modelBuilder.factory_('expr::bsgU4("@0*@0*@0*@0*(@1/0.19)*(@1/0.19)", gU, betaLstau)')
+              self.modelBuilder.factory_('expr::ssgU2("-{}*@0*@0*(@1/0.19)*(@1/0.19)*(@1/0.19)*(@1/0.19)", gU, betaLstau)'.format(scale))
+              self.modelBuilder.factory_('expr::ssgU4("@0*@0*@0*@0*(@1/0.19)*(@1/0.19)", gU, betaLstau)')
+          else:
+            if self.grid:
+              self.modelBuilder.factory_('expr::bbgU2("-{}*(((@0/fabs(@0))*@0)**0.5)*@1", mu, r)'.format(scale))
+              self.modelBuilder.factory_('expr::bbgU4("@0*@1", mu, r)')
+              self.modelBuilder.factory_('expr::bsgU4("@0*@1*(@2/0.19)*(@2/0.19)", mu, r, betaLstau)')
+              self.modelBuilder.factory_('expr::ssgU2("-{}*(((@0/fabs(@0))*@0)**0.5)*@1*(@2/0.19)*(@2/0.19)*(@2/0.19)*(@2/0.19)", mu, r, betaLstau)'.format(scale))
+              self.modelBuilder.factory_('expr::ssgU4("@0*@1*(@2/0.19)*(@2/0.19)", mu, r, betaLstau)')
+
+            else:
+              self.modelBuilder.factory_('expr::bbgU2("-{}*(((@0/fabs(@0))*@0)**0.5)", mu)'.format(scale))
+              self.modelBuilder.factory_('expr::bbgU4("@0", mu)')
+              self.modelBuilder.factory_('expr::bsgU4("@0*(@1/0.19)*(@1/0.19)", mu, betaLstau)')
+              self.modelBuilder.factory_('expr::ssgU2("-{}*(((@0/fabs(@0))*@0)**0.5)*(@1/0.19)*(@1/0.19)*(@1/0.19)*(@1/0.19)", mu, betaLstau)'.format(scale))
+              self.modelBuilder.factory_('expr::ssgU4("@0*(@1/0.19)*(@1/0.19)", mu, betaLstau)')
+
+
 
         if not self.mu:
           if self.grid:
@@ -77,16 +101,20 @@ class VLQ(PhysicsModel):
 
         scalings = []
 
-        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process: 
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process and not process.startswith("bb") and not process.startswith("bs") and not process.startswith("ss"): 
             scalings.append('gU4')
-        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process:
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process and not process.startswith("bb") and not process.startswith("bs") and not process.startswith("ss"):
             scalings.append('gU2')
-        #if "ggH_t_1200" in process:
-        #    scalings.append('ggH_t_scale')
-        #if "ggH_b_1200" in process:
-        #    scalings.append('ggH_b_scale')
-        #if "ggH_i_1200" in process:
-        #    scalings.append('ggH_i_scale')
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process and process.startswith("bb"):
+            scalings.append('bbgU4')
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process and process.startswith("bb"):
+            scalings.append('bbgU2')
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process and process.startswith("bs"):
+            scalings.append('bsgU4')
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' not in process and process.startswith("ss"):
+            scalings.append('ssgU4')
+        if ('VLQ_betaRd33_0' in process or 'VLQ_betaRd33_minus1' in process) and 'interference' in process and process.startswith("ss"):
+            scalings.append('ssgU2')
 
         if scalings:
             scaling = '_'.join(scalings)

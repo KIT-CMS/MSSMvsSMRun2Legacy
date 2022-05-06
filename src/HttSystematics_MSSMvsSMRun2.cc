@@ -97,18 +97,29 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
   std::vector<std::string> vlq_signals = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
                                           "VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M",
                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M",
-                                          "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
+                                          "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M",
+                                          "bbToVLQ_betaRd33_minus1_matched_M","bbToVLQ_betaRd33_0_matched_M",
+                                          "bbToVLQ_betaRd33_minus1_matched_interference_M","bbToVLQ_betaRd33_0_matched_interference_M",
+                                          "bsToVLQ_betaRd33_minus1_matched_M","bsToVLQ_betaRd33_0_matched_M",
+                                          "ssToVLQ_betaRd33_minus1_matched_M","ssToVLQ_betaRd33_0_matched_M",
+                                          "ssToVLQ_betaRd33_minus1_matched_interference_M","ssToVLQ_betaRd33_0_matched_interference_M"};
 
 
   std::vector<std::string> vlq_signals_offdiag = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
                                                   "VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M"};
 
-
   std::vector<std::string> vlq_tchannel = {"VLQ_betaRd33_minus1_matched_M","VLQ_betaRd33_0_matched_M",
-                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M"};
+                                           "VLQ_betaRd33_minus1_offdiag0_matched_M","VLQ_betaRd33_0_offdiag0_matched_M",
+                                           "bbToVLQ_betaRd33_minus1_matched_M","bbToVLQ_betaRd33_0_matched_M",
+                                           "bsToVLQ_betaRd33_minus1_matched_M","bsToVLQ_betaRd33_0_matched_M",
+                                           "ssToVLQ_betaRd33_minus1_matched_M","ssToVLQ_betaRd33_0_matched_M"};
+
 
   std::vector<std::string> vlq_interference = {"VLQ_betaRd33_minus1_matched_interference_M","VLQ_betaRd33_0_matched_interference_M",
-                                              "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M"};
+                                              "VLQ_betaRd33_minus1_offdiag0_matched_interference_M","VLQ_betaRd33_0_offdiag0_matched_interference_M",
+                                              "bbToVLQ_betaRd33_minus1_matched_interference_M","bbToVLQ_betaRd33_0_matched_interference_M",
+                                              "ssToVLQ_betaRd33_minus1_matched_interference_M","ssToVLQ_betaRd33_0_matched_interference_M"};
+
 
 
   std::vector<std::string> mssm_ggH_lowmass_signals;
@@ -164,29 +175,13 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
      ({"em","et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 0.985,1.048)
      ({"em","et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.052,0.887));
 
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_tchannel)
-        .bin_id(nobtag_categories)
-        .AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMap<>::init(0.82));
+   cb.cp().process(vlq_tchannel).AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 1.0,0.82)
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.0,1.25));
 
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_tchannel)
-        .bin_id(btag_categories)
-        .AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMap<>::init(1.25));
-
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_interference)
-        .bin_id(nobtag_categories)
-        .AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMap<>::init(0.89));
-
-   cb.cp()
-        .channel({"em","et", "mt", "tt"})
-        .process(vlq_interference)
-        .bin_id(btag_categories)
-        .AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMap<>::init(1.16));
+   cb.cp().process(vlq_interference).AddSyst(cb, "4fs_vs_5fs_uncert", "lnN", SystMapAsymm<channel,ch::syst::era,bin_id,mass>::init
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, nobtag_categories, {"500","1000","2000","3000","4000","5000"}, 1.0,0.89)
+     ({"em","et","mt","tt"}, {"2016","2017","2018"}, btag_categories, {"500","1000","2000","3000","4000","5000"}, 1.0,1.16));
 
    cb.cp()
         .channel({"em","et", "mt", "tt"})
