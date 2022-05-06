@@ -26,6 +26,12 @@ def parse_args():
     parser.add_argument("--output", "-o",
                         default="limit",
                         help="Name of the output plot without file extension")
+    parser.add_argument("--x-var", "-x",
+                        default="r_ggH",
+                        help="Name of the POI to include as x variable")
+    parser.add_argument("--y-var", "-y",
+                        default="r_bbH",
+                        help="Name of the POI to include as y variable")
     return parser.parse_args()
 
 
@@ -94,25 +100,33 @@ def convert_graph_to_dataframe(graph):
     logger.debug("Searching for entries missing in the created TGraph...")
     getxy = operator.itemgetter(0,1)
     existing_points = map(getxy, points)
-    missing = set(itertools.product(x_vals, y_vals)) - set(existing_points)
+    # we want to ignore edge values when interpolating since these can get set to 0
+    # at the moment we only ignore the upper edges as the lower edges don't seem to have the same issues
+    x_vals_trim = x_vals
+    y_vals_trim = y_vals
+    x_vals_trim.remove(max(x_vals_trim))
+    y_vals_trim.remove(max(y_vals_trim))
+    missing = set(itertools.product(x_vals_trim, y_vals_trim)) - set(existing_points)
     logger.info("Found {} missing entries in scan".format(len(missing)))
     if len(missing) > 0:
         logger.info("Will set their values to the interpolated ones...")
-    miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
+    #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
+    # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
+    miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)), missing)
 
     # Build dataframe from the uniqe x and y values
     df = pd.DataFrame(data=points,
-                      columns=["r_ggH", "r_bbH", "deltaNLL"])
+                      columns=[args.x_var, args.y_var, "deltaNLL"])
     logger.debug("Dataframe successfully created...")
     # Fill dataframe with values contained in graph
     df = df.append(pd.DataFrame(data=miss_entries,
-                                columns=["r_ggH", "r_bbH", "deltaNLL"]),
+                                columns=[args.x_var, args.y_var, "deltaNLL"]),
                                 ignore_index=True,
                                 sort=True)
     logger.debug("Added missing values from scan to dataframe...")
 
     logger.debug("Sorting dataframe to restore correct order of scan...")
-    df.sort_values(by=["r_ggH", "r_bbH"], inplace=True)
+    df.sort_values(by=[args.x_var, args.y_var], inplace=True)
     return df
 
 
@@ -120,9 +134,9 @@ def convert_dataframe_to_tree(df, best_fit, offset=0.):
     # Create tree structure and branch pointers
     tree = ROOT.TTree("limit", "limit")
     ggh = array("f", [0.])
-    tree.Branch("r_ggH", ggh, "r_ggH/F")
+    tree.Branch(args.x_var, ggh, "%s/F" % args.x_var)
     bbh = array("f", [0.])
-    tree.Branch("r_bbH", bbh, "r_bbH/F")
+    tree.Branch(args.y_var, bbh, "%s/F" % args.y_var)
     deltaNLL = array("f", [0.])
     tree.Branch("deltaNLL", deltaNLL, "deltaNLL/F")
     quantileExp = array("f", [0.])
@@ -137,8 +151,8 @@ def convert_dataframe_to_tree(df, best_fit, offset=0.):
     tree.Fill()
     # Loop over dataframe entries and fill the tree
     for index, row in df.iterrows():
-        ggh[0] = row["r_ggH"]
-        bbh[0] = row["r_bbH"]
+        ggh[0] = row[args.x_var]
+        bbh[0] = row[args.y_var]
         deltaNLL[0] = row["deltaNLL"]
         quantileExp[0] = ROOT.Math.chisquared_cdf_c(2*row["deltaNLL"], 2)
         tree.Fill()
@@ -151,7 +165,7 @@ def main(args):
 
     # Write Tree entries in TGraph to get structure for likelihood database
     graph = plot.TGraph2DFromTree(limit,
-                                  "r_ggH", "r_bbH",
+                                  args.x_var, args.y_var,
                                   'deltaNLL',
                                   'quantileExpected > -0.5 && deltaNLL < 1000')
                                   # 'quantileExpected > -0.5 && deltaNLL > 0 && deltaNLL < 1000')
@@ -163,9 +177,9 @@ def main(args):
               float_format="%.6f",
               header=False, index=False,
               na_rep="NaN",
-              columns=["r_ggH", "r_bbH", "deltaNLL"])
+              columns=[args.x_var, args.y_var, "deltaNLL"])
     best = plot.TGraphFromTree(
-        limit, "r_ggH", "r_bbH", 'deltaNLL == 0')
+        limit, args.x_var, args.y_var, 'deltaNLL == 0')
     plot.RemoveGraphXDuplicates(best)
     # Write back a root TTree with the modified contents.
     outfile = ROOT.TFile(args.output.replace(".txt", ".root"), "recreate")

@@ -310,6 +310,8 @@ def parse_arguments():
                     action='store_true', help='')
     parser.add_argument('--cms_label',default='',
                     help='Optional additional string for CMs label')
+    parser.add_argument('--bOnly', default=False,
+                    action='store_true', help='')
     return parser.parse_args()
 
 def main(args):
@@ -349,55 +351,55 @@ def main(args):
     #if args.ratio_range=="":
     #  args.ratio_range = "0.7,1.3"
     if bin_number in ["2","35","36","37"]:
-        if args.channel=='tt': bin_label = "B-tag"
+        if args.channel=='tt': bin_label = "b tag"
         if args.channel in ['mt','et','lt']: 
-          bin_label = "B-tag"
-          if bin_number=="35": bin_label = "B-tag, Tight-m_{T}"
-          if bin_number=="36": bin_label = "B-tag, Loose-m_{T}"
+          bin_label = "b tag"
+          if bin_number=="35": bin_label = "b tag, Tight-m_{T}"
+          if bin_number=="36": bin_label = "b tag, Loose-m_{T}"
         if args.channel in ['em']:
-          bin_label = "B-tag"
+          bin_label = "b tag"
           if bin_number=="2": bin_label = "t#bar{t} CR"
-          if bin_number=="35": bin_label = "B-tag, High d_{#zeta}"
-          if bin_number=="36": bin_label = "B-tag, Medium d_{#zeta}" 
-          if bin_number=="37": bin_label = "B-tag, Low d_{#zeta}" 
+          if bin_number=="35": bin_label = "b tag, High D_{#zeta}"
+          if bin_number=="36": bin_label = "b tag, Medium D_{#zeta}" 
+          if bin_number=="37": bin_label = "b tag, Low D_{#zeta}" 
         plot.ModTDRStyle(r=0.04, l=0.18)
         if args.ratio_range=="":
           args.ratio_range = "0.85,1.15"
-        bin_label = "B-tag" # no sub labels when combing all sub-categories
+        bin_label = "b tag" # no sub labels when combing all sub-categories
     if bin_number in ["32","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.4,1.6"
-        if args.channel=='tt': bin_label = "No b-tag"
+        if args.channel=='tt': bin_label = "No b tag"
         if args.channel in ['mt','et','lt']: 
-          bin_label = "No b-tag"
-          if bin_number=="32": bin_label = "No b-tag, Tight-m_{T}"
-          if bin_number=="33": bin_label = "No b-tag, Loose-m_{T}"
+          bin_label = "No b tag"
+          if bin_number=="32": bin_label = "No b tag, Tight-m_{T}"
+          if bin_number=="33": bin_label = "No b tag, Loose-m_{T}"
         if args.channel in ['em']:
-          bin_label = "No b-tag"
-          if bin_number=="32": bin_label = "No b-tag, High d_{#zeta}"
-          if bin_number=="33": bin_label = "No b-tag, Medium d_{#zeta}"
-          if bin_number=="34": bin_label = "No b-tag, Low d_{#zeta}"
-        bin_label = "B-tag" # no sub labels when combing all sub-categories
+          bin_label = "No b tag"
+          if bin_number=="32": bin_label = "No b tag, High D_{#zeta}"
+          if bin_number=="33": bin_label = "No b tag, Medium D_{#zeta}"
+          if bin_number=="34": bin_label = "No b tag, Low D_{#zeta}"
+        bin_label = "b tag" # no sub labels when combing all sub-categories
 
     if bin_number in ["132","232","332","432","133","233","333","433","33","34"]:
         if args.ratio_range=="":
           args.ratio_range = "0.7,1.3"
-        if args.channel=='tt': bin_label = "No b-tag"
+        if args.channel=='tt': bin_label = "No b tag"
         if args.channel in ['mt','et','lt']:
-          bin_label = "No b-tag"
-          if bin_number[1:]=="32": bin_label = "No b-tag, Tight-m_{T}"
-          if bin_number[1:]=="33": bin_label = "No b-tag, Loose-m_{T}"
+          bin_label = "No b tag"
+          if bin_number[1:]=="32": bin_label = "No b tag, Tight-m_{T}"
+          if bin_number[1:]=="33": bin_label = "No b tag, Loose-m_{T}"
         if args.channel in ['em']:
-          bin_label = "No b-tag"
-          if bin_number[1:]=="32": bin_label = "No b-tag, High d_{#zeta}"
-          if bin_number[1:]=="33": bin_label = "No b-tag, Medium d_{#zeta}"
-          if bin_number[1:]=="34": bin_label = "No b-tag, Low d_{#zeta}"
+          bin_label = "No b tag"
+          if bin_number[1:]=="32": bin_label = "No b tag, High D_{#zeta}"
+          if bin_number[1:]=="33": bin_label = "No b tag, Medium D_{#zeta}"
+          if bin_number[1:]=="34": bin_label = "No b tag, Low D_{#zeta}"
 
-        bin_label = "No b-tag" # no sub labels when combing all sub-categories
+        bin_label = "No b tag" # no sub labels when combing all sub-categories
         if bin_number[0] == '1': bin_label+=', p_{T}^{#tau#tau}<50 GeV'
-        if bin_number[0] == '2': bin_label+=', 50#leq p_{T}^{#tau#tau}<100 GeV'
-        if bin_number[0] == '3': bin_label+=', 100#leq p_{T}^{#tau#tau}<200 GeV'
-        if bin_number[0] == '4': bin_label+=', p_{T}^{#tau#tau}#geq 200 GeV'
+        if bin_number[0] == '2': bin_label+=', 50< p_{T}^{#tau#tau}<100 GeV'
+        if bin_number[0] == '3': bin_label+=', 100< p_{T}^{#tau#tau}<200 GeV'
+        if bin_number[0] == '4': bin_label+=', p_{T}^{#tau#tau}> 200 GeV'
         plot.ModTDRStyle(r=0.04, l=0.18)
 
     ## Add bin labels
@@ -451,10 +453,17 @@ def main(args):
         outname=args.outname + '_'
     else:
         outname=''
-   
+  
+ 
     if args.file_dir=="htt_tt_232": extra_pad=0.45 
-    if args.file_dir=="htt_em_35": extra_pad=0.55 
-    if '_35' in args.file_dir or '_132' in args.file_dir or '_232' in args.file_dir: cms_label = 'Supplementary'    
+    if args.file_dir=="htt_tt_35": extra_pad=0.57 
+    if args.file_dir=="htt_tt_132": extra_pad=0.65 
+    if args.file_dir=="htt_tt_232": extra_pad=0.62 
+    if args.file_dir=="htt_em_35": extra_pad=0.7 
+    if args.file_dir=="htt_lt_35": extra_pad=0.45 
+    if args.file_dir=="htt_lt_232": extra_pad=0.45 
+    if args.file_dir=="htt_em_232": extra_pad=0.45 
+    if '_35' in args.file_dir or '_132' in args.file_dir or '_232' in args.file_dir or args.bOnly: cms_label = 'Supplementary'    
 
     if args.file:
         print "Providing shape file: ", args.file, ", with specified subdir name: ", file_dir
@@ -718,8 +727,8 @@ def main(args):
     axish[1].GetYaxis().SetTitleOffset(0.5)
     axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
     if not is2D:
-        #axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
-        axish[0].GetYaxis().SetTitle("< Events / GeV >")
+        axish[0].GetYaxis().SetTitle("dN/dm_{#tau#tau} (1/GeV)")
+        #axish[0].GetYaxis().SetTitle("< Events / GeV >")
         axish[0].GetYaxis().SetTitleOffset(1.5)
         axish[1].GetYaxis().SetTitleOffset(1.5)
 
@@ -786,9 +795,9 @@ def main(args):
     pads[1].SetTicks(1)
     #Setup legend
     if not is2D:
-        legend = plot.PositionedLegend(0.37,0.30,3,0.02,0.02)
+        legend = plot.PositionedLegend(0.42,0.33,3,0.02,0.02)
 #def PositionedLegend(width, height, pos, offset, horizontaloffset=None):
-        legend.SetTextSize(0.025)
+        legend.SetTextSize(0.028)
     else:
         legend = PositionedLegendUnrolled(0.13,0.5,7,0.02)
         legend.SetTextSize(0.035) 
@@ -843,11 +852,18 @@ def main(args):
         if begin_left == None:
             #begin_left = 0.145
             begin_left = 0.180
+        latex2.SetTextFont(42)
         latex2.DrawLatex(begin_left, 0.960, channel_label+', '+bin_label)
     else:
         latex2.SetTextAlign(23)
         latex2.SetTextSize(0.05)
         latex2.DrawLatex(0.46,0.955,"{}, {}".format(bin_label, channel_label))
+
+
+    if args.bOnly:
+      #pads[0].cd()
+      latex2.DrawLatex(0.54,0.55,"Bkg. only fit")
+
 
     #CMS and lumi labels
     plot.FixTopRange(pads[0], plot.GetPadYMax(pads[0]), extra_pad if extra_pad>0 else 0.3)
@@ -855,7 +871,8 @@ def main(args):
     #extra='Preliminary'
     if not is2D:
         #DrawCMSLogo(pads[0], 'CMS', extra, 0, 0.07, -0.0, 2.0, '', 0.85, relExtraDX=0.05)
-        DrawCMSLogo(pads[0], 'CMS', extra, 11, 0.045, 0.05, 1.0, '', 0.6)
+        cms_scale=1.0
+        DrawCMSLogo(pads[0], 'CMS', extra, 11, 0.045, 0.05, 1.0, '', cms_scale)
 
         plot.DrawTitle(pads[0], lumi, 3, textSize=0.6)
     else:
@@ -886,7 +903,7 @@ def main(args):
         azimov_ratio_datahist = ROOT.TGraphAsymmErrors(azimov_ratio_datahist_)
 
         pads[1].cd()
-        pads[1].SetGrid(0,1)
+        #pads[1].SetGrid(0,1)
         axish[1].Draw("axis")
         axish[1].SetMinimum(float(args.ratio_range.split(',')[0]))
         axish[1].SetMaximum(float(args.ratio_range.split(',')[1]))

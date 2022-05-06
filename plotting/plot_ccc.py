@@ -19,6 +19,13 @@ label_dict = {
     "htt_et": "e#tau_{h}",
     "htt_mt": "#mu#tau_{h}",
     "htt_tt": "#tau_{h}#tau_{h}",
+
+    "btag": "B tag",
+    "pt_0to50": "p_{T}^{#tau#tau}<50 GeV",
+    "pt_50to100": "50< p_{T}^{#tau#tau}<100 GeV",
+    "pt_100to200": "100< p_{T}^{#tau#tau}<200 GeV",
+    "pt_GT200": "p_{T}^{#tau#tau}> 200 GeV",
+
 }
 
 
@@ -87,6 +94,9 @@ def main(args):
     num_chans = len(channels)
     print(channels)
 
+    if '_pt_' in channels[1]:
+        styles.ModTDRStyle(l=0.22, b=0.12)
+
     canv = ROOT.TCanvas("canv")
     # Create the plot object.
     axis_label = "#sigma#font[42]{{({}#phi)}}#font[52]{{B}}#font[42]{{(#phi#rightarrow#tau#tau)}} (pb)".format("gg" if "gg" in args.poi else "bb")
@@ -104,10 +114,21 @@ def main(args):
     print("Nominal fit: {} {}/+{}".format(res_poi.getVal(), res_poi.getAsymErrorLo(), res_poi.getAsymErrorHi()))
     # Fill TGraphAsymmErrors with fit values.
     points = ROOT.TGraphAsymmErrors(num_chans)
+    
     if "htt" in channels[0]:
         chan_it = sorted(channels)
     else:
         chan_it = reversed(sorted(channels))
+
+    if '_pt_' in channels[1]:
+        channels_sorted = range(5)
+        for c in channels:
+          if 'btag' in c: channels_sorted[4] = c
+          if '0to50' in c: channels_sorted[3] = c
+          if '50to100' in c: channels_sorted[2] = c
+          if '100to200' in c: channels_sorted[1] = c
+          if 'GT200' in c: channels_sorted[0] = c
+        chan_it = channels_sorted
     for i, ch_ in enumerate(chan_it):
         ri = parameters.find(ch_)
         points.SetPoint(i, ri.getVal(), i+0.5)
@@ -115,7 +136,7 @@ def main(args):
         print("Alternate fit: ", ch_, ri.getVal())
         frame.GetYaxis().SetBinLabel(i+1, label_dict[ch_.replace(prefix, "")])
 
-    if "htt" not in channels[0]:
+    if "htt" not in channels[0] and '_pt_' not in channels[1]:
         frame.GetYaxis().SetRangeUser(0, num_chans+0.5)
     points.SetLineColor(ROOT.kBlack)
     points.SetLineWidth(3)
@@ -124,7 +145,9 @@ def main(args):
     # frame.GetXaxis().SetNdivisions(505)
     frame.GetXaxis().SetTitleSize(0.05)
     frame.GetXaxis().SetLabelSize(0.04)
-    frame.GetYaxis().SetLabelSize(0.06)
+    if '_pt_' in channels[1]:
+        frame.GetYaxis().SetLabelSize(0.04)
+    else: frame.GetYaxis().SetLabelSize(0.06)
     frame.Draw()
 
     # ROOT.gStyle.SetOptStat(0)
@@ -148,9 +171,12 @@ def main(args):
     ROOT.gPad.SetTicky()
     ROOT.gPad.RedrawAxis()
 
-    if "htt" not in channels[0]:
+    if "htt" not in channels[0] and '_pt_' not in channels[1]:
         # l = 0.14, r = 0.04
         legend = ROOT.TLegend(0.25, 0.80, 0.85, 0.88)
+    elif '_pt_' in channels[1]:
+        legend = ROOT.TLegend(0.24, 0.77, 0.46, 0.92)
+        legend.SetFillStyle(0)
     else:
         if args.legend_position == 0:
             legend = ROOT.TLegend(0.18, 0.77, 0.48, 0.92)
@@ -163,7 +189,7 @@ def main(args):
     legend.AddEntry(globalFitLine, "Global Best Fit", "l")
     legend.AddEntry(globalFitBand, "Global Best Fit #pm 1 #sigma", "f")
     legend.SetTextSize(0.032)
-    if "htt" not in channels[0]:
+    if "htt" not in channels[0] and '_pt_' not in channels[1]:
         legend.SetNColumns(2)
     legend.Draw()
 
@@ -195,13 +221,15 @@ def main(args):
     # Draw mass of Higgs boson outside of frame
     if args.mass is not None:
         mass_label = "#font[42]{m_{#phi} = %s GeV}" % args.mass
-        if args.legend_position == 0:
+        if '_pt_' in channels[1]:
+            latex2.DrawLatex(0.26, up_pos, mass_label)
+        elif args.legend_position == 0:
             latex2.DrawLatex(begin_left, up_pos, mass_label)
-        if args.legend_position == 1:
+        elif args.legend_position == 1:
             latex2.DrawLatex(begin_right, up_pos, mass_label)
-        if args.legend_position == 2:
+        elif args.legend_position == 2:
             latex2.DrawLatex(begin_right, low_pos, mass_label)
-        if args.legend_position == 3:
+        elif args.legend_position == 3:
             latex2.DrawLatex(begin_left, low_pos, mass_label)
     if args.toy_json is not None:
         if args.mass is None:
@@ -209,13 +237,15 @@ def main(args):
         with open(args.toy_json, "r") as fi:
             res = json.load(fi)["{}.0".format(args.mass)]
         label = "#font[42]{{p-value = {:.2f}}}".format(res["p"])
-        if args.legend_position == 0:
+        if '_pt_' in channels[1]:
+            latex2.DrawLatex(0.26, up_pos-1*spacing, label)
+        elif args.legend_position == 0:
             latex2.DrawLatex(begin_left, up_pos-1*spacing, label)
-        if args.legend_position == 1:
+        elif args.legend_position == 1:
             latex2.DrawLatex(begin_right, up_pos-1*spacing, label)
-        if args.legend_position == 2:
+        elif args.legend_position == 2:
             latex2.DrawLatex(begin_right, low_pos-1*spacing, label)
-        if args.legend_position == 3:
+        elif args.legend_position == 3:
             latex2.DrawLatex(begin_left, low_pos-1*spacing, label)
 
     # Draw CMS logo in upper left corner

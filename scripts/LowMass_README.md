@@ -231,10 +231,24 @@ combine -M ChannelCompatibilityCheck \
 -g 2016 -g 2017 -g 2018 \
 -v 2
 
-# make plot
+# make plots
+
+MASS=100
 
 python plotting/plot_ccc.py higgsCombine.CCC.year.ChannelCompatibilityCheck.mH${MASS}.root -p r_ggH -o ChannelCompatibilityCheck_FitResults_mH${MASS}.channel -r m12,15
 ```
+
+# by year:
+
+python plotting/plot_ccc.py higgsCombine.CCC.year.ChannelCompatibilityCheck.mH${MASS}.root -p r_ggH -o ChannelCompatibilityCheck_FitResults_mH${MASS}.year -r m5,15 --mass $MASS --toy-json ChannelCompatibilityCheck_combined_cmb-mH${MASS}_year.json
+
+by channel:
+
+python plotting/plot_ccc.py higgsCombine.CCC.channel.ChannelCompatibilityCheck.mH${MASS}.root -p r_ggH -o ChannelCompatibilityCheck_FitResults_mH${MASS}.channel -r m15,20 --mass $MASS --toy-json ChannelCompatibilityCheck_combined_cmb-mH${MASS}_channel.json
+
+by category:
+
+python plotting/plot_ccc.py higgsCombine.CCC.cat.ChannelCompatibilityCheckRegexGroup.mH100.root  -p r_ggH -o ChannelCompatibilityCheck_FitResults_mH${MASS}.cat -r m20,20 --mass $MASS --toy-json ChannelCompatibilityCheck_combined_cmb-mH${MASS}_cat.json
 
 ## run GOF tests
 
@@ -300,6 +314,12 @@ and then the plots can be produced using:
 
 ```bash
 
-for c in em lt tt; do for b in 332 432; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b} -f shapes_cbyears.root --ratio --ratio_range "0.85,1.15" ; done; done 
+#s+b
+
+for c in em lt tt; do for b in 35 132 232 332 432; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b} -f shapes_cbyears.root --f_bOnly shapes_cbyears_bOnly.root --ratio --ratio_range "0.85,1.15" ; done; done
+
+#b-only
+
+for c in em lt tt; do for b in 35 132 232 332 432; do python scripts/postFitPlotJetFakes.py --mode postfit --file_dir htt_${c}_${b} -f shapes_cbyears_bOnly.root --ratio --ratio_range "0.85,1.15" --bOnly ; done; done
 
 ```
