@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument("--output", "-o",
                         default="limit",
                         help="Name of the output plot without file extension")
-    parser.add_argument("--x_var", "-x",
+    parser.add_argument("--x-var", "-x",
                         default="r_ggH",
                         help="Name of the POI to include as x variable")
     parser.add_argument("--y_var", "-y",
