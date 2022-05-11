@@ -26,10 +26,10 @@ def parse_args():
     parser.add_argument("--output", "-o",
                         default="limit",
                         help="Name of the output plot without file extension")
-    parser.add_argument("--x_var", "-x",
+    parser.add_argument("--x-var", "-x",
                         default="r_ggH",
                         help="Name of the POI to include as x variable")
-    parser.add_argument("--y_var", "-y",
+    parser.add_argument("--y-var", "-y",
                         default="r_bbH",
                         help="Name of the POI to include as y variable")
     return parser.parse_args()
@@ -112,8 +112,7 @@ def convert_graph_to_dataframe(graph):
         logger.info("Will set their values to the interpolated ones...")
     #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
     # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
-    miss_entries = map(lambda x: (x[0], x[1], (graph.Interpolate(*x)<=0)*graph.GetHistogram().Interpolate(*x) + (graph.Interpolate(*x)>0)*graph.Interpolate(*x)), missing)
-        
+    miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)), missing)
 
     # Build dataframe from the uniqe x and y values
     df = pd.DataFrame(data=points,
