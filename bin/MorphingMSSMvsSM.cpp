@@ -730,9 +730,9 @@ int main(int argc, char **argv) {
   }
 
   // Define MSSM CPV model-dependent mass parameters mH3, mH2, mH1 (sub_analysis "cpv")
-  RooRealVar mH3("mH3", "mH3", 125., 90., 4000.);
-  RooRealVar mH2("mH2", "mH2", 125., 90., 4000.);
-  RooRealVar mH1("mH1", "mH1", 125., 90., 4000.);
+  RooRealVar mH3("mH3", "mH3", 125., 60., 4000.);
+  RooRealVar mH2("mH2", "mH2", 125., 60., 4000.);
+  RooRealVar mH1("mH1", "mH1", 125., 60., 4000.);
 
   expression = max_lowmass + "*(mH3 >=" + max_lowmass +") + mH3*(mH3 < "+ max_lowmass + ")";
   RooFormulaVar mH3_lowmass("mH3_lowmass", "mH3_lowmass", expression, mH3);
