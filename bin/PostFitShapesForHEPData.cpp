@@ -18,6 +18,8 @@ int main(int argc, char* argv[]) {
   // Setup program options
   std::string datacard   = "";
   std::string workspace  = "";
+  std::string fit = "";
+  std::string fit_name = "";
   std::string category_name     = "";
   std::string signal_mass_name = "";
   std::vector<unsigned int> signal_masses;
@@ -36,6 +38,12 @@ int main(int argc, char* argv[]) {
     ("datacard,d",
       po::value<string>(&datacard)->required(),
       "The input datacard to be used for restoring the binning. Please note, that the input files mentioned in the datacard should also be accessible [REQUIRED]")
+    ("fit,f",
+      po::value<string>(&fit)->required(),
+      "The input ROOT file containing the background-only fit [REQUIRED]")
+    ("fitname,F",
+      po::value<string>(&fit_name)->required(),
+      "Name the background-only fit [REQUIRED]")
     ("category,c ",
       po::value<string>(&category_name)->required(),
       "The name of the category [REQUIRED]")
@@ -77,9 +85,15 @@ int main(int argc, char* argv[]) {
   // Need this to read combine workspaces
   gSystem->Load("libHiggsAnalysisCombinedLimit");
 
-  // Get workspace of the analysis category htt_tt_35_2018
+  // Get workspace
   auto inputfile = TFile::Open(workspace.c_str(), "read");
   RooWorkspace *ws = (RooWorkspace*)inputfile->Get("w");
+
+  // Obtain background-only fit
+  auto fitfile = TFile::Open(fit.c_str(), "read");
+  RooFitResult* fitres = (RooFitResult*)fitfile->Get(fit_name.c_str());
+  auto postfit_parameters = fitres->floatParsFinal();
+  TIterator* iter(postfit_parameters.createIterator());
 
   // Getting datacard + input root file for restoring the binning
   ch::CombineHarvester cmb_card;
@@ -91,6 +105,22 @@ int main(int argc, char* argv[]) {
   ch::CombineHarvester cmb;
   cmb.SetFlag("workspaces-use-clone", true);
   ch::ParseCombineWorkspace(cmb, *ws, "ModelConfig", data.c_str(), false);
+
+  // Apply post-fit parameter values from fit
+  for (TObject *parit = iter->Next(); parit != nullptr; parit = iter->Next()) {
+    RooRealVar *postfitpar = dynamic_cast<RooRealVar *>(parit);
+    auto par = cmb.cp().GetParameter(postfitpar->GetName());
+    if(par){
+      //std::cout << "Initial parameter: " << par->name() << ", value: " << par->val() <<", -1 sigma: " << par->err_d() << ", +1 sigma: " << par->err_u() << std::endl;
+      par->set_val(postfitpar->getVal());
+      par->set_err_d(postfitpar->getErrorLo());
+      par->set_err_u(postfitpar->getErrorHi());
+      //std::cout << "\tFinal parameter: " << par->name() << ", value: " << par->val() <<", -1 sigma: " << par->err_d() << ", +1 sigma: " << par->err_u() << std::endl;
+    }
+    else {
+      //std::cout << "WARNING: Following parameter not in workspace: " << postfitpar->GetName() << std::endl;
+    }
+  }
 
   // Drop any process that has no hist/data/pdf
   cmb.FilterProcs([&](ch::Process * proc) {
@@ -137,25 +167,29 @@ int main(int argc, char* argv[]) {
       if (0 == syst.err_d() && 0 == syst.err_u())
       {
         //std::cout << "\tExcluding: " << syst.name() << std::endl;
-        continue; // Avoid unconstrained nuisance parameters
+        continue; // Avoid parameters not used in the fit
       }
       else
       {
         // Determine impact of uncertainty variation
-        //std::cout << "\tSystematic: " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
-        syst.set_val(1);
+        //std::cout << "\tSystematic (central): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
+        double initial_syst_val = syst.val();
+        syst.set_val(initial_syst_val + syst.err_u());
+        //std::cout << "\tSystematic (up): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
         cmb_bin_bgproc.cp().UpdateParameters({syst});
         auto bg_shape_syst_up = cmb_bin_bgproc.cp().GetShape();
         bg_shape_syst_up = ch::RestoreBinning(bg_shape_syst_up, reference_binning);
         //std::cout << "\tUpdated integral of background (upward): " << bg_shape_syst_up.Integral() << std::endl;
         std::string up_name;
-        syst.set_val(-1);
+        syst.set_val(initial_syst_val + syst.err_d());
+        //std::cout << "\tSystematic (down): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
         cmb_bin_bgproc.cp().UpdateParameters({syst});
         auto bg_shape_syst_down = cmb_bin_bgproc.cp().GetShape();
         bg_shape_syst_down = ch::RestoreBinning(bg_shape_syst_down, reference_binning);
         //std::cout << "\tUpdated integral of background (downward): " << bg_shape_syst_down.Integral() << std::endl;
         std::string down_name;
-        syst.set_val(0);
+        syst.set_val(initial_syst_val);
+        //std::cout << "\tSystematic (restored): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
         cmb_bin_bgproc.cp().UpdateParameters({syst});
 
         // Check impact of systematic uncertainty, and excluding, if no impact found
@@ -252,25 +286,29 @@ int main(int argc, char* argv[]) {
         if (0 == syst.err_d() && 0 == syst.err_u())
         {
           //std::cout << "\tExcluding from variations: " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
-          continue; // Avoid unconstrained parameters
+          continue; // Avoid parameters not used in the fit
         }
         else
         {
           // Determine impact of uncertainty variation
-          //std::cout << "\tSystematic: " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
-          syst.set_val(1);
+          //std::cout << "\tSystematic (central): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
+          double initial_syst_val = syst.val();
+          syst.set_val(initial_syst_val + syst.err_u());
+          //std::cout << "\tSystematic (up): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
           cmb_bin_sigproc.cp().UpdateParameters({syst});
           auto sig_shape_syst_up = cmb_bin_sigproc.cp().GetShape();
           sig_shape_syst_up = ch::RestoreBinning(sig_shape_syst_up, reference_binning);
           //std::cout << "\tUpdated integral of signal (upward): " << sig_shape_syst_up.Integral() << std::endl;
           std::string up_name;
-          syst.set_val(-1);
+          syst.set_val(initial_syst_val + syst.err_d());
+          //std::cout << "\tSystematic (down): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
           cmb_bin_sigproc.cp().UpdateParameters({syst});
           auto sig_shape_syst_down = cmb_bin_sigproc.cp().GetShape();
           sig_shape_syst_down = ch::RestoreBinning(sig_shape_syst_down, reference_binning);
           //std::cout << "\tUpdated integral of signal (downward): " << sig_shape_syst_down.Integral() << std::endl;
           std::string down_name;
-          syst.set_val(0);
+          syst.set_val(initial_syst_val);
+          //std::cout << "\tSystematic (restored): " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
           cmb_bin_sigproc.cp().UpdateParameters({syst});
 
           // Check impact of systematic uncertainty, and excluding, if no impact found
