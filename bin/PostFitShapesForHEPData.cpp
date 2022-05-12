@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
   correlations << "Parameter1,Parameter2,Correlation\n";
   for (unsigned int par1=0; par1 < parnames.size(); ++par1){
     for(unsigned int par2=0; par2 < par1; ++par2){
-      double correlation_val = fitres->correlation(parnames.at(par1).c_str(), parnames.at(par2).c_str());
+      double correlation_val = std::round(100.0*fitres->correlation(parnames.at(par1).c_str(), parnames.at(par2).c_str())) / 100.0;
       if(std::abs(correlation_val) >= 1e-2){ // Include only correlations >= 1 %
         correlations << parnames.at(par1) << "," << parnames.at(par2) << "," << correlation_val  << std::endl;
       }
