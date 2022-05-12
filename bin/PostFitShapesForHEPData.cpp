@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   if (vm.count("help")) {
     std::cout << config << std::endl;
     std::cout << "Example usage:" << std::endl << std::endl;
-    std::cout << "PrefitShapesForHEPData -w ws_htt_tt_35_2018.root -d htt_tt_35_2018.txt -c htt_tt_35_2018 \\" << std::endl;
+    std::cout << "PostFitShapesForHEPData -w ws_htt_tt_35_2018.root -d htt_tt_35_2018.txt -c htt_tt_35_2018 \\" << std::endl;
     std::cout << "                       -P r_ggH:1 -P r_bbH:1 -m MH -f multidimfitggH.bkgOnly.bestfit.robustHesse.root -F fit_mdf \\" << std::endl;
     std::cout << "                       -M 60 -M 80 -M 95 -M 100 -M 120 -M 125 -M 130 -M 140 -M 160 -M 180 -M 200 \\" << std::endl;
     std::cout << "                       -M 250 -M 300 -M 350 -M 400 -M 450 -M 500 -M 600 -M 700 -M 800 -M 900 -M 1000 \\" << std::endl;
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   for (unsigned int par1=0; par1 < parnames.size(); ++par1){
     for(unsigned int par2=0; par2 < par1; ++par2){
       double correlation_val = fitres->correlation(parnames.at(par1).c_str(), parnames.at(par2).c_str());
-      if(std::abs(correlation_val) > 1e-3){
+      if(std::abs(correlation_val) >= 1e-2){ // Include only correlations >= 1 %
         correlations << parnames.at(par1) << "," << parnames.at(par2) << "," << correlation_val  << std::endl;
       }
     }
