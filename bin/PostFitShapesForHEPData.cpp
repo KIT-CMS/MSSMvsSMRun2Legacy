@@ -1,4 +1,6 @@
 #include <map>
+#include <iostream>
+#include <fstream>
 #include "boost/program_options.hpp"
 #include "boost/format.hpp"
 #include "boost/algorithm/string.hpp"
@@ -71,7 +73,7 @@ int main(int argc, char* argv[]) {
     std::cout << config << std::endl;
     std::cout << "Example usage:" << std::endl << std::endl;
     std::cout << "PrefitShapesForHEPData -w ws_htt_tt_35_2018.root -d htt_tt_35_2018.txt -c htt_tt_35_2018 \\" << std::endl;
-    std::cout << "                       -P r_ggH:1 -P r_bbH:1 -m MH \\" << std::endl;
+    std::cout << "                       -P r_ggH:1 -P r_bbH:1 -m MH -f multidimfitggH.bkgOnly.bestfit.robustHesse.root -F fit_mdf \\" << std::endl;
     std::cout << "                       -M 60 -M 80 -M 95 -M 100 -M 120 -M 125 -M 130 -M 140 -M 160 -M 180 -M 200 \\" << std::endl;
     std::cout << "                       -M 250 -M 300 -M 350 -M 400 -M 450 -M 500 -M 600 -M 700 -M 800 -M 900 -M 1000 \\" << std::endl;
     std::cout << "                       -M 1200 -M 1400 -M 1600 -M 1800 -M 2000 -M 2300 -M 2600 -M 2900 -M 3200 -M 3500" << std::endl;
@@ -94,6 +96,7 @@ int main(int argc, char* argv[]) {
   RooFitResult* fitres = (RooFitResult*)fitfile->Get(fit_name.c_str());
   auto postfit_parameters = fitres->floatParsFinal();
   TIterator* iter(postfit_parameters.createIterator());
+  std::vector<std::string> parnames = {};
 
   // Getting datacard + input root file for restoring the binning
   ch::CombineHarvester cmb_card;
@@ -110,6 +113,7 @@ int main(int argc, char* argv[]) {
   for (TObject *parit = iter->Next(); parit != nullptr; parit = iter->Next()) {
     RooRealVar *postfitpar = dynamic_cast<RooRealVar *>(parit);
     auto par = cmb.cp().GetParameter(postfitpar->GetName());
+    parnames.push_back(postfitpar->GetName());
     if(par){
       //std::cout << "Initial parameter: " << par->name() << ", value: " << par->val() <<", -1 sigma: " << par->err_d() << ", +1 sigma: " << par->err_u() << std::endl;
       par->set_val(postfitpar->getVal());
@@ -119,6 +123,19 @@ int main(int argc, char* argv[]) {
     }
     else {
       //std::cout << "WARNING: Following parameter not in workspace: " << postfitpar->GetName() << std::endl;
+    }
+  }
+
+  // Writing out correlations between parameters
+  std::ofstream correlations;
+  correlations.open(fit_name+"_correlations.csv");
+  correlations << "Parameter1,Parameter2,Correlation\n";
+  for (unsigned int par1=0; par1 < parnames.size(); ++par1){
+    for(unsigned int par2=0; par2 < par1; ++par2){
+      double correlation_val = fitres->correlation(parnames.at(par1).c_str(), parnames.at(par2).c_str());
+      if(std::abs(correlation_val) > 1e-3){
+        correlations << parnames.at(par1) << "," << parnames.at(par2) << "," << correlation_val  << std::endl;
+      }
     }
   }
 
