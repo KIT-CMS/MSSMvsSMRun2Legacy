@@ -177,13 +177,12 @@ int main(int argc, char* argv[]) {
     bg_shape.SetName(bg.c_str());
     bg_shape.SetTitle(bg.c_str());
     bg_shape.Write();
-    unsigned int n_bins = bg_shape.GetNbinsX();
-    //std::cout << "Background: " << bg << ", nominal yield: " << bg_shape.Integral() << std::endl;
+    std::cout << "Background: " << bg << ", nominal yield: " << bg_shape.Integral() << std::endl;
     auto systematics = cmb_bin_bgproc.cp().GetParameters();
     for (auto syst : systematics) {
       if (0 == syst.err_d() && 0 == syst.err_u())
       {
-        //std::cout << "\tExcluding: " << syst.name() << std::endl;
+        std::cout << "\tExcluding: " << syst.name() << std::endl;
         continue; // Avoid parameters not used in the fit
       }
       else
@@ -210,50 +209,16 @@ int main(int argc, char* argv[]) {
         cmb_bin_bgproc.cp().UpdateParameters({syst});
 
         // Check impact of systematic uncertainty, and excluding, if no impact found
-        bool valid_systematic = false;
+        bool valid_systematic = true;
         TH1F* bg_shape_copy_up = (TH1F*) bg_shape.Clone();
         bg_shape_copy_up->Divide(&bg_shape_syst_up);
         TH1F* bg_shape_copy_down = (TH1F*) bg_shape.Clone();
         bg_shape_copy_down->Divide(&bg_shape_syst_down);
-        std::vector<float> up_vals; up_vals.reserve(n_bins);
-        std::vector<float> down_vals; down_vals.reserve(n_bins);
-        for(unsigned int i=1; i <= n_bins; i++){
-          //std::cout << "\t\tBin: " << i << " ContentUp: " << bg_shape_copy_up->GetBinContent(i) << " ContentDown: " << bg_shape_copy_down->GetBinContent(i) << std::endl;
-            up_vals.push_back(bg_shape_copy_up->GetBinContent(i));
-            down_vals.push_back(bg_shape_copy_down->GetBinContent(i));
-            if(valid_systematic == false && (up_vals.back() != 1 || down_vals.back() != 1)){
-              valid_systematic = true;
-            }
-        }
-
-        // Determine type of systematic
-        /*
-        for (auto val : up_vals){
-          std::cout << val << " ";
-        }
-        std::cout << "\n";
-        for (auto val : down_vals){
-          std::cout << val << " ";
-        }
-        std::cout << "\n";
-        */
-        bool up_vals_equal = std::all_of(up_vals.begin(), up_vals.end(), [&] (float test){return std::abs(test - up_vals[0]) < 1e-6;});
-        bool down_vals_equal = std::all_of(down_vals.begin(), down_vals.end(), [&] (float test){return std::abs(test - down_vals[0]) < 1e-6;});
-        if(up_vals_equal && down_vals_equal){
-          up_name = bg + "_norm_" + syst.name() + "_Up";
-          down_name = bg + "_norm_" + syst.name() + "_Down";
-        }
-        else if (std::string(syst.name()).find("prop") == std::string::npos){
-          up_name = bg + "_shape_" + syst.name() + "_Up";
-          down_name = bg + "_shape_" + syst.name() + "_Down";
-        }
-        else {
-          up_name = bg + "_" + syst.name() + "_Up";
-          down_name = bg + "_" + syst.name() + "_Down";
-        }
 
         // If a proper uncertainty, write systematic variations to output
         if (valid_systematic){
+          up_name = bg + "_" + syst.name() + "_Up";
+          down_name = bg + "_" + syst.name() + "_Down";
           bg_shape_syst_up.SetName(up_name.c_str());
           bg_shape_syst_up.SetTitle(up_name.c_str());
           bg_shape_syst_up.Write();
@@ -295,14 +260,13 @@ int main(int argc, char* argv[]) {
       sig_shape.SetName(sig_name.c_str());
       sig_shape.SetTitle(sig_name.c_str());
       sig_shape.Write();
-      unsigned int n_bins = sig_shape.GetNbinsX();
-      //std::cout << "Signal: " << sig_name << ", nominal yield: " << sig_shape.Integral() << std::endl;
+      std::cout << "Signal: " << sig_name << ", nominal yield: " << sig_shape.Integral() << std::endl;
 
       auto systematics = cmb_bin_sigproc.cp().GetParameters();
       for (auto syst : systematics){
         if (0 == syst.err_d() && 0 == syst.err_u())
         {
-          //std::cout << "\tExcluding from variations: " << syst.name() << ", value: " << syst.val() <<", -1 sigma: " << syst.err_d() << ", +1 sigma: " << syst.err_u() << std::endl;
+          std::cout << "\tExcluding: " << syst.name() << std::endl;
           continue; // Avoid parameters not used in the fit
         }
         else
@@ -329,50 +293,16 @@ int main(int argc, char* argv[]) {
           cmb_bin_sigproc.cp().UpdateParameters({syst});
 
           // Check impact of systematic uncertainty, and excluding, if no impact found
-          bool valid_systematic = false;
+          bool valid_systematic = true;
           TH1F* sig_shape_copy_up = (TH1F*) sig_shape.Clone();
           sig_shape_copy_up->Divide(&sig_shape_syst_up);
           TH1F* sig_shape_copy_down = (TH1F*) sig_shape.Clone();
           sig_shape_copy_down->Divide(&sig_shape_syst_down);
-          std::vector<float> up_vals; up_vals.reserve(n_bins);
-          std::vector<float> down_vals; down_vals.reserve(n_bins);
-          for(unsigned int i=1; i <= n_bins; i++){
-            //std::cout << "\t\tBin: " << i << " ContentUp: " << sig_shape_copy_up->GetBinContent(i) << " ContentDown: " << sig_shape_copy_down->GetBinContent(i) << std::endl;
-            up_vals.push_back(sig_shape_copy_up->GetBinContent(i));
-            down_vals.push_back(sig_shape_copy_down->GetBinContent(i));
-            if(valid_systematic == false && (up_vals.back() != 1 || down_vals.back() != 1)){
-              valid_systematic = true;
-            }
-          }
-
-          // Determine type of systematic
-          /*
-          for (auto val : up_vals){
-            std::cout << val << " ";
-          }
-          std::cout << "\n";
-          for (auto val : down_vals){
-            std::cout << val << " ";
-          }
-          std::cout << "\n";
-          */
-          bool up_vals_equal = std::all_of(up_vals.begin(), up_vals.end(), [&] (float test){return std::abs(test - up_vals[0]) < 1e-6;});
-          bool down_vals_equal = std::all_of(down_vals.begin(), down_vals.end(), [&] (float test){return std::abs(test - down_vals[0]) < 1e-6;});
-          if(up_vals_equal && down_vals_equal){
-            up_name = sig_name + "_norm_" + syst.name() + "_Up";
-            down_name = sig_name + "_norm_" + syst.name() + "_Down";
-          }
-          else if (std::string(syst.name()).find("prop") == std::string::npos){
-            up_name = sig_name + "_shape_" + syst.name() + "_Up";
-            down_name = sig_name + "_shape_" + syst.name() + "_Down";
-          }
-          else {
-            up_name = sig_name + "_" + syst.name() + "_Up";
-            down_name = sig_name + "_" + syst.name() + "_Down";
-          }
 
           // If a proper uncertainty, write systematic variations to output
           if (valid_systematic){
+            up_name = sig_name + "_" + syst.name() + "_Up";
+            down_name = sig_name + "_" + syst.name() + "_Down";
             sig_shape_syst_up.SetName(up_name.c_str());
             sig_shape_syst_up.SetTitle(up_name.c_str());
             sig_shape_syst_up.Write();
