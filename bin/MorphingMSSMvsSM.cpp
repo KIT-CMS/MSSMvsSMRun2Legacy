@@ -329,7 +329,7 @@ int main(int argc, char **argv) {
 
   VString mssm_signals, mssm_lowmass_signals, qqh_bsm_signals, wh_bsm_signals, zh_bsm_signals;
 
-  std::string smlike = "none";
+  std::string smlike = "h";
   if(sub_analysis == "sm-like-light"){
     smlike = "h";
   }
