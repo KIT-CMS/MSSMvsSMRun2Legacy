@@ -131,8 +131,7 @@ exp_scan['graph'].SetMarkerStyle(ROOT.kCircle)
 exp_scan['graph'].SetMarkerSize(1.)
 exp_scan['graph'].SetLineWidth(3)
 exp_scan['graph'].SetLineColor(args.exp_color)
-#exp_scan['graph'].Draw('AP')
-exp_scan['graph'].Draw('AL')
+exp_scan['graph'].Draw('AP')
 
 obs_scan['graph'].SetMarkerColor(args.obs_color)
 obs_scan['graph'].SetMarkerStyle(ROOT.kCircle)
@@ -175,10 +174,9 @@ for yval in yvals:
             if cr['valid_hi']: line.DrawLine(cr['hi'], 0, cr['hi'], yval)
 
 
-#exp_scan['graph'].Draw('LP same')
-exp_scan['func'].Draw('l same')
+exp_scan['graph'].Draw('LP same')
+#exp_scan['func'].Draw('l same')
 obs_scan['graph'].Draw('LP same')
-#obs_scan['graph'].Draw('L same')
 #obs_scan['func'].Draw('l same')
 
 
@@ -196,8 +194,8 @@ exp_crossings = exp_scan['crossings']
 exp_val_nom = exp_scan['val']
 exp_val_2sig = exp_scan['val_2sig']
 
-textfit = '%s = %.4f{}^{#plus %.4f}_{#minus %.4f}' % (fixed_name, val_nom[0], val_nom[1], abs(val_nom[2]))
-exptextfit = '{}^{(#plus %.4f)}_{(#minus %.4f)}' % (exp_val_nom[1], abs(exp_val_nom[2]))
+textfit = '%s = %.2f{}^{#plus %.2f}_{#minus %.2f}' % (fixed_name, val_nom[0], val_nom[1], abs(val_nom[2]))
+exptextfit = '{}^{(#plus %.2f)}_{(#minus %.2f)}' % (exp_val_nom[1], abs(exp_val_nom[2]))
 
 
 pt = ROOT.TPaveText(0.59, 0.82, 0.95, 0.88, 'NDCNB')
