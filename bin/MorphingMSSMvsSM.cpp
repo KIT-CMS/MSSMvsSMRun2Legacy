@@ -244,6 +244,16 @@ int main(int argc, char **argv) {
       exit(1);
     }
   }
+  if (analysis == "bsm-model-indep") {
+    if (std::find(sub_analysis_choices.begin(), sub_analysis_choices.end(), sub_analysis) != sub_analysis_choices.end()) {
+      std::cout << "ERROR: wrong choice of 'sub_analysis' option. In case of model-independent analysis, please don't choose from:\n\t";
+      for(auto choice : sub_analysis_choices){
+        std::cout << choice << " ";
+      }
+      std::cout << " as this is likely not what you want to do." << std::endl;
+      exit(1);
+    }
+  }
   // sm_like_hists option
   if(analysis == "bsm-model-dep-full"){
     if(std::find(sm_like_hists_choices.begin(), sm_like_hists_choices.end(), sm_like_hists) == sm_like_hists_choices.end()){
