@@ -1,0 +1,25 @@
+em_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2016/em/ws.root
+em_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2017/em/ws.root
+em_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2018/em/ws.root
+et_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2016/et/ws.root
+et_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2017/et/ws.root
+et_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2018/et/ws.root
+mt_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2016/mt/ws.root
+mt_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2017/mt/ws.root
+mt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2018/mt/ws.root
+tt_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2016/tt/ws.root
+tt_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2017/tt/ws.root
+tt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_3/2018/tt/ws.root
+em_categories: [32, 33, 34, 35, 36, 37]
+et_categories: [32, 33, 35, 36]
+mt_categories: [32, 33, 35, 36]
+tt_categories: [32, 35]
+eras: [2016, 2017, 2018]
+final_states: [em, et, mt, tt]
+restore_directory: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/analysis_2022_06_07_forHepData/datacards_bsm-model-indep/restore_binning
+fitfile: multidimfitggH.bkgOnly.bestfit.robustHesse.root
+fitname: fit_mdf
+POI:
+  gU: 1
+massname: MH
+masses: [1000, 2000, 3000, 4000, 5000]
