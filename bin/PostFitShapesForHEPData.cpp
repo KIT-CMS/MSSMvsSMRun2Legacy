@@ -3,6 +3,7 @@
 #include <fstream>
 #include "boost/program_options.hpp"
 #include "boost/format.hpp"
+#include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
 #include "TSystem.h"
 #include "TH2F.h"
@@ -23,6 +24,7 @@ int main(int argc, char* argv[]) {
   std::string fit = "";
   std::string fit_name = "";
   std::string category_name     = "";
+  std::string output_directory = "";
   std::string signal_mass_name = "";
   std::vector<unsigned int> signal_masses;
   std::vector<std::string> parameters_of_interest;
@@ -49,6 +51,9 @@ int main(int argc, char* argv[]) {
     ("category,c ",
       po::value<string>(&category_name)->required(),
       "The name of the category [REQUIRED]")
+    ("output-dir,o ",
+      po::value<string>(&output_directory)->required(),
+      "The name of the output directory [REQUIRED]")
     ("signal-mass-name,m",
       po::value<string>(&signal_mass_name)->required(),
       "The name of the mass parameter in the workspace [REQUIRED]")
@@ -152,7 +157,10 @@ int main(int argc, char* argv[]) {
   ch::CombineHarvester cmb_bin = cmb.cp().bin({category_name.c_str()});
 
   // Storing all info in an output file
-  TFile* out = TFile::Open((category_name+"_hepdata.root").c_str(), "recreate");
+  if (!boost::filesystem::exists(output_directory)){
+    boost::filesystem::create_directory(output_directory);
+  }
+  TFile* out = TFile::Open((output_directory + "/" + category_name+"_hepdata.root").c_str(), "recreate");
   out->cd();
 
   // Extracting observed data

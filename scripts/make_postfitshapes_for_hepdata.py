@@ -14,13 +14,14 @@ def execute_command(command):
 
 parser = ArgumentParser(description="Script to create postfit shapes for HEP Data using PostFitShapesForHEPData")
 parser.add_argument("--analysis-configuration", required=True, help="Path to a .yaml file containing all information for an analysis.")
+parser.add_argument("--output-directory", required=True, help="Directory where to put the ROOT file outputs")
 
 args = parser.parse_args()
 
 command_template = ("PostFitShapesForHEPData"
   " -w {WORKSPACE}"
   " -d {RESTORE_BINNING_DATACARD}"
-  " -c {CATEGORY}"
+  " -c {CATEGORY} -o {OUTPUTDIR}"
   " -f {FITFILE} -F {FITNAME}"
   " {POI_CONFIG}"
   " -m {MASSNAME} {MASSES}"
@@ -43,6 +44,7 @@ for era in analysis_configuration["eras"]:
           WORKSPACE=workspace,
           RESTORE_BINNING_DATACARD=restore_datacard,
           CATEGORY=cname,
+          OUTPUTDIR=args.output_directory,
           FITFILE=analysis_configuration["fitfile"],
           FITNAME=analysis_configuration["fitname"],
           POI_CONFIG=pois,
