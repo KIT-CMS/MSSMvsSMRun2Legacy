@@ -17,7 +17,7 @@ tt_categories: [132, 232, 332, 432, 35]
 eras: [2016, 2017, 2018]
 final_states: [em, et, mt, tt]
 restore_directory: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/restore_binning
-fitfile: multidimfitggH.bkgOnly.bestfit.robustHesse.root
+fitfile: multidimfitggH.bkgOnly.bestfit.robustHesse.LowMass.root
 fitname: fit_mdf
 POI:
   r_ggH: 1
