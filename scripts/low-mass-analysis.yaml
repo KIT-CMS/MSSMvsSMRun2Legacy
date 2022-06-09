@@ -1,0 +1,28 @@
+em_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2016/em/ws.root
+em_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2017/em/ws.root
+em_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2018/em/ws.root
+et_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2016/et/ws.root
+et_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2017/et/ws.root
+et_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2018/et/ws.root
+mt_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2016/mt/ws.root
+mt_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2017/mt/ws.root
+mt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2018/mt/ws.root
+tt_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2016/tt/ws.root
+tt_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2017/tt/ws.root
+tt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/2018/tt/ws.root
+em_categories: [2, 132, 232, 332, 432, 133, 233, 333, 433, 35, 36]
+et_categories: [132, 232, 332, 432, 35]
+mt_categories: [132, 232, 332, 432, 35]
+tt_categories: [132, 232, 332, 432, 35]
+eras: [2016, 2017, 2018]
+final_states: [em, et, mt, tt]
+restore_directory: CombineHarvester/MSSMvsSMRun2Legacy/model_independent_limits/output_all_all_bsm-model-indep/restore_binning
+fitfile: multidimfitggH.bkgOnly.bestfit.robustHesse.root
+fitname: fit_mdf
+POI:
+  r_ggH: 1
+  r_bbH: 1
+  r_ggX: 0
+  r_qqX: 0
+massname: MH
+masses: [60, 80, 95, 100, 120, 125, 130, 140, 160, 180, 200]

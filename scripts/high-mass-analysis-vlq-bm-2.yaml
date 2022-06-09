@@ -10,7 +10,7 @@ mt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_b
 tt_2016_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_2/2016/tt/ws.root
 tt_2017_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_2/2017/tt/ws.root
 tt_2018_workspace: CombineHarvester/MSSMvsSMRun2Legacy/analysis_2022_02_28/vlq_bm_2/2018/tt/ws.root
-em_categories: [32, 33, 34, 35, 36, 37]
+em_categories: [2, 32, 33, 34, 35, 36, 37]
 et_categories: [32, 33, 35, 36]
 mt_categories: [32, 33, 35, 36]
 tt_categories: [32, 35]
