@@ -175,7 +175,7 @@ if [[ $MODE == "initial" ]]; then
     ############
     morph_parallel.py --output ${defaultdir}/datacards \
         --analysis ${analysis} \
-        --sub-analysis "sm-like-light" \
+        --sub-analysis "none" \
         --hSM-treatment ${hSM_treatment} \
         --categorization ${categorization} \
         --sm-like-hists ${sm_like_hists} \
