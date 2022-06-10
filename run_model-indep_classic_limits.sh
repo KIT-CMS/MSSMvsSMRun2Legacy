@@ -235,6 +235,8 @@ elif [[ $MODE == "ws" ]]; then
     -i ${datacarddir}/combined/cmb/ \
     -m 125.0 --parallel 4 | tee -a ${defaultdir}/logs/workspace_independent.txt
 
+elif [[ $MODE == "setup" ]]; then
+
     ############
     # job setup creation
     ############
