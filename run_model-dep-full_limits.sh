@@ -310,7 +310,7 @@ if [[ $MODE == "initial" ]]; then
     # Check if the expected number of datacards has been written
     EXPECTED=$(((15+15+11+18)*3))
     if [[ $(ls ${datacarddir}/combined/cmb/*.txt | wc -l) != $EXPECTED ]]; then
-        echo "[ERROR] Not all datacards have been created or written. Please check the logs..."
+        echo -e "\033[0;31m[ERROR]\033[0m Not all datacards have been created or written. Please check the logs..."
         echo "Expected ${EXPECTED} datacards written but found only $(ls ${datacarddir}/combined/cmb/ | wc -l) in the combined directory."
     fi
 
@@ -514,15 +514,15 @@ elif [[ $MODE == "collect" ]]; then
     --job-mode 'condor' \
     --task-name $taskname2 \
     --dry-run \
-    --redefineSignalPOI x \
-    --setParameterRanges x=0,1 \
-    --setParameters r=1 \
-    --freezeParameters r -v1 \
+    --redefineSignalPOI r \
+    --setParameterRanges r=0,1 \
+    --setParameters x=1 \
+    --freezeParameters x -v1 \
     --cminDefaultMinimizerStrategy 0 \
     --X-rtd MINIMIZER_analytic \
     --cminDefaultMinimizerTolerance 0.01 2>&1 | tee -a ${defaultdir}/logs/collect_jobs_${MODEL}.txt
 
-    # # condor_submit condor_${taskname2}.sub
+    # condor_submit condor_${taskname2}.sub
     cp asymptotic_grid.root ..
     cd ${defaultdir}/limits_${MODEL}/
 
@@ -542,8 +542,8 @@ elif [[ $MODE == "collect" ]]; then
     fi
     modelname=${MODEL}_13.root
     [[ $OLDFILES == 1 ]] && modelname="${MODEL}_13_old.root"
-    for label in "Preliminary" ""; do
-        plotLimitGrid.py asymptotic_grid.root \
+    for label in "Preliminary" "" "Supplementary"; do
+        ${CMSSW_BASE}/src/CombineHarvester/CombineTools/scripts/plotLimitGrid.py asymptotic_grid.root \
         --scenario-label="${scenario_label}" \
         --output ${TAG}_${MODEL}_${label} \
         --title-right="${title}" \
