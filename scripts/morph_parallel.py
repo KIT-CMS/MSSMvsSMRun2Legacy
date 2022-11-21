@@ -61,5 +61,9 @@ if args.dry_run:
         print command
 
 else:
-    p = Pool(args.parallel)
-    p.map(execute, commands)
+    if args.parallel < 2:
+        for command in commands:
+            execute(command)
+    else:
+        p = Pool(args.parallel)
+        p.map(execute, commands)
