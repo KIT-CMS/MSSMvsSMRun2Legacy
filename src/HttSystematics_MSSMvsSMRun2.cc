@@ -2747,12 +2747,12 @@ void AddMSSMvsSMRun2Systematics(CombineHarvester &cb, bool jetfakes, bool embedd
       .channel({"em"})
       .process({"QCD"})
       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_stat_$ERA", "lnN", SystMap<bin_id>::init
-              ({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}, 1.07));
+              ({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437,302}, 1.07));
     cb.cp()
       .channel({"em"})
       .process({"QCD"})
       .AddSyst(cb, "CMS_htt_qcd_nbtag_closure_syst", "lnN", SystMap<bin_id>::init
-              ({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437}, 1.05));
+              ({2,35,135,235,335,435,36,136,236,336,436,37,137,237,337,437,302}, 1.05));
 
     //    cb.cp()
     //       .channel({"em"})
