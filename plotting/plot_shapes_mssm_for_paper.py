@@ -108,6 +108,11 @@ def parse_arguments():
         default=None,
         help="Add total background shape of b-only fit to ratio plot."
     )
+    parser.add_argument(
+        "--supplementary",
+        action="store_true",
+        help="Add supplementary label and change y-axis range"
+    )
     return parser.parse_args()
 
 
@@ -169,12 +174,15 @@ def main(args):
                 "em": ["2","32", "33", "34", "35", "36", "37"]
             }
             channel_categories = {
-                "et": ["32", "35"],
-                "mt": ["32", "35"],
+                "et": ["32_mt_tot", "35_mt_tot"],
+                "mt": ["32_mt_tot", "35_mt_tot"],
+                # "tt": ["32_mt_tot", "35_mt_tot"],
+                # # "em": ["32", "33", "35", "36"],
+                # "em": ["32_mt_tot", "33_mt_tot", "34_mt_tot", "35_mt_tot", "36_mt_tot", "37_mt_tot"],
+                # "lt": ["32_mt_tot", "33_mt_tot", "35_mt_tot", "36_mt_tot"],
                 "tt": ["32", "35"],
-                # "em": ["32", "33", "35", "36"],
-                "em": ["33", "36"],
-                "lt": ["32", "35"],
+                "em": ["32", "33", "34", "35", "36", "37"],
+                "lt": ["32", "33", "35", "36"],
             }
     else:
         channel_categories = {
@@ -204,10 +212,10 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b tag Tight-m_{T}",
-                "33": "No b tag Loose-m_{T}",
-                "35": "b tag Tight-m_{T}",
-                "36": "b tag Loose-m_{T}",
+                "32": "No b tag, Tight-m_{T}",
+                "33": "No b tag, Loose-m_{T}",
+                "35": "b tag, Tight-m_{T}",
+                "36": "b tag, Loose-m_{T}",
                 },
             "mt": {
                 "1": "2D ggH/qqH category",
@@ -216,10 +224,10 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b tag Tight-m_{T}",
-                "33": "No b tag Loose-m_{T}",
-                "35": "b tag Tight-m_{T}",
-                "36": "b tag Loose-m_{T}",
+                "32": "No b tag, Tight-m_{T}",
+                "33": "No b tag, Loose-m_{T}",
+                "35": "b tag, Tight-m_{T}",
+                "36": "b tag, Loose-m_{T}",
                 },
             "lt": {
                 "1": "2D ggH/qqH category",
@@ -228,10 +236,10 @@ def main(args):
                 "16": "misc",
                 "20": "Genuine #tau",
                 "21": "Jet #rightarrow #tau_{h}",
-                "32": "No b tag Tight-m_{T}",
-                "33": "No b tag Loose-m_{T}",
-                "35": "b tag Tight-m_{T}",
-                "36": "b tag Loose-m_{T}",
+                "32": "No b tag, Tight-m_{#lower[-0.2]{T}}",
+                "33": "No b tag, Loose-m_{#lower[-0.2]{T}}",
+                "35": "b tag, Tight-m_{#lower[-0.2]{T}}",
+                "36": "b tag, Loose-m_{#lower[-0.2]{T}}",
                 },
             "tt": {
                 "1": "2D ggH/qqH category",
@@ -323,9 +331,9 @@ def main(args):
         for category in channel_categories[channel]:
             # Set split value to 101 for no b-tag categories to make
             # transition between scales smoother
-            if int(category) < 35 and int(category) > 10:
+            if int(category.split("_")[0]) < 35 and int(category.split("_")[0]) > 10:
                 split_dict[channel] += 100
-            if args.control_region and category != "2":
+            if args.control_region and category.split("_")[0] != "2":
                 continue
             rootfile = rootfile_parser.Rootfile_parser(args.input, mode="CombineHarvesterMerged")
             legend_bkg_processes = copy.deepcopy(bkg_processes)
@@ -341,12 +349,12 @@ def main(args):
             # get background histograms
             for process in bkg_processes:
                 if process in ["jetFakes", "jetFakesEMB"] and channel == "tt":
-                    jetfakes_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, process).Clone(), xlow=30.)
+                    jetfakes_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, process).Clone("jetFakesComb"), xlow=30.)
                     jetfakes_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "wFakes"), xlow=30.))
                     plot.add_hist(jetfakes_hist, process, "bkg")
                 elif process in ["HSM"]:
                     if channel == "em":
-                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone(), xlow=30.)
+                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone("H125"), xlow=30.)
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggHWW125"), xlow=30.))
@@ -355,23 +363,23 @@ def main(args):
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
                         plot.add_hist(hsm_hist, process, "bkg")
                     else:
-                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone(), xlow=30.)
+                        hsm_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125").Clone("H125"), xlow=30.)
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
                         hsm_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "bbH125"), xlow=30.))
                         plot.add_hist(hsm_hist, process, "bkg")
                 elif process == "EWK" and channel == "em":
-                    ewk_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone(), xlow=30.)
+                    ewk_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone("EWK"), xlow=30.)
                     ewk_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL"), xlow=30.))
                     plot.add_hist(ewk_hist, process, "bkg")
                 elif process in ["HWW"]:
-                    hww_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggHWW125").Clone(), xlow=30.)
+                    hww_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggHWW125").Clone("HWW"), xlow=30.)
                     hww_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqHWW125"), xlow=30.))
                     hww_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZHWW125"), xlow=30.))
                     hww_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
                     plot.add_hist(hww_hist, process, "bkg")
                 elif process == "other":
                     if channel == "em":
-                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone(), xlow=30.)
+                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "W").Clone("other"), xlow=30.)
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL"), xlow=30.))
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZL"), xlow=30.))
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125"), xlow=30.))
@@ -383,7 +391,7 @@ def main(args):
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "WHWW125"), xlow=30.))
                         plot.add_hist(other_hist, process, "bkg")
                     elif channel in ["et", "mt", "lt", "tt"]:
-                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL").Clone(), xlow=30.)
+                        other_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VVL").Clone("other"), xlow=30.)
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ZL"), xlow=30.))
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggH125"), xlow=30.))
                         other_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "qqH125"), xlow=30.))
@@ -397,25 +405,22 @@ def main(args):
                     process, "hist", fillcolor=styles.color_dict[process])
 
             # get signal histograms
-            if int(category) > 30:
+            if int(category.split("_")[0]) > 30:
                 plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
                 for i in plot_idx_to_add_signal:
                     if args.model_independent:
-                        ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone()
+                        ggH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_t"), xlow=30.).Clone("ggh")
                         ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_i"), xlow=30.))
                         ggH_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "ggh_b"), xlow=30.))
                         plot.subplot(i).add_hist(ggH_hist, "ggH")
                         # bbH signal
-                        bbH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.)
+                        bbH_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "bbh"), xlow=30.).Clone("bbh")
                         # if args.cross_section_bbh != args.cross_section_ggh:
                         #     print("Scaling bbH by {}".format(float(args.cross_section_bbh)/float(args.cross_section_ggh)))
                         #     bbH_hist.Scale(float(args.cross_section_bbh)/float(args.cross_section_ggh))
-                        if args.cross_section_bbh != args.cross_section_ggh:
-                            print("Scaling bbH by {}".format(float(args.cross_section_bbh)/0.0030584))
-                            bbH_hist.Scale(float(args.cross_section_bbh)/0.0030584)
                         plot.subplot(i).add_hist(bbH_hist, "bbH")
                         # vector leptoquark signal
-                        VLQ_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VLQ_s"), xlow=30.).Clone()
+                        VLQ_hist = rebin_hist_for_logX(rootfile.get(era, channel, category, "VLQ_s"), xlow=30.).Clone("VLQ")
                         VLQ_hist.Add(rebin_hist_for_logX(rootfile.get(era, channel, category, "VLQ_i"), xlow=30.))
                         plot.subplot(i).add_hist(
                             VLQ_hist, "VLQ")
@@ -431,7 +436,7 @@ def main(args):
 
             plot.subplot(0).setGraphStyle("data_obs", "e0")
             if args.model_independent:
-                if int(category) > 30:
+                if int(category.split("_")[0]) > 30:
                     plot.subplot(0 if args.linear else 1).setGraphStyle(
                         "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=2)
                     plot.subplot(0 if args.linear else 1).setGraphStyle(
@@ -457,7 +462,7 @@ def main(args):
                     plot.subplot(2).setGraphStyle(
                         "total_bkg_b_only", "hist", linecolor=ROOT.kBlue,
                         linewidth=2, linestyle=2)
-                if int(category) > 30:
+                if int(category.split("_")[0]) > 30:
                     bkg_ggH = plot.subplot(2).get_hist("ggH")
                     bkg_bbH = plot.subplot(2).get_hist("bbH")
                     bkg_VLQ = plot.subplot(2).get_hist("VLQ")
@@ -540,20 +545,26 @@ def main(args):
                     # max(1,
                     #     split_dict[channel] * 2))
             else:
-                plot.subplot(0).setYlims(
-                    split_dict[channel],
-                    max(1.4 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
-                        split_dict[channel] * 2))
+                if args.supplementary:
+                    plot.subplot(0).setYlims(
+                        split_dict[channel],
+                        max(1.6 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
+                            split_dict[channel] * 2))
+                else:
+                    plot.subplot(0).setYlims(
+                        split_dict[channel],
+                        max(1.4 * plot.subplot(0).get_hist("data_obs").GetMaximum(),
+                            split_dict[channel] * 2))
 
             if channel == "em":
-                if int(category) == 36:
+                if int(category.split("_")[0]) == 36:
                     plot.subplot(2).setYlims(0.2, 2.5)
                 else:
                     plot.subplot(2).setYlims(0.5, 2.0)
             elif channel == "tt":
                 plot.subplot(2).setYlims(0.7, 2.5)
             else:
-                if int(category) == 35:
+                if int(category.split("_")[0]) == 35:
                     plot.subplot(2).setYlims(0.5, 2.2)
                 else:
                     plot.subplot(2).setYlims(0.7, 2.2)
@@ -564,7 +575,7 @@ def main(args):
                 # plot.subplot(1).setYlims(1.e-4, split_dict[channel])
                 plot.subplot(1).setYlims(min(1.e-3, plot.subplot(1).get_hist("data_obs").GetMinimum()/10., plot.subplot(1).get_hist("total_bkg").GetMinimum()/10.), split_dict[channel])
                 plot.subplot(1).setLogY()
-                if int(category) > 30 or int(category) == 2:
+                if int(category.split("_")[0]) > 30 or int(category.split("_")[0]) == 2:
                     plot.subplot(1).setLogX()
                 plot.subplot(1).setYlabel(
                     "")  # otherwise number labels are not drawn on axis
@@ -576,12 +587,12 @@ def main(args):
                     x_label = args.control_variable
                 plot.subplot(2).setXlabel(x_label)
             else:
-                if int(category) > 30 or int(category) == 2:
+                if int(category.split("_")[0]) > 30 or int(category.split("_")[0]) == 2:
                     plot.subplot(2).setXlabel("m_{T}^{tot} (GeV)")
                 else:
                     plot.subplot(2).setXlabel("SVFit m_{#tau#tau} (GeV)")
             if args.normalize_by_bin_width:
-                if int(category) > 30 or int(category) == 2:
+                if int(category.split("_")[0]) > 30 or int(category.split("_")[0]) == 2:
                     plot.subplot(0).setYlabel("dN/dm_{T}^{tot} (1/GeV)")
                     # plot.subplot(0).setYlabel("< Events / GeV >")
                 else:
@@ -592,7 +603,7 @@ def main(args):
             plot.subplot(2).setYlabel("Obs./Exp.")
 
 
-            if (int(category) > 30 or int(category) == 2) and args.x_range is None:
+            if (int(category.split("_")[0]) > 30 or int(category.split("_")[0]) == 2) and args.x_range is None:
                 plot.subplot(0).setLogX()
                 plot.subplot(2).setLogX()
 
@@ -605,17 +616,18 @@ def main(args):
             plot.scaleYTitleOffset(1.05)
 
             if channel == "em":
-                if category == "32":
-                    plot.subplot(0).setNYdivisions(3, 5)
-                elif category == "33":
+                # if category.split("_")[0] == "32":
+                #     plot.subplot(0).setNYdivisions(3, 5)
+                # elif category.split("_")[0] == "33":
+                if category.split("_")[0] == "33":
                     plot.subplot(0).setNYdivisions(4, 5)
-            if int(category) < 35 and int(category) > 10:
+            if int(category.split("_")[0]) < 35 and int(category.split("_")[0]) > 10:
                 plot.subplot(1).setNYdivisions(3, 5)
             plot.subplot(2).setNYdivisions(3, 5)
 
             # draw subplots. Argument contains names of objects to be drawn in corresponding order.
             # procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "bbH", "bbH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
-            if category == "2":
+            if category.split("_")[0] == "2":
                 procs_to_draw = ["stack", "total_bkg", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
             else:
                 if args.model_independent:
@@ -631,7 +643,7 @@ def main(args):
                 #     "ggH_top", "bbH_top",
                 #     "data_obs"
                 # ])
-                if category == "2":
+                if category.split("_")[0] == "2":
                     plot.subplot(1).Draw([
                         "stack", "total_bkg",
                         "data_obs"
@@ -659,7 +671,10 @@ def main(args):
                 label2.DrawLatex(0.97, 0.75, "linear scale")
                 # Redraw upper x axis to have good looking plot
                 plot.subplot(0)._pad.cd()
-                y_max = 1.4 * plot.subplot(0).get_hist("data_obs").GetMaximum()
+                if args.supplementary:
+                    y_max = 1.6 * plot.subplot(0).get_hist("data_obs").GetMaximum()
+                else:
+                    y_max = 1.4 * plot.subplot(0).get_hist("data_obs").GetMaximum()
                 axis = ROOT.TGaxis(30., y_max, 5000., y_max, 30., 5000., 510, "GBSU-")
                 axis.SetTickLength(0.02)
                 axis.SetTickSize(0.02)
@@ -667,7 +682,7 @@ def main(args):
 
             # Draw upper panel after lower panel of split to ensure full
             # display of the data points
-            if category == "2":
+            if category.split("_")[0] == "2":
                 plot.subplot(2).Draw([
                     "total_bkg",
                     "data_obs"
@@ -675,12 +690,12 @@ def main(args):
             else:
                 if args.model_independent:
                     if args.b_only_fit is not None:
-                        if int(category) > 30:
+                        if int(category.split("_")[0]) > 30:
                             procs_to_draw = ["total_bkg_b_only", "total_bkg", "bkg_ggH", "bkg_bbH", "bkg_VLQ", "data_obs"]
                         else:
                             procs_to_draw = ["total_bkg_b_only", "total_bkg", "data_obs"]
                     else:
-                        if int(category) > 30:
+                        if int(category.split("_")[0]) > 30:
                             procs_to_draw = ["total_bkg", "bkg_ggH", "bkg_bbH", "bkg_VLQ", "data_obs"]
                         else:
                             procs_to_draw = ["total_bkg", "data_obs"]
@@ -691,11 +706,11 @@ def main(args):
                 plot.subplot(2).Draw(procs_to_draw)
 
             # create legends
-            if int(category) < 30 and int(category) > 2:
+            if int(category.split("_")[0]) < 30 and int(category.split("_")[0]) > 2:
                 plot.add_legend(width=0.38, height=0.30)
             else:
                 # plot.add_legend(width=0.60, height=0.20, pos=1)
-                plot.add_legend(width=0.40, height=0.33, pos=3)
+                plot.add_legend(width=0.42, height=0.33, pos=3)
             # plot.add_legend(width=0.6, height=0.15)
             for process in legend_bkg_processes:
                 if process == "HSM" and channel == "em":
@@ -707,22 +722,22 @@ def main(args):
             if not args.blinded:
                 plot.legend(0).add_entry(0, "data_obs", "Observed", 'PE')
             plot.legend(0).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
-            if args.control_region and category == "2":
+            if args.control_region and category.split("_")[0] == "2":
                 pass
             else:
                 if args.model_independent:
-                    if int(category) > 30:
+                    if int(category.split("_")[0]) > 30:
                         mass_str = "%s GeV" % args.mass if float(args.mass) < 1000 else "{:.1f} TeV".format(float(args.mass) / 1000)
                         ggH_xs_str = "%s pb" % args.cross_section_ggh if float(args.cross_section_ggh) > 1e-2 else "{} fb".format(float(args.cross_section_ggh) * 1000)
                         bbH_xs_str = "%s pb" % args.cross_section_bbh if float(args.cross_section_bbh) > 1e-2 else "{} fb".format(float(args.cross_section_bbh) * 1000)
-                        plot.legend(0).add_entry(0 if args.linear else 1, "ggH", "#splitline{gg#phi @ %s}{(m_{#phi} = %s)}" % (ggH_xs_str, mass_str), 'l')
-                        plot.legend(0).add_entry(0 if args.linear else 1, "bbH", "#splitline{bb#phi @ %s}{(m_{#phi} = %s)}" % (bbH_xs_str, mass_str), 'l')
+                        plot.legend(0).add_entry(0 if args.linear else 1, "ggH", "#splitline{gg#phi @ %s}{(m_{#lower[-0.4]{#phi}} = %s)}" % (ggH_xs_str, mass_str), 'l')
+                        plot.legend(0).add_entry(0 if args.linear else 1, "bbH", "#splitline{bb#phi @ %s}{(m_{#lower[-0.4]{#phi}} = %s)}" % (bbH_xs_str, mass_str), 'l')
                         plot.legend(0).add_entry(0 if args.linear else 1, "", "", '')
-                        plot.legend(0).add_entry(0 if args.linear else 1, "VLQ", "#splitline{VLQ, g_{U} = %s}{(m_{U} = %s TeV)}" % (1.2, 1), 'l')
+                        plot.legend(0).add_entry(0 if args.linear else 1, "VLQ", "#splitline{VLQ, g_{#lower[-0.4]{U}} = %s}{(m_{#lower[-0.4]{U}} = %s TeV)}" % (1.2, 1), 'l')
                 else:
                     plot.legend(0).add_entry(0 if args.linear else 1, "mssm_sig", "#splitline{H #rightarrow #tau#tau}{#splitline{(m_{A}= %s GeV,}{ tan #beta = %s)}}" %(args.mass, args.tanbeta), 'l')
             plot.legend(0).setNColumns(2)
-            # plot.legend(0).scaleTextSize(1.05)
+            plot.legend(0).scaleTextSize(1.15)
             plot.legend(0).Draw()
 
 
@@ -738,11 +753,11 @@ def main(args):
                 plot.legend(1).add_entry(0, "total_bkg", "Bkg. unc.", 'f')
                 if args.b_only_fit:
                     plot.legend(1).add_entry(2, "total_bkg_b_only", "Bkg. only fit", "l")
-            if args.control_region and category == "2":
+            if args.control_region and category.split("_")[0] == "2":
                 pass
             else:
                 if args.model_independent:
-                    if int(category) > 30:
+                    if int(category.split("_")[0]) > 30:
                         plot.legend(1).add_entry(0 if args.linear else 1, "ggH",
                                              "gg#phi", 'l')
                         plot.legend(1).add_entry(0 if args.linear else 1, "bbH",
@@ -763,11 +778,11 @@ def main(args):
                 plot.legend(1).setNColumns(5)
                 if args.b_only_fit is not None:
                     plot.legend(1).setNColumns(6)
-            # plot.legend(1).scaleTextSize(1.05)
+            plot.legend(1).scaleTextSize(1.15)
             plot.legend(1).Draw()
 
             # draw additional labels
-            plot.DrawCMS(cms_sub="")
+            plot.DrawCMS(cms_sub="Supplementary" if args.supplementary else "")
             if "2016" in args.era:
                 plot.DrawLumi("36.3 fb^{-1} (2016, 13 TeV)")
             elif "2017" in args.era:
@@ -782,7 +797,7 @@ def main(args):
 
             posChannelCategoryLabelLeft = None
             plot.DrawChannelCategoryLabel(
-                "#font[42]{%s, %s}" % (channel_dict[channel], category_dict[channel][category]),
+                "#font[42]{%s, %s}" % (channel_dict[channel], category_dict[channel][category.split("_")[0]]),
                 begin_left=posChannelCategoryLabelLeft)
 
             # save plot
@@ -793,7 +808,7 @@ def main(args):
                                                 postfix, "png"
                                                 if args.png else "pdf"))
             # Undo switch of split value
-            if int(category) < 35 and int(category) > 10:
+            if int(category.split("_")[0]) < 35 and int(category.split("_")[0]) > 10:
                 split_dict[channel] -= 100
             plots.append(
                 plot

@@ -13,7 +13,7 @@ XSEC_BBH=$7
 
 [[ -z $MASS ]] && MASS=1200
 [[ -z $XSEC_GGH ]] && XSEC_GGH=0.05
-[[ -z $XSEC_BBH && ! -z $6 ]] && XSEC_BBH=0.05
+[[ -z $XSEC_BBH && ! -z $6 ]] && XSEC_BBH=$6
 [[ -z $XSEC_BBH ]] && XSEC_BBH=0.05
 
 
@@ -36,9 +36,11 @@ do
                                        --normalize-by-bin-width \
                                        -o $OUTPUT \
                                        --model-independent \
-                                       --blinded \
                                        --mass $MASS \
                                        --x-sec-ggh $XSEC_GGH \
-                                       --x-sec-bbh $XSEC_BBH \
+                                       --x-sec-bbh $XSEC_BBH
+                                       # --x-range 0,150 \
+                                       # --linear
+                                       # --blinded \
     done
 done
