@@ -142,11 +142,14 @@ quantity_dict = {
     "int_gg_tautau_H3" : "^{}#eta(gg#rightarrow^{}h_{3}#rightarrow#tau#tau)",
     "int_bb_tautau_H2" : "^{}#eta(bb#rightarrow^{}h_{2}#rightarrow#tau#tau)",
     "int_bb_tautau_H3" : "^{}#eta(bb#rightarrow^{}h_{3}#rightarrow#tau#tau)",
+    "m_A" : "m_{A}",
+    "m_h" : "m_{h}",
+    "m_H" : "m_{H}",
 }
 
 BSM = {}
 for phi in additional + [smlike]:
-    BSM[phi] = [q.format(phi=phi) for q in ["xs_gg_{phi}", "xs_bb_{phi}", "rescale_gb_{phi}", "rescale_gt_{phi}", "br_{phi}_tautau", "br_{phi}_bb", "width_{phi}"]]
+    BSM[phi] = [q.format(phi=phi) for q in ["m_{phi}", "xs_gg_{phi}", "xs_bb_{phi}", "rescale_gb_{phi}", "rescale_gt_{phi}", "br_{phi}_tautau", "br_{phi}_bb", "width_{phi}"]]
     if model == "mh1125_CPV" and phi in additional:
         BSM[phi].extend([q.format(phi=phi) for q in ["int_gg_tautau_{phi}", "int_bb_tautau_{phi}"]])
 
