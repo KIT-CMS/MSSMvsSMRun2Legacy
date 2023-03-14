@@ -32,6 +32,10 @@ def parse_args():
     parser.add_argument("--y-var", "-y",
                         default="r_bbH",
                         help="Name of the POI to include as y variable")
+    parser.add_argument("--max-value",
+                        type=int,
+                        default=1000,
+                        help="Maximum value of deltaNLL when reading the input tree")
     return parser.parse_args()
 
 
@@ -113,6 +117,8 @@ def convert_graph_to_dataframe(graph):
     #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
     # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
     miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)), missing)
+    # miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) != 0. else graph.Interpolate(x[0], x[1]+0.000001)), missing)
+    # Solution without relying on different interpolation algorithm for TH2Ds, was relying on shift instead.
 
     # Build dataframe from the uniqe x and y values
     df = pd.DataFrame(data=points,
@@ -167,7 +173,7 @@ def main(args):
     graph = plot.TGraph2DFromTree(limit,
                                   args.x_var, args.y_var,
                                   'deltaNLL',
-                                  'quantileExpected > -0.5 && deltaNLL < 1000')
+                                  'quantileExpected > -0.5 && deltaNLL < {}'.format(args.max_value))
                                   # 'quantileExpected > -0.5 && deltaNLL > 0 && deltaNLL < 1000')
 
     # rezero the TGraph to have sensible values in the output file
