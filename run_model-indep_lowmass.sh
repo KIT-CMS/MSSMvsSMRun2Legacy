@@ -186,6 +186,84 @@ case "$MODE" in
             -m 95 --parallel 8
       ;;
 
+    "setup")
+    ############
+    # job setup creation
+    ############
+    cd ${defaultdir}/limits_ind/condor
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200" \
+    -M AsymptoticLimits \
+    --rAbsAcc 0 \
+    --rRelAcc 0.0005 \
+    --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
+    --setParameters r_ggH=0,r_bbH=0 \
+    --redefineSignalPOIs r_bbH \
+    -d ${datacarddir}/combined/cmb/ws.root \
+    --there -n ".bbH" \
+    --job-mode condor \
+    --dry-run \
+    --task-name bbH_full_cmb \
+    --X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
+
+    combineTool.py -m "60,80,100,120,125,130,140,160,180,200" \
+    -M AsymptoticLimits \
+    --rAbsAcc 0 \
+    --rRelAcc 0.0005 \
+    --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
+    --setParameters r_ggH=0,r_bbH=0 \
+    --redefineSignalPOIs r_ggH \
+    -d ${datacarddir}/combined/cmb/ws.root \
+    --there -n ".ggH" \
+    --job-mode condor \
+    --dry-run \
+    --task-name ggH_full_cmb \
+    --X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND \
+    --cminDefaultMinimizerStrategy 0 \
+    --cminDefaultMinimizerTolerance 0.01 \
+    -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_ggh.txt
+      ;;
+
+    "submit")
+    ############
+    # job submission
+    ############
+    cd ${defaultdir}/limits_ind/condor
+    condor_submit condor_bbH_full_cmb.sub
+    condor_submit condor_ggH_full_cmb.sub
+      ;;
+
+    "submit-local")
+    ############
+    # job submission
+    ############
+    cp scripts/run_limits_locally.py ${defaultdir}/limits_ind/condor
+    cd ${defaultdir}/limits_ind/condor
+    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
+    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_ggH_full_cmb.sh
+      ;;
+
+    "collect")
+    for p in gg bb
+    do
+        combineTool.py -M CollectLimits ${datacarddir}/combined/cmb/higgsCombine.${p}H*.root \
+        --use-dirs \
+        -o ${datacarddir}/combined/cmb/mssm_${p}H_cmb.json
+
+        plotMSSMLimits.py --cms-sub "Preliminary" \
+        --title-right "138 fb^{-1} (13 TeV)" \
+        --process "${p}#phi" \
+        --y-axis-min 0.0001 \
+        --y-axis-max 1000.0 \
+        --show exp,obs ${datacarddir}/combined/cmb/mssm_${p}H_cmb_cmb.json \
+        --output mssm_model-independent_${p}H_cmb \
+        --logx \
+        --logy
+    done
+      ;;
+
     "prepare-ggH-bbH-scan")
         [[ ! -d ${defaultdir}/ggH_bbH_scan_ind/condor ]] && mkdir -p ${defaultdir}/ggH_bbH_scan_ind/condor
         cd ${defaultdir}/ggH_bbH_scan_ind/condor
