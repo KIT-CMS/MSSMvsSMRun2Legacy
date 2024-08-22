@@ -191,12 +191,12 @@ case "$MODE" in
     # job setup creation
     ############
     cd ${defaultdir}/limits_ind/condor
-    combineTool.py -m "60,80,100,120,125,130,140,160,180,200" \
+    combineTool.py -m "60,80,95,100,120,125,130,140,160,180,200" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
-    --setParameters r_ggH=0,r_bbH=0 \
+    --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --freezeParameters r_qqX,r_ggX \
     --redefineSignalPOIs r_bbH \
     -d ${datacarddir}/combined/cmb/ws.root \
     --there -n ".bbH" \
@@ -208,12 +208,12 @@ case "$MODE" in
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
 
-    combineTool.py -m "60,80,100,120,125,130,140,160,180,200" \
+    combineTool.py -m "60,80,95,100,120,125,130,140,160,180,200" \
     -M AsymptoticLimits \
     --rAbsAcc 0 \
     --rRelAcc 0.0005 \
     --boundlist ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/input/mssm_boundaries.json \
-    --setParameters r_ggH=0,r_bbH=0 \
+    --setParameters r_ggH=0,r_bbH=0,r_qqX=0,r_ggX=0 --freezeParameters r_qqX,r_ggX \
     --redefineSignalPOIs r_ggH \
     -d ${datacarddir}/combined/cmb/ws.root \
     --there -n ".ggH" \
@@ -241,8 +241,8 @@ case "$MODE" in
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits_ind/condor
     cd ${defaultdir}/limits_ind/condor
-    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
-    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_ggH_full_cmb.sh
+    python3 run_limits_locally.py --cores 11 --njobs 11 --taskname condor_bbH_full_cmb.sh
+    python3 run_limits_locally.py --cores 11 --njobs 11 --taskname condor_ggH_full_cmb.sh
       ;;
 
     "collect")
