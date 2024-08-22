@@ -23,7 +23,7 @@ class YtYbScan(PhysicsModel):
         for po in physOptions:
             if po.startswith('XS-Workspace='):
                 self.XS_File = po.replace('XS-Workspace=', '')
-                print "Using %s for XS inputs"%self.XS_File
+                print("Using %s for XS inputs"%self.XS_File)
 
     def setModelBuilder(self, modelBuilder):
         PhysicsModel.setModelBuilder(self, modelBuilder)
@@ -39,7 +39,7 @@ class YtYbScan(PhysicsModel):
         param_var = self.modelBuilder.out.var(param)
         systname = "systeff_%s"%param
 
-        print "Doing AsymPow systematic '%s'" %(param)
+        print("Doing AsymPow systematic '%s'" %(param))
 
         self.NUISANCES.add(param)
         hi = self.modelBuilder.out.function('xs_%(production)s%(higgs)s_up' % vars()) 
@@ -79,7 +79,7 @@ class YtYbScan(PhysicsModel):
     def preProcessNuisances(self,nuisances):
         doParams = set()
         for bin in self.DC.bins:
-            for proc in self.DC.exp[bin].keys():
+            for proc in list(self.DC.exp[bin].keys()):
                 if self.DC.isSignal[proc]:
                     scaling = 'scaling_%s' % proc
                     params = self.modelBuilder.out.function(scaling).getParameters(ROOT.RooArgSet()).contentsString().split(',')
@@ -87,7 +87,7 @@ class YtYbScan(PhysicsModel):
                         if param in self.NUISANCES:
                             doParams.add(param)
         for param in doParams:
-            print 'Add nuisance parameter %s to datacard' % param
+            print('Add nuisance parameter %s to datacard' % param)
             nuisances.append((param,False, "param", [ "0", "1"], [] ) )
 
     def doParametersOfInterest(self):
@@ -121,7 +121,7 @@ class YtYbScan(PhysicsModel):
     def getYieldScale(self,bin,process):
         if self.DC.isSignal[process]:
             scaling = 'scaling_%s' % process
-            print 'Scaling %s/%s as %s' % (bin, process, scaling)
+            print('Scaling %s/%s as %s' % (bin, process, scaling))
             return scaling
         else:
             return 1

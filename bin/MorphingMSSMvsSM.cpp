@@ -13,6 +13,7 @@
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/BinomialBinByBin.h"
 #include "CombineHarvester/MSSMvsSMRun2Legacy/interface/dout_tools.h"
 #include "RooRealVar.h"
+#include "RooFormulaVar.h"
 #include "RooWorkspace.h"
 #include "TF1.h"
 #include "TH2.h"
@@ -1233,35 +1234,35 @@ int main(int argc, char **argv) {
 
     std::cout << "[INFO] Using the following categories:" << std::endl;
     std::cout << "   sm_and_btag_cats:" << std::endl;
-    for (const auto i: sm_and_btag_cats)
+    for (const auto &i: sm_and_btag_cats)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "   sm_and_btag_cats_exclude_em_control:" << std::endl;
-    for (const auto i: sm_and_btag_cats_exclude_em_control)
+    for (const auto &i: sm_and_btag_cats_exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    sm_cats:" << std::endl;
-    for (const auto i: sm_cats)
+    for (const auto &i: sm_cats)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    mssm_cats:" << std::endl;
-    for (const auto i: mssm_cats)
+    for (const auto &i: mssm_cats)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    mssm_cats_exclude_em_control:" << std::endl;
-    for (const auto i: mssm_cats_exclude_em_control)
+    for (const auto &i: mssm_cats_exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    mssm_btag_cats:" << std::endl;
-    for (const auto i: mssm_btag_cats)
+    for (const auto &i: mssm_btag_cats)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    sm_signal_cat:" << std::endl;
-    for (const auto i: sm_signal_cat)
+    for (const auto &i: sm_signal_cat)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
     std::cout << "    exclude_em_control:" << std::endl;
-    for (const auto i: exclude_em_control)
+    for (const auto &i: exclude_em_control)
       std::cout << "      " << i.first << ' ' << i.second << std::endl;
     std::cout  << std::endl;
 

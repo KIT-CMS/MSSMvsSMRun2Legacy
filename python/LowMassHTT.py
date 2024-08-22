@@ -101,7 +101,7 @@ class LowMassHTT(PhysicsModel):
 
         if scalings:
           scaling = '_'.join(scalings)
-          print 'Scaling %s/%s as %s' % (bin_, process,scaling)
+          print('Scaling %s/%s as %s' % (bin_, process,scaling))
           return scaling
         else:
           return 1

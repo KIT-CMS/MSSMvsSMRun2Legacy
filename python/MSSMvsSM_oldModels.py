@@ -115,18 +115,18 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
         for po in physOptions:
             if po.startswith('filePrefix='):
                 self.filePrefix = po.replace('filePrefix=', '')
-                print 'Set file prefix to: %s' % self.filePrefix
+                print('Set file prefix to: %s' % self.filePrefix)
 
             if po.startswith('modelFile='):
                 cfg= po.replace('modelFile=', '')
                 cfgSplit = cfg.split(',')
                 if len(cfgSplit) != 3:
-                    raise RuntimeError, 'Model file argument %s should be in the format ENERGY,ERA,FILE' % cfg
+                    raise RuntimeError('Model file argument %s should be in the format ENERGY,ERA,FILE' % cfg)
                 self.energy = cfgSplit[0]
                 self.era = cfgSplit[1]
                 self.modelFile = cfgSplit[2]
                 self.scenario = self.modelFile.replace('.root','').replace('_%s'%self.energy,'').replace('_old','')
-                print "Importing scenario '%s' for sqrt(s) = '%s TeV' and '%s' data-taking period from '%s'"%(self.scenario, self.energy, self.era, self.modelFile)
+                print("Importing scenario '%s' for sqrt(s) = '%s TeV' and '%s' data-taking period from '%s'"%(self.scenario, self.energy, self.era, self.modelFile))
 
                 if self.scenario == "mHH125":
                     self.smlike = "H"
@@ -140,49 +140,49 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                     self.smlike = "h"
                     self.bsmscalar = "H"
                     self.massparameter = "mA"
-                print "Chosen model-specific settings:"
-                print "SM-like Higgs boson:",self.smlike
-                print "BSM scalar Higgs boson:",self.bsmscalar
-                print "Mass parameter in the plane:",self.massparameter
+                print("Chosen model-specific settings:")
+                print("SM-like Higgs boson:",self.smlike)
+                print("BSM scalar Higgs boson:",self.bsmscalar)
+                print("Mass parameter in the plane:",self.massparameter)
 
             if po.startswith('debug-output='):
                 debug_name = po.replace('debug-output=', '')
                 self.debug_output = ROOT.TFile.Open(debug_name, "recreate")
-                print "Using %s as debug output file"%debug_name
+                print("Using %s as debug output file"%debug_name)
 
             if po.startswith('MSSM-NLO-Workspace='):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
-                print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
+                print("Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO)
 
             if po.startswith('replace-with-SM125='):
                 self.replace_with_sm125 = bool(int(po.replace('replace-with-SM125=', ''))) # use either 1 or 0 for the choice
-                print "Replacing with SM 125?",self.replace_with_sm125
+                print("Replacing with SM 125?",self.replace_with_sm125)
 
             if po.startswith('sm-predictions='):
                 sm_pred_path = po.replace('sm-predictions=','')
                 self.sm_predictions = json.load(open(sm_pred_path,'r'))
-                print "Using %s for SM predictions"%sm_pred_path
+                print("Using %s for SM predictions"%sm_pred_path)
 
             if po.startswith('minTemplateMass='):
                 self.minTemplateMass = float(po.replace('minTemplateMass=', ''))
-                print "Lower limit for mass histograms: {MINMASS}".format(MINMASS=self.minTemplateMass)
+                print("Lower limit for mass histograms: {MINMASS}".format(MINMASS=self.minTemplateMass))
 
             if po.startswith('maxTemplateMass='):
                 self.maxTemplateMass = float(po.replace('maxTemplateMass=', ''))
-                print "Upper limit for mass histograms: {MAXMASS}".format(MAXMASS=self.maxTemplateMass)
+                print("Upper limit for mass histograms: {MAXMASS}".format(MAXMASS=self.maxTemplateMass))
 
             if po.startswith('scaleforh='):
                 self.scaleforh = float(po.replace('scaleforh=',''))
-                print "Additional scale for the light scalar h: {SCALE}".format(SCALE=self.scaleforh)
+                print("Additional scale for the light scalar h: {SCALE}".format(SCALE=self.scaleforh))
 
             if po.startswith('hSM-treatment='):
                 hSM_treatment = po.replace('hSM-treatment=', '')
                 self.use_hSM_difference = hSM_treatment == "hSM-in-bg"
-                print "Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference
+                print("Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference)
 
             if po.startswith('qqh-pred-from-scaling='):
                 self.qqh_pred_from_scaling = bool(int(po.replace('qqh-pred-from-scaling=', ''))) # use either 1 or 0 for the choice
-                print "Scale qqH process for sm-like H by hand instead from values in root file?", self.qqh_pred_from_scaling
+                print("Scale qqH process for sm-like H by hand instead from values in root file?", self.qqh_pred_from_scaling)
 
         self.filename = os.path.join(self.filePrefix, self.modelFile)
 
@@ -212,7 +212,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
         elif higgs:
             name = name.format(HIGGS=higgs)
             accesskey = accesskey.format(HIGGS=higgs)
-        print "Doing histFunc '%s' with '%s' key for quantity '%s' from mssm_xs_tools..." %(name, accesskey, quantity)
+        print("Doing histFunc '%s' with '%s' key for quantity '%s' from mssm_xs_tools..." %(name, accesskey, quantity))
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -226,25 +226,25 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                 value = getattr(self.mssm_inputs, method)(accesskey, x, y)
                 if quantity == 'mass' and self.minTemplateMass:
                     if value < self.minTemplateMass:
-                        print "[WARNING]: Found a value for {MH} below lower mass limit: {VALUE} < {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
+                        print("[WARNING]: Found a value for {MH} below lower mass limit: {VALUE} < {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
                             MH=name,
                             VALUE=value,
                             MINMASS=self.minTemplateMass,
                             XNAME=x_parname,
                             XVALUE=x,
                             YNAME=y_parname,
-                            YVALUE=y)
+                            YVALUE=y))
                         value = self.minTemplateMass
                 if quantity == 'mass' and self.maxTemplateMass:
                     if value > self.maxTemplateMass:
-                        print "[WARNING]: Found a value for {MH} above upper mass limit: {VALUE} > {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
+                        print("[WARNING]: Found a value for {MH} above upper mass limit: {VALUE} > {MINMASS} for {XNAME} = {XVALUE}, {YNAME} = {YVALUE}. Setting it to limit".format(
                             MH=name,
                             VALUE=value,
                             MINMASS=self.maxTemplateMass,
                             XNAME=x_parname,
                             XVALUE=x,
                             YNAME=y_parname,
-                            YVALUE=y)
+                            YVALUE=y))
                         value = self.maxTemplateMass
                 hist.SetBinContent(i_x+1, i_y+1, value)
         return self.doHistFunc(name, hist, varlist)
@@ -257,7 +257,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
         accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
-        print "Computing 'qqphi' scaling function from xsec tools"
+        print("Computing 'qqphi' scaling function from xsec tools")
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -274,11 +274,11 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
 
                 # Check if values for BR returned from tool are sensible.
                 if br_htautau <= 0 and br_htautau_SM <= 0:
-                    print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = 1.
                     br_htautau = 1.
                 elif br_htautau_SM <= 0:
-                    print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = br_htautau
 
                 # Check if qqH prediction should not be read from root files but be computed as
@@ -321,7 +321,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
         accesskey_br = self.quantity_map['br']['access'].format(HIGGS=self.smlike)
         accesskey_br_SM = self.quantity_map['br_SM']['access'].format(HIGGS=self.smlike)
 
-        print "Computing 'ggphi' scaling function from xsec tools"
+        print("Computing 'ggphi' scaling function from xsec tools")
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -340,19 +340,19 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
                 if xs_ggh <= 0 and xs_ggh_SM <= 0:
-                    print "[WARNING]: Both BSM and SM ggh xs predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: Both BSM and SM ggh xs predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     xs_ggh_SM = 1.
                     xs_ggh = 1.
                 elif xs_ggh_SM <= 0:
-                    print "[WARNING]: SM ggh xs prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: SM ggh xs prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     xs_ggh_SM = xs_ggh
 
                 if br_htautau <= 0 and br_htautau_SM <= 0:
-                    print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = 1.
                     br_htautau = 1.
                 elif br_htautau_SM <= 0:
-                    print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = br_htautau
 
                 value =  xs_ggh / xs_ggh_SM * br_htautau / br_htautau_SM # xs(mh) * BR(mh) / (xs_SM(mh) * BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
@@ -374,7 +374,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
         xs_bbh_SM125 = self.sm_predictions["xs_bb_SMH125"]
         br_htautau_SM125 = self.sm_predictions["br_SMH125_tautau"]
 
-        print "Computing 'bbphi' scaling function from xsec tools"
+        print("Computing 'bbphi' scaling function from xsec tools")
 
         x_parname = varlist[0].GetName()
         x_binning = self.binning[self.scenario][x_parname]
@@ -393,11 +393,11 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                 br_htautau_SM = getattr(self.mssm_inputs, self.quantity_map['br_SM']['method'])(accesskey_br_SM, x, y)
 
                 if br_htautau <= 0 and br_htautau_SM <= 0:
-                    print "[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: Both BSM and SM BR predictions are <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting both to 1.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = 1.
                     br_htautau = 1.
                 elif br_htautau_SM <= 0:
-                    print "[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y)
+                    print("[WARNING]: SM BR prediction is <= 0 for {MASS}={MASSVAL}, tanb={TANBVAL}. Setting to BSM prediction.".format(MASS=self.massparameter, MASSVAL=x, TANBVAL=y))
                     br_htautau_SM = br_htautau
 
                 # xs(mh) * (xs_SM(125.4)/xs_SM(mh)) * BR(mh) * (BR_SM(125.4)/BR_SM(mh)) correcting for mass dependence mh vs. 125.4 GeV
@@ -439,7 +439,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                 else:
                     hist_hi.SetBinContent(i_x+1, i_y+1, (nominal+value_hi)/nominal)
                     hist_lo.SetBinContent(i_x+1, i_y+1, (nominal+value_lo)/nominal)
-        print "Doing AsymPow systematic '%s' with '%s' key for quantity '%s' from mssm_xs_tools..." %(param, accesskey+uncertaintykey.format(VAR='up/down'), quantity)
+        print("Doing AsymPow systematic '%s' with '%s' key for quantity '%s' from mssm_xs_tools..." %(param, accesskey+uncertaintykey.format(VAR='up/down'), quantity))
 
         self.NUISANCES.add(param)
         hi = self.doHistFunc('%s_hi'%systname, hist_hi, varlist)
@@ -467,7 +467,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
     def preProcessNuisances(self,nuisances):
         doParams = set()
         for bin in self.DC.bins:
-            for proc in self.DC.exp[bin].keys():
+            for proc in list(self.DC.exp[bin].keys()):
                 if self.DC.isSignal[proc]:
                     scaling = 'scaling_%s' % proc
                     params = self.modelBuilder.out.function(scaling).getParameters(ROOT.RooArgSet()).contentsString().split(',')
@@ -475,7 +475,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
                         if param in self.NUISANCES:
                             doParams.add(param)
         for param in doParams:
-            print 'Add nuisance parameter %s to datacard' % param
+            print('Add nuisance parameter %s to datacard' % param)
             nuisances.append((param,False, "param", [ "0", "1"], [] ) )
 
     def doParametersOfInterest(self):
@@ -540,7 +540,7 @@ class MSSMvsSMOldModelsHiggsModel(PhysicsModel):
     def getYieldScale(self,bin,process):
         if self.DC.isSignal[process]:
             scaling = 'scaling_%s' % process
-            print 'Scaling %s/%s as %s' % (bin, process, scaling)
+            print('Scaling %s/%s as %s' % (bin, process, scaling))
             return scaling
         else:
             return 1

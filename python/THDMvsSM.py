@@ -71,28 +71,28 @@ class THDMvsSMHiggsModel(PhysicsModel):
         for po in physOptions:
             if po.startswith('filePrefix='):
                 filePrefix = po.replace('filePrefix=', '')
-                print 'Set file prefix to: %s' % filePrefix
+                print('Set file prefix to: %s' % filePrefix)
             if po.startswith('modelFile='):
                 modelFile = po.replace('modelFile=', '')
-                print "Importing scenario from '%s''"%(modelFile)
+                print("Importing scenario from '%s''"%(modelFile))
             if po.startswith('MSSM-NLO-Workspace='):
                 self.ggHatNLO = po.replace('MSSM-NLO-Workspace=', '')
-                print "Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO
+                print("Using %s for MSSM ggH NLO reweighting"%self.ggHatNLO)
             if po.startswith('debug-output='):
                 debug_name = po.replace('debug-output=', '')
                 self.debug_output = ROOT.TFile.Open(debug_name, "recreate")
-                print "Using %s as debug output file"%debug_name
+                print("Using %s as debug output file"%debug_name)
             if po.startswith('hSM-treatment='):
                 hSM_treatment = po.replace('hSM-treatment=', '')
                 self.use_hSM_difference = hSM_treatment == "hSM-in-bg"
-                print "Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference
+                print("Using (BSM - SM) difference for SM-like Higgs boson?",self.use_hSM_difference)
             if po.startswith('sm-predictions='):
                 sm_pred_path = po.replace('sm-predictions=','')
                 self.sm_predictions = json.load(open(sm_pred_path,'r'))
-                print "Using %s for SM predictions"%sm_pred_path
+                print("Using %s for SM predictions"%sm_pred_path)
             if po.startswith('replace-with-SM125='):
                 self.replace_with_sm125 = bool(int(po.replace('replace-with-SM125=', ''))) # use either 1 or 0 for the choice
-                print "Replacing with SM 125?",self.replace_with_sm125
+                print("Replacing with SM 125?",self.replace_with_sm125)
         self.filename = os.path.join(filePrefix, modelFile)
         if "FixedMass" in modelFile.replace(".root", ""):
             self.x_variable = "cos_betal"
@@ -169,7 +169,7 @@ class THDMvsSMHiggsModel(PhysicsModel):
     def preProcessNuisances(self,nuisances):
         doParams = set()
         for bin in self.DC.bins:
-            for proc in self.DC.exp[bin].keys():
+            for proc in list(self.DC.exp[bin].keys()):
                 if self.DC.isSignal[proc]:
                     scaling = 'scaling_%s' % proc
                     print(scaling)
@@ -178,7 +178,7 @@ class THDMvsSMHiggsModel(PhysicsModel):
                         if param in self.NUISANCES:
                             doParams.add(param)
         for param in doParams:
-            print 'Add nuisance parameter %s to datacard' % param
+            print('Add nuisance parameter %s to datacard' % param)
             nuisances.append((param,False, "param", [ "0", "1"], [] ) )
 
     def doParametersOfInterest(self):
@@ -243,7 +243,7 @@ class THDMvsSMHiggsModel(PhysicsModel):
                 if term in self.SYST_DICT:
                     extra += self.SYST_DICT[term]
             terms.extend(extra)
-            print(proc, terms)
+            print((proc, terms))
             # Add scaling function for the process to the workspace
             if re.match("ggh$", proc) and self.replace_with_sm125 and self.use_hSM_difference:
                 self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms))) # Add scaling of BSM process: mu*SF = x*r*SF
@@ -252,7 +252,7 @@ class THDMvsSMHiggsModel(PhysicsModel):
                 self.modelBuilder.factory_('prod::bsm_scaling_%s(%s)'%(proc,','.join(terms)))
                 self.modelBuilder.factory_('expr::scaling_%s(\"(@0 - @1 * @2 * %s * %s)\", %s)'%(proc,str(self.sm_predictions["xs_bb_SMH125"]),str(self.sm_predictions["br_SMH125_tautau"]),','.join(["bsm_scaling_%s"%proc,"x","r"])))
             else:
-                print('prod::scaling_%s(%s)'%(proc,','.join(terms)))
+                print(('prod::scaling_%s(%s)'%(proc,','.join(terms))))
                 self.modelBuilder.factory_('prod::scaling_%s(%s)'%(proc,','.join(terms)))
             self.modelBuilder.out.function('scaling_%s'%proc).Print('')
 
@@ -287,7 +287,7 @@ class THDMvsSMHiggsModel(PhysicsModel):
     def getYieldScale(self,bin,process):
         if self.DC.isSignal[process]:
             scaling = 'scaling_%s' % process
-            print 'Scaling %s/%s as %s' % (bin, process, scaling)
+            print('Scaling %s/%s as %s' % (bin, process, scaling))
             return scaling
         else:
             return 1
