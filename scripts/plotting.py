@@ -290,7 +290,7 @@ def CreateTransparentColor(color, alpha):
 
 
 def Set(obj, **kwargs):
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         if value is None:
             getattr(obj, 'Set' + key)()
         elif isinstance(value, (list, tuple)):
@@ -562,7 +562,7 @@ def ParamFromFilename(filename, param):
         num1 = re.findall(param + '\.\d+', filename)[0].replace(param + '.', '')
         return int(num1)
     else:
-        print("Error: parameter " + param + " not found in filename")
+        print(("Error: parameter " + param + " not found in filename"))
 
 
 ##@}
@@ -690,8 +690,8 @@ def TH2FromTGraph2D(graph, method='BinEdgeAligned',
         y_min = min(y_widths) if force_y_width is None else force_y_width
         x_bins = int(((x_vals[-1] - (x_vals[0] - 0.5 * x_min)) / x_min) + 0.5)
         y_bins = int(((y_vals[-1] - (y_vals[0] - 0.5 * y_min)) / y_min) + 0.5)
-        print('[TH2FromTGraph2D] x-axis binning: (%i, %g, %g)' % (x_bins, x_vals[0] - 0.5 * x_min, x_vals[0] - 0.5 * x_min + x_bins * x_min))
-        print('[TH2FromTGraph2D] y-axis binning: (%i, %g, %g)' % (y_bins, y_vals[0] - 0.5 * y_min, y_vals[0] - 0.5 * y_min + y_bins * y_min))
+        print(('[TH2FromTGraph2D] x-axis binning: (%i, %g, %g)' % (x_bins, x_vals[0] - 0.5 * x_min, x_vals[0] - 0.5 * x_min + x_bins * x_min)))
+        print(('[TH2FromTGraph2D] y-axis binning: (%i, %g, %g)' % (y_bins, y_vals[0] - 0.5 * y_min, y_vals[0] - 0.5 * y_min + y_bins * y_min)))
         # Use a number slightly smaller than 0.49999 because the TGraph2D interpolation
         # is fussy about evaluating on the boundary
         h_proto = R.TH2F('prototype', '',
@@ -742,7 +742,7 @@ def LimitTGraphFromJSONFile(jsfile, label):
 def ToyTGraphFromJSON(js, label):
     xvals = []
     yvals = []
-    if isinstance(label,types.StringTypes):
+    if isinstance(label,(str,)):
         for entry in js[label]:
             xvals.append(float(entry))
             yvals.append(1.0)
@@ -954,7 +954,7 @@ def ApplyGraphYOffset(graph, y_off):
 def RemoveGraphYAll(graph, val):
     for i in range(graph.GetN()):
         if graph.GetY()[i] == val:
-            print('[RemoveGraphYAll] Removing point (%f, %f)' % (graph.GetX()[i], graph.GetY()[i]))
+            print(('[RemoveGraphYAll] Removing point (%f, %f)' % (graph.GetX()[i], graph.GetY()[i])))
             graph.RemovePoint(i)
             RemoveGraphYAll(graph, val)
             break
@@ -964,7 +964,7 @@ def RemoveSmallDelta(graph, val):
     for i in range(graph.GetN()):
         diff = abs(graph.GetY()[i])
         if diff < val:
-            print('[RemoveSmallDelta] Removing point (%f, %f)' % (graph.GetX()[i], graph.GetY()[i]))
+            print(('[RemoveSmallDelta] Removing point (%f, %f)' % (graph.GetX()[i], graph.GetY()[i])))
             graph.RemovePoint(i)
             RemoveSmallDelta(graph, val)
             break
@@ -1009,20 +1009,20 @@ def ImproveMinimum(graph, func, doIt=False):
                 before = graph.GetY()[i]
                 graph.GetY()[i] -= min_y
                 after = graph.GetY()[i]
-                print('Point %i, before=%f, after=%f' % (i, before, after))
+                print(('Point %i, before=%f, after=%f' % (i, before, after)))
         return (fit_x, fit_y)
     search_min = fit_i - 2 if fit_i >= 2 else fit_i - 1
     search_max = fit_i + 2 if fit_i + 2 < graph.GetN() else fit_i + 1
     min_x = func.GetMinimumX(graph.GetX()[search_min], graph.GetX()[search_max])
     min_y = func.Eval(min_x)
-    print('[ImproveMinimum] Fit minimum was (%f, %f)' % (fit_x, fit_y))
-    print('[ImproveMinimum] Better minimum was (%f, %f)' % (min_x, min_y))
+    print(('[ImproveMinimum] Fit minimum was (%f, %f)' % (fit_x, fit_y)))
+    print(('[ImproveMinimum] Better minimum was (%f, %f)' % (min_x, min_y)))
     if doIt:
         for i in range(graph.GetN()):
             before = graph.GetY()[i]
             graph.GetY()[i] -= min_y
             after = graph.GetY()[i]
-            print('Point %i, before=%f, after=%f' % (i, before, after))
+            print(('Point %i, before=%f, after=%f' % (i, before, after)))
         graph.Set(graph.GetN() + 1)
         graph.SetPoint(graph.GetN() - 1, min_x, 0)
         graph.Sort()
@@ -1091,8 +1091,8 @@ def ReZeroTGraph(gr, doIt=False):
             min_y = gr.GetY()[i]
             min_x = gr.GetX()[i]
     if min_y < fit_y:
-        print('[ReZeroTGraph] Fit minimum was (%f, %f)' % (fit_x, fit_y))
-        print('[ReZeroTGraph] Better minimum was (%f, %f)' % (min_x, min_y))
+        print(('[ReZeroTGraph] Fit minimum was (%f, %f)' % (fit_x, fit_y)))
+        print(('[ReZeroTGraph] Better minimum was (%f, %f)' % (min_x, min_y)))
         if doIt:
             for i in range(gr.GetN()):
                 before = gr.GetY()[i]
@@ -1149,7 +1149,7 @@ def RemoveNearMin(graph, val, spacing=None):
         if i == bf_i:
             continue
         if abs(graph.GetX()[i] - bf) < (val * spacing):
-            print('[RemoveNearMin] Removing point (%f, %f) close to minimum at %f' % (graph.GetX()[i], graph.GetY()[i], bf))
+            print(('[RemoveNearMin] Removing point (%f, %f) close to minimum at %f' % (graph.GetX()[i], graph.GetY()[i], bf)))
             graph.RemovePoint(i)
             RemoveNearMin(graph, val, spacing)
             break
@@ -1652,10 +1652,10 @@ def contourFromTH2(h2in, threshold, minPoints=10, frameValue=1000.):
     ret = R.TList()
     for i in range(conts.GetSize()):
         contLevel = conts.At(i)
-        print('>> Contour %d has %d Graphs' % (i, contLevel.GetSize()))
+        print(('>> Contour %d has %d Graphs' % (i, contLevel.GetSize())))
         for j in range(contLevel.GetSize()):
             gr1 = contLevel.At(j)
-            print('\t Graph %d has %d points' % (j, gr1.GetN()))
+            print(('\t Graph %d has %d points' % (j, gr1.GetN())))
             if gr1.GetN() > minPoints:
                 ret.Add(gr1.Clone())
             # // break;
@@ -1962,7 +1962,7 @@ def CompareHists(hists=[],
     hs = R.THStack("hs","")
     hist_count=0
     legend_hists=[]
-    if isinstance(uncert_hist, (list,)):
+    if isinstance(uncert_hist, list):
      for i in uncert_hist:
        if i is None: continue 
        if norm_bins and i is not None: i.Scale(1.0,"width")
@@ -2043,7 +2043,7 @@ def CompareHists(hists=[],
 
     uncert_hs = R.THStack()
     if uncert_hist is not None:
-      if isinstance(uncert_hist, (list,)):
+      if isinstance(uncert_hist, list):
          #col_list = [12,6,4,2,3,4]
          col_list=colourlist
          count = 0
@@ -2113,7 +2113,7 @@ def CompareHists(hists=[],
 
     for legi,hist in enumerate(legend_hists):
         legend.AddEntry(hist,legend_titles[legi],"l")
-    if isinstance(uncert_hist, (list,)):
+    if isinstance(uncert_hist, list):
      count=0
      for i in uncert_hist:
        if i is not None: legend.AddEntry(i,uncert_title[count],'f') 
@@ -2168,7 +2168,7 @@ def CompareHists(hists=[],
             ratio_hs.Add(o)
             hist_count+=1
         if uncert_hist is not None:
-           if isinstance(uncert_hist, (list,)):
+           if isinstance(uncert_hist, list):
              ratio_err_hs = R.THStack("ratio_err_hs","")
              count=0
              for i in uncert_hist:

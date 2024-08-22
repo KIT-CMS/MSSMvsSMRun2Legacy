@@ -109,12 +109,12 @@ axis.GetYaxis().SetTitle(args.y_title.replace('X',X))
 
 cont_1sigma = plot.contourFromTH2(hists, ROOT.Math.chisquared_quantile_c(1 - 0.68, 2), 10, frameValue=20)
 cont_2sigma = plot.contourFromTH2(hists, ROOT.Math.chisquared_quantile_c(1 - 0.95, 2), 10, frameValue=20)
-print cont_1sigma
+print(cont_1sigma)
 for item in cont_1sigma :
-    print item
-print cont_2sigma
+    print(item)
+print(cont_2sigma)
 for item in cont_2sigma :
-    print item
+    print(item)
 
 if debug is not None:
     debug.WriteTObject(hists, 'hist')
@@ -190,7 +190,7 @@ plot.FixOverlay()
 if args.sm_exp:
     best_sm.Draw("P SAME")
     for overlayGraph in overlayGraphs:
-        print "test"
+        print("test")
         overlayGraph.Draw("P SAME")
     overlayLegend.Draw("SAME")
 canv.Print('.pdf')

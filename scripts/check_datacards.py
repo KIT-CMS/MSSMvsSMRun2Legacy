@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ROOT
@@ -39,22 +39,22 @@ only_first = first_categories.difference(second_categories)
 only_second = second_categories.difference(first_categories)
 
 if len(only_first) > 0:
-    print("Categories available only in "+args.first_shapefile)
+    print(("Categories available only in "+args.first_shapefile))
     print(only_first)
 if len(only_second) > 0:
-    print("Categories available only in "+args.second_shapefile)
+    print(("Categories available only in "+args.second_shapefile))
     print(only_second)
 
 print("Checking now common categories")
 for cat in common:
-    print "\tConsidering",cat
+    print("\tConsidering",cat)
     first_dir = first.Get(cat)
     second_dir = second.Get(cat)
     first_hists = set([k.GetName() for k in first_dir.GetListOfKeys()])
     second_hists = set([k.GetName() for k in second_dir.GetListOfKeys()])
     second_hists_mapped = set()
     for h in second_hists:
-        for fst, snd in process_mapping.items():
+        for fst, snd in list(process_mapping.items()):
             if snd in h:
                 h = h.replace(snd, fst)
                 break
@@ -81,30 +81,30 @@ for cat in common:
         only_second_hists = only_second_processes
 
     if len(only_first_processes) > 0:
-        print("\tProcesses available only in "+args.first_shapefile)
-        print "\t",only_first_processes
+        print(("\tProcesses available only in "+args.first_shapefile))
+        print("\t",only_first_processes)
 
     only_first_hists_single = only_first_hists
     for proc in only_first_processes:
         only_first_hists_single = only_first_hists_single.intersection(set([h for h in only_first_hists_single if not proc in h]))
     if len(only_first_hists_single) > 0:
-        print("\tIndividual histograms available only in "+args.first_shapefile)
-        print "\t",only_first_hists_single
+        print(("\tIndividual histograms available only in "+args.first_shapefile))
+        print("\t",only_first_hists_single)
 
     if len(only_second_processes) > 0:
-        print("\tProcesses available only in "+args.second_shapefile)
-        print "\t",only_second_processes
+        print(("\tProcesses available only in "+args.second_shapefile))
+        print("\t",only_second_processes)
 
     only_second_hists_single = only_second_hists
     for proc in only_second_processes:
         only_second_hists_single = only_second_hists_single.intersection(set([h for h in only_second_hists_single if not proc in h]))
     if len(only_second_hists_single) > 0:
-        print("\tIndividual histograms available only in "+args.second_shapefile)
-        print "\t",only_second_hists_single
+        print(("\tIndividual histograms available only in "+args.second_shapefile))
+        print("\t",only_second_hists_single)
 
     for hist in common_hists:
         hist2 = hist
-        for fst, snd in process_mapping.items():
+        for fst, snd in list(process_mapping.items()):
             if fst in hist2:
                 hist2 = str(hist2.replace(fst,snd))
                 break
@@ -115,9 +115,9 @@ for cat in common:
         diff_vals = np.array([abs(diff_hist.GetBinContent(i+1)) for i in range(diff_hist.GetNbinsX())])
         diff_value = np.sum(diff_vals)
         if diff_value >  0.0:
-            print "\t\tDifference spotted:",hist,diff_value,"ratio to first:",diff_value/first_hist.Integral()
+            print("\t\tDifference spotted:",hist,diff_value,"ratio to first:",diff_value/first_hist.Integral())
             if args.verbose:
-                print "\t\tDifference in bins:",hist,diff_vals
+                print("\t\tDifference in bins:",hist,diff_vals)
 
 if args.consistency_2D_vs_1D:
     print("")
@@ -126,7 +126,7 @@ if args.consistency_2D_vs_1D:
 
     # if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
     if len(first_sm_signal_categories) > 1:
-        print("Checking consistency of 1D split SM signal categories with 2D SM signal category for",args.first_shapefile)
+        print(("Checking consistency of 1D split SM signal categories with 2D SM signal category for",args.first_shapefile))
         assert(len([c for c in first_sm_signal_categories if "bin" not in c]) == 1)
         sm_signal_2D = [first.Get(c) for c in first_sm_signal_categories if "bin" not in c][0]
         sm_signal_1D = [first.Get(c) for c in sorted(first_sm_signal_categories) if "bin" in c]
@@ -142,11 +142,11 @@ if args.consistency_2D_vs_1D:
 
             diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
             if np.sum(diff_2D_vs_split_1D) > 0.0:
-                print "\tDifference spotted:",k.GetName(),diff_2D_vs_split_1D
+                print("\tDifference spotted:",k.GetName(),diff_2D_vs_split_1D)
 
     # if more than 1, then split categories available for 2D xxh. Usually 1 "xxh" category per channel (ROOT files provided channel-wise)
     if len(second_sm_signal_categories) > 1:
-        print("Checking consistency of 1D split SM signal categories with 2D SM signal category for "+args.second_shapefile)
+        print(("Checking consistency of 1D split SM signal categories with 2D SM signal category for "+args.second_shapefile))
         assert(len([c for c in second_sm_signal_categories if "bin" not in c]) == 1)
         sm_signal_2D = [second.Get(c) for c in second_sm_signal_categories if "bin" not in c][0]
         sm_signal_1D = [second.Get(c) for c in sorted(second_sm_signal_categories) if "bin" in c]
@@ -162,6 +162,6 @@ if args.consistency_2D_vs_1D:
 
             diff_2D_vs_split_1D = np.abs(sm_2D_values - sm_1D_split_values)
             if np.sum(diff_2D_vs_split_1D) > 0.0:
-                print "\tSplitting difference spotted:",k.GetName(),np.sum(diff_2D_vs_split_1D)
-                print "\t2D      :",sm_2D_values
-                print "\t1D split:",sm_1D_split_values
+                print("\tSplitting difference spotted:",k.GetName(),np.sum(diff_2D_vs_split_1D))
+                print("\t2D      :",sm_2D_values)
+                print("\t1D split:",sm_1D_split_values)

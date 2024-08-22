@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import ROOT
 import math
 import json
@@ -33,7 +33,7 @@ parser.add_argument('--no-sort', action='store_true', help='Do not sort by impac
 args = parser.parse_args()
 
 if args.transparent:
-    print 'plotImpacts.py: --transparent is now always enabled, the option will be removed in a future update'
+    print('plotImpacts.py: --transparent is now always enabled, the option will be removed in a future update')
 
 externalPullDef = False
 if args.pullDef is not None:
@@ -141,23 +141,23 @@ if args.color_groups is not None:
 
 seen_types = set()
 
-for name, col in colors.iteritems():
+for name, col in colors.items():
     color_hists[name] = ROOT.TH1F()
     plot.Set(color_hists[name], FillColor=col, Title=name)
 
 if args.color_groups is not None:
-    for name, col in color_groups.iteritems():
+    for name, col in color_groups.items():
         color_group_hists[name] = ROOT.TH1F()
         plot.Set(color_group_hists[name], FillColor=col, Title=name)
 
-for page in xrange(n):
+for page in range(n):
     canv = ROOT.TCanvas(args.output, args.output)
     n_params = len(datalist[show * page:show * (page + 1)])
     pdata = datalist[show * page:show * (page + 1)]
-    print '>> Doing page %i, have %i parameters' % (page, n_params)
+    print('>> Doing page %i, have %i parameters' % (page, n_params))
 
     boxes = []
-    for i in xrange(n_params):
+    for i in range(n_params):
         y1 = ROOT.gStyle.GetPadBottomMargin()
         y2 = 1. - ROOT.gStyle.GetPadTopMargin()
         h = (y2 - y1) / float(n_params)
@@ -195,7 +195,7 @@ for page in xrange(n):
     text_entries = []
     text_entries_bkgOnly = []
     redo_boxes = []
-    for p in xrange(n_params):
+    for p in range(n_params):
         i = n_params - (p + 1)
         pre = pdata[p]['prefit']
         fit = pdata[p]['fit']
@@ -379,13 +379,13 @@ for page in xrange(n):
     if args.color_groups is not None:
         legend2 = ROOT.TLegend(0.01, 0.94, leg_width, 0.99, '', 'NBNDC')
         legend2.SetNColumns(2)
-        for name, h in color_group_hists.iteritems():
+        for name, h in color_group_hists.items():
             legend2.AddEntry(h, Translate(name, translate), 'F')
         legend2.Draw()
     elif len(seen_types) > 1:
         legend2 = ROOT.TLegend(0.01, 0.94, leg_width, 0.99, '', 'NBNDC')
         legend2.SetNColumns(2)
-        for name, h in color_hists.iteritems():
+        for name, h in color_hists.items():
             if name == 'Unrecognised': continue
             legend2.AddEntry(h, name, 'F')
         legend2.Draw()

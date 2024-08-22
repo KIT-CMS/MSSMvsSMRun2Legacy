@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+
 import ROOT as r
 import sys
 import os
@@ -103,7 +103,7 @@ t = PrettyTable([
     'Process', 'File 1 Integral ({})'.format(args.type1),
     ' File 2 Integral ({})'.format(args.type2), 'Ratio'
 ])
-for category in list(set(file1.keys()).intersection(file2.keys())):
+for category in list(set(file1.keys()).intersection(list(file2.keys()))):
     if file1[category] == 0 or file2[category] == 0:
         t.add_row([
             category,

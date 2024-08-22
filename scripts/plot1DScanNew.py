@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import ROOT
 import math
 from functools import partial
@@ -36,7 +36,7 @@ def Eval(obj, x, params):
 def BuildScan(scan, param, files, color, yvals, ycut):
     graph = read(scan, param, files, ycut)
     bestfit = None
-    for i in xrange(graph.GetN()):
+    for i in range(graph.GetN()):
         if graph.GetY()[i] == 0.:
             bestfit = graph.GetX()[i]
     graph.SetMarkerColor(color)
@@ -105,9 +105,9 @@ parser.add_argument('--logo', default='CMS')
 parser.add_argument('--logo-sub', default='Internal')
 args = parser.parse_args()
 
-print '--------------------------------------'
-print  args.output
-print '--------------------------------------'
+print('--------------------------------------')
+print(args.output)
+print('--------------------------------------')
 
 fixed_name = args.POI
 if args.translate is not None:

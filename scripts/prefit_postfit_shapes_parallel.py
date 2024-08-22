@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
 import glob
@@ -10,7 +10,7 @@ def execute(cmd):
     try:
         os.system(cmd)
     except:
-        print "[WARNING] Command failed:",cmd
+        print("[WARNING] Command failed:",cmd)
 
 parser = argparse.ArgumentParser( description = "Script to run 'PostFitShapesFromWorkspace' in parallel for each category.")
 parser.add_argument('--datacard_pattern', required = True, help = "Path pattern to the 'combined.txt.cmb' datacards to be used for the histograms")
@@ -35,6 +35,6 @@ cmds = ['card=DATACARD;'
 p = Pool(args.parallel)
 if args.dry_run:
     for cmd in cmds:
-        print cmd
+        print(cmd)
 else:
     p.map(execute, cmds)

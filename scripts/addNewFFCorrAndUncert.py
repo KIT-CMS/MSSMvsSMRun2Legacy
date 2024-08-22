@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #This script drops unnecessary subdirectories from the shape files - the original
 #input file is saved under the same name but with _full_file appended
 import ROOT
@@ -14,7 +14,7 @@ def WriteToTFile(obj, file, path):
     file.cd()
     as_vec = path.split('/')
     if len(as_vec) >= 1:
-        for i in xrange(0, len(as_vec)-1):
+        for i in range(0, len(as_vec)-1):
             if not ROOT.gDirectory.GetDirectory(as_vec[i]):
                 ROOT.gDirectory.mkdir(as_vec[i])
             ROOT.gDirectory.cd(as_vec[i])
@@ -30,7 +30,7 @@ def ScaleJetFakes(histo,chan, mt_cat, year):
                 'et': {2016: {'mTloose': '(0.844816+-0.000543283*x+9.73709e-06*pow(x,2)+-1.2664e-08*pow(x,3))', 'mTtight': '(0.70624+0.00191175*x+-2.66422e-06*pow(x,2)+5.20671e-09*pow(x,3))'}, 2017: {'mTloose': '(0.930003+-0.0026238*x+2.06055e-05*pow(x,2)+-3.554e-08*pow(x,3))', 'mTtight': '(1.05848+-0.00450755*x+2.98441e-05*pow(x,2)+-5.30103e-08*pow(x,3))'}, 2018: {'mTloose': '(0.938801+-0.0032487*x+2.69341e-05*pow(x,2)+-5.57956e-08*pow(x,3))', 'mTtight': '(0.748626+0.00146163*x+-6.11159e-06*pow(x,2)+1.222e-08*pow(x,3))'}}
              }
 
-  print histo.GetName(), dirname, chan, mt_cat, year, func_map[chan][year][mt_cat]
+  print(histo.GetName(), dirname, chan, mt_cat, year, func_map[chan][year][mt_cat])
   func = ROOT.TF1('func',func_map[chan][year][mt_cat])  
 
   histonew=histo.Clone()

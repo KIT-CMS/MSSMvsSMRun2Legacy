@@ -40,7 +40,7 @@ f.Close()
 
 problematic_points = set()
 
-for level_name, graph in levels.items():
+for level_name, graph in list(levels.items()):
     print(f"Showing {level_name}, scanning mA:")
     tanb_vals = sorted(set(graph["tanb"]))
     mA_vals = sorted(set(graph["mA"]))
@@ -102,7 +102,7 @@ for level_name in levels:
 out = r.TFile.Open(args.output, "recreate")
 out.cd()
 
-for level_name, graph in levels.items():
+for level_name, graph in list(levels.items()):
     n_points = len(graph.index)
     print(f"Level {level_name} reduced to {n_points} points")
     new_graph = r.TGraph2D(level_name, level_name, n_points, graph["mA"].values, graph["tanb"].values, graph["CLs"].values)

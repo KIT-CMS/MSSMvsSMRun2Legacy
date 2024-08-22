@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -12,7 +12,7 @@ def execute(cmd):
     try:
         os.system(cmd)
     except:
-        print "[WARNING] Command failed:",cmd
+        print("[WARNING] Command failed:",cmd)
 
 parser = argparse.ArgumentParser( description = "Compare Integrals of Processes between ML and Cutbased shapes")
 parser.add_argument('--output-folder', required = True, help = "Main folder, where the datacards should be created")
@@ -58,7 +58,7 @@ if args.sm:
 
 if args.dry_run:
     for command in commands:
-        print command
+        print(command)
 
 else:
     if args.parallel < 2:

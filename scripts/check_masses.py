@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import ROOT
 import argparse
@@ -24,10 +24,10 @@ higgses = ['h', 'A', 'H', 'H1', 'H2', 'H3']
 for f in flist:
     F = ROOT.TFile.Open(f)
     scenario = os.path.basename(f).replace(".root","")
-    print "Considering",scenario,"scenario"
+    print("Considering",scenario,"scenario")
     for higgs in higgses:
         histname = "m_"+higgs
         mhiggs = F.Get(histname)
         if mhiggs:
-            print "\tRange for",histname,": [",mhiggs.GetMinimum(),",",mhiggs.GetMaximum(),"]"
+            print("\tRange for",histname,": [",mhiggs.GetMinimum(),",",mhiggs.GetMaximum(),"]")
         

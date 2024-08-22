@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from argparse import ArgumentParser
 from multiprocessing import Pool
@@ -8,7 +8,7 @@ import subprocess
 import shlex
 
 def execute_command(command):
-  print("Processing:",command)
+  print(("Processing:",command))
   returncode = subprocess.check_call(shlex.split(command), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
   return returncode
 
@@ -31,7 +31,7 @@ commands = []
 
 analysis_configuration = yaml.load(open(args.analysis_configuration, "r"))
 
-pois = " ".join(["-P {key}:{value}".format(key=key,value=value) for key, value in analysis_configuration["POI"].items()])
+pois = " ".join(["-P {key}:{value}".format(key=key,value=value) for key, value in list(analysis_configuration["POI"].items())])
 masses = " ".join(["-M {m}".format(m=m) for m in analysis_configuration["masses"]])
 
 for era in analysis_configuration["eras"]:
@@ -55,4 +55,4 @@ for era in analysis_configuration["eras"]:
 
 p = Pool(10)
 returncodes = p.map(execute_command, commands)
-print("Sum of returncodes:",sum(returncodes))
+print(("Sum of returncodes:",sum(returncodes)))

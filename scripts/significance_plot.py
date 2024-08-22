@@ -63,7 +63,7 @@ for proc in ['gg','bb']:
   
   limit_dict = {}
   first_pass = True
-  for key, val in scenario.items():
+  for key, val in list(scenario.items()):
      
     # change so in bin center
     
@@ -91,7 +91,7 @@ for proc in ['gg','bb']:
       i+=1
     
     #limit_dict[key]["p_value"].Print("all")
-    print key
+    print(key)
     limit_dict[key]["significance"].Print("all")
   
     if first_pass:

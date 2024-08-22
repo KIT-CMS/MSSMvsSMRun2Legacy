@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ROOT
@@ -85,8 +85,8 @@ for padx in pads:
     plot.Set(padx, Tickx=1, Ticky=1, Logx=args.logx)
     if args.pad_style is not None:
         settings = {x.split('=')[0]: eval(x.split('=')[1]) for x in args.pad_style.split(',')}
-        print 'Applying style options to the TPad(s):'
-        print settings
+        print('Applying style options to the TPad(s):')
+        print(settings)
         plot.Set(padx, **settings)
 
 graphs = []
@@ -120,7 +120,7 @@ plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
 
 def RemovePoints(graph_set, high=True):
   graph_set_new = {}
-  for key,g in graph_set.items(): 
+  for key,g in list(graph_set.items()): 
     x=ROOT.Double()
     y=ROOT.Double()
     
@@ -137,7 +137,7 @@ def RemovePoints(graph_set, high=True):
         if x==200:
           y_new = g_clone.Eval(x_bound)
           if key in ['exp1','exp2']:
-            print key
+            print(key)
             x_=ROOT.Double()
             y_=ROOT.Double()
             g.GetPoint(i+1,x_,y_)
@@ -216,7 +216,7 @@ for i, src in enumerate(args.input):
     if len(splitsrc) == 1:
         graph_sets.append(plot.StandardLimitsFromJSONFile(file, args.show.split(',')))
         if axis is None:
-            axis = plot.CreateAxisHists(len(pads), graph_sets[-1].values()[0], True)
+            axis = plot.CreateAxisHists(len(pads), list(graph_sets[-1].values())[0], True)
             for a in axis: a.GetXaxis().SetLimits(60., 3500,)
             DrawAxisHists(pads, axis, pads[0])
         plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
@@ -246,7 +246,7 @@ for i, src in enumerate(args.input):
         settings['Title'] = src
         if args.auto_style is not None:
             nm = 'default'
-            for x in icol.keys():
+            for x in list(icol.keys()):
                 if x in splitsrc[1]:
                     nm = x
             i = icol[nm]  # take the next default color...

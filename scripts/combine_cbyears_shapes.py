@@ -53,7 +53,7 @@ for c in ['lt','tt','em']:
     if args.bOnly: fin = ROOT.TFile('shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars())
     else: fin = ROOT.TFile('shapes_cbyears_%(c)s_%(b)s.root' % vars())
 
-    print fin, 'shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars()
+    print(fin, 'shapes_cbyears_bOnly_%(c)s_%(b)s.root' % vars())
 
 
     if c == 'lt': chans = ['mt','et']
@@ -101,14 +101,14 @@ for c in ['lt','tt','em']:
     new_bins= array.array('d',new_bins)
     for y in [2016, 2017, 2018]:
       for chan in chans:
-         print 'shapes/%(y)s/%(chan)s/vlq.inputs-mssm-vs-sm-Run%(y)s-mt_tot_puppi.root' % vars()
+         print('shapes/%(y)s/%(chan)s/vlq.inputs-mssm-vs-sm-Run%(y)s-mt_tot_puppi.root' % vars())
          fin_vlq = ROOT.TFile('shapes/%(y)s/%(chan)s/vlq.inputs-mssm-vs-sm-Run%(y)s-mt_tot_puppi.root' % vars())
          b_ = b.replace('_mt_tot','')
          indir = dir_map['%(chan)s_%(b_)s' % vars()]
          htemp1 = fin_vlq.Get('%(indir)s/VLQ_betaRd33_0_matched_M_1000' % vars())
          htemp2 = fin_vlq.Get('%(indir)s/VLQ_betaRd33_0_matched_interference_M_1000' % vars())
-         print '%(indir)s/VLQ_betaRd33_0_matched_M_1000' % vars()
-         print htemp1
+         print('%(indir)s/VLQ_betaRd33_0_matched_M_1000' % vars())
+         print(htemp1)
          htemp1 = htemp1.Rebin(len(new_bins)-1,"",new_bins)
          htemp2 = htemp2.Rebin(len(new_bins)-1,"",new_bins)
          h1.Add(htemp1)

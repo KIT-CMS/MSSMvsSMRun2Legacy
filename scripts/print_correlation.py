@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ROOT as R
@@ -13,4 +13,4 @@ F = R.TFile.Open(fpath,"read")
 result = F.Get("fit_s")
 params = result.floatParsInit()
 correlation =  round(result.correlation(params.find(poi1),params.find(poi2)),3)
-print "Determined correlation between {POI1} and {POI2}: {CORR}".format(POI1=poi1, POI2=poi2, CORR=correlation)
+print("Determined correlation between {POI1} and {POI2}: {CORR}".format(POI1=poi1, POI2=poi2, CORR=correlation))

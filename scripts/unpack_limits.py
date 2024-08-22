@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import tarfile
 import sys
@@ -25,4 +25,4 @@ info_list = [(i, outfolder) for i in glob.glob(pattern)]
 
 p = Pool(10)
 returncodes = p.map(extract,info_list)
-print("Sum of returncodes",sum(returncodes))
+print(("Sum of returncodes",sum(returncodes)))

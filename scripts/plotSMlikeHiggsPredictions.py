@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ROOT as R
@@ -30,7 +30,7 @@ args = parser.parse_args()
 bsm_model = R.TFile.Open(args.mssm_benchmark, "read")
 bsm_name = os.path.basename(args.mssm_benchmark.strip(".root"))
 
-print("MODEL:",bsm_name)
+print(("MODEL:",bsm_name))
 
 sm_predictions = {}
 with open(args.sm_predictions, "r") as smf:
@@ -206,7 +206,7 @@ bsm_predictions["m_{PHI}_inverted"] = bsm_predictions["m_{PHI}"].Clone("m_{PHI}_
 if args.bsm_sm_like in ['h', 'H']:
     bsm_predictions["rescale_gt_H"] = bsm_model.Get("rescale_gt_H")
 
-for bsm_pred in bsm_predictions.values():
+for bsm_pred in list(bsm_predictions.values()):
     bsm_pred.SetContour(1000)
 
 NXBins = bsm_predictions["m_{PHI}"].GetNbinsX() # mA or mHp
@@ -321,7 +321,7 @@ C.Clear()
 
 out = R.TFile.Open(bsm_name + "_debug.root", "recreate")
 
-for bsm_pred in bsm_predictions.values():
+for bsm_pred in list(bsm_predictions.values()):
     print(bsm_pred)
     bsm_pred.Write()
 
@@ -331,7 +331,7 @@ out.Close()
 
 contour_quantities = []
 
-for key in bsm_predictions.keys():
+for key in list(bsm_predictions.keys()):
     if "sf_" in key or "mass-only" in key or "non-mass" in key or key == "m_{PHI}" or "gsq_" in key:
         contour_quantities.append(key)
 

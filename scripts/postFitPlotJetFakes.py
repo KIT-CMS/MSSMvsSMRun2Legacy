@@ -170,7 +170,7 @@ def getHistogram(fname, histname, dirname='', postfitmode='prefit', allowEmpty=F
             return [histo,outname]
         elif isinstance(histo,ROOT.TDirectory) and postfitmode in key.GetName() and dircheck:
             return getHistogram(histo,histname, allowEmpty=allowEmpty, logx=logx)
-    print 'Failed to find %(postfitmode)s histogram with name %(histname)s in file %(fname)s '%vars()
+    print('Failed to find %(postfitmode)s histogram with name %(histname)s in file %(fname)s '%vars())
     if allowEmpty:
         return [ROOT.TH1F('empty', '', 1, 0, 1), outname]
     else:
@@ -413,7 +413,7 @@ def main(args):
 
     is2D=False
 
-    print fitvars, bin_number
+    print(fitvars, bin_number)
     if fitvars=='m_sv' or bin_number in ["2","35","36","37","132","232","332","432","133","233","333","433"]:
         x_title = "m_{#tau#tau} (GeV)"
         #x_bins = re.split("\[|\]",bin_labels)[1].split(",")
@@ -466,7 +466,7 @@ def main(args):
     if '_35' in args.file_dir or '_132' in args.file_dir or '_232' in args.file_dir or args.bOnly: cms_label = 'Supplementary'    
 
     if args.file:
-        print "Providing shape file: ", args.file, ", with specified subdir name: ", file_dir
+        print("Providing shape file: ", args.file, ", with specified subdir name: ", file_dir)
         shape_file=args.file
         shape_file_name=args.file
     

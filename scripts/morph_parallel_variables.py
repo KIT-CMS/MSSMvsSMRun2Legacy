@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -12,7 +12,7 @@ def execute(cmd):
     try:
         os.system(cmd)
     except:
-        print "[WARNING] Command failed:",cmd
+        print("[WARNING] Command failed:",cmd)
 
 parser = argparse.ArgumentParser( description = "Compare Integrals of Processes between ML and Cutbased shapes")
 parser.add_argument('--output_folder', required = True, help = "Main folder, where the datacards should be created")
@@ -57,11 +57,11 @@ for era in eras:
                     catname = "_".join([channel,category])
                     command = command_template.format(ERA=era, CATEGORY=catname, OUTPUT=args.output_folder, VARIABLE=variable, ADDITIONALARGS=args.additional_arguments)
                     commands.append(command)
-                    print command
+                    print(command)
 
 if args.dry_run:
     for command in commands:
-        print command
+        print(command)
 else:
     p = Pool(args.parallel)
     p.map(execute, commands)

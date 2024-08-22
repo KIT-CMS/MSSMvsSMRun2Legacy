@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -9,7 +9,7 @@ import sys
 
 if __name__ == "__main__":
     filename = sys.argv[1]
-    print("[INFO] Print fit results from file {}.".format(filename))
+    print(("[INFO] Print fit results from file {}.".format(filename)))
     f = ROOT.TFile(filename)
     if f == None:
         raise Exception("[ERROR] File {} not found.".format(filename))
@@ -42,4 +42,4 @@ if __name__ == "__main__":
         r = results[name][0]
         d = results[name][1]
         u = results[name][2]
-        print("[INFO] {0:<30}: {1:.2f} {2:.2f} +{3:.2f}".format(name, r, d-r, u-r))
+        print(("[INFO] {0:<30}: {1:.2f} {2:.2f} +{3:.2f}".format(name, r, d-r, u-r)))

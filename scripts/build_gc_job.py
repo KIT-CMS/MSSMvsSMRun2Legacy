@@ -107,7 +107,7 @@ def modify_combine_script(workspace, script, workdir):
                 modified_config.write(line)
     modified_config.close()
     os.chmod("{}/combine_fit.sh".format(workdir), 0o777)
-    print("Submitting {} jobs".format(njobs))
+    print(("Submitting {} jobs".format(njobs)))
     return njobs
 
 
@@ -118,7 +118,7 @@ def write_gc(script, workspace, workdir, tag, se_path):
     script = os.path.abspath(script)
     workdir = os.path.abspath(workdir)
     se_path = parse_nrg_path(se_path)
-    print("Using se path: {}".format(se_path))
+    print(("Using se path: {}".format(se_path)))
 
     configfilepath = "{WORKDIR}/{TAG}.conf".format(WORKDIR=workdir, TAG=tag)
     outputpath = '{se_path}/output/'.format(se_path=se_path)
@@ -153,8 +153,8 @@ def write_gc(script, workspace, workdir, tag, se_path):
 def main(args):
     # check if CMSSW is there:
     if "SCRAM_ARCH" in os.environ and "CMSSW_BASE" in os.environ and "CMSSW_VERSION" in os.environ:
-        print(write_gc(args.combine_script, args.workspace, args.workdir, args.tag,
-                        args.se_path))
+        print((write_gc(args.combine_script, args.workspace, args.workdir, args.tag,
+                        args.se_path)))
     else:
         print("No CMSSW found ... Exiting ")
 

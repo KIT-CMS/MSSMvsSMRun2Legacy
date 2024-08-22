@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import itertools
@@ -54,7 +54,7 @@ def rezero_tgraph2d(graph, perform=True):
     fit_y = 0.
     fit_z = 0.
     # Find minimum of fit as first value with
-    for i in xrange(graph.GetN()):
+    for i in range(graph.GetN()):
         if graph.GetZ()[i] == 0.:
             fit_x = graph.GetX()[i]
             fit_y = graph.GetY()[i]
@@ -63,7 +63,7 @@ def rezero_tgraph2d(graph, perform=True):
     min_x = 0.
     min_y = 0.
     min_z = 0.
-    for i in xrange(graph.GetN()):
+    for i in range(graph.GetN()):
         if graph.GetZ()[i] < min_z:
             min_z = graph.GetZ()[i]
             min_y = graph.GetY()[i]
@@ -72,7 +72,7 @@ def rezero_tgraph2d(graph, perform=True):
         logging.info('[ReZeroTGraph] Fit minimum was (%f, %f, %f)' % (fit_x, fit_y, fit_z))
         logging.info('[ReZeroTGraph] Better minimum was (%f, %f, %f)' % (min_x, min_y, min_z))
         if perform:
-            for i in xrange(graph.GetN()):
+            for i in range(graph.GetN()):
                 before = graph.GetZ()[i]
                 graph.GetZ()[i] -= min_z
                 after = graph.GetZ()[i]
@@ -90,7 +90,7 @@ def convert_graph_to_dataframe(graph):
     gy = graph.GetY()
     gz = graph.GetZ()
     logger.debug("Retrieving information on scan points from TGraph...")
-    for i in xrange(graph.GetN()):
+    for i in range(graph.GetN()):
         x_vals.add(gx[i])
         y_vals.add(gy[i])
         points.append((gx[i], gy[i], gz[i]))
@@ -103,7 +103,7 @@ def convert_graph_to_dataframe(graph):
     # using the interpolation implemented in TGraph
     logger.debug("Searching for entries missing in the created TGraph...")
     getxy = operator.itemgetter(0,1)
-    existing_points = map(getxy, points)
+    existing_points = list(map(getxy, points))
     # we want to ignore edge values when interpolating since these can get set to 0
     # at the moment we only ignore the upper edges as the lower edges don't seem to have the same issues
     x_vals_trim = x_vals
@@ -116,7 +116,7 @@ def convert_graph_to_dataframe(graph):
         logger.info("Will set their values to the interpolated ones...")
     #miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x)), missing)
     # when TGraph2D Interpolate returns 0 use the TH2D Interpolate function instead
-    miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)), missing)
+    miss_entries = [(x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) > 0 else graph.GetHistogram().Interpolate(*x)) for x in missing]
     # miss_entries = map(lambda x: (x[0], x[1], graph.Interpolate(*x) if graph.Interpolate(*x) != 0. else graph.Interpolate(x[0], x[1]+0.000001)), missing)
     # Solution without relying on different interpolation algorithm for TH2Ds, was relying on shift instead.
 

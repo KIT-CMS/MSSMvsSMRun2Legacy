@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
 import glob
@@ -11,7 +11,7 @@ def execute(cmd):
     try:
         os.system(cmd)
     except:
-        print "[WARNING] Command failed:", cmd
+        print("[WARNING] Command failed:", cmd)
 
 
 parser = argparse.ArgumentParser(
@@ -52,7 +52,7 @@ datacards = [
     card for card in os.listdir(os.path.join(args.basedir, "combined", "cmb"))
     if "txt" in card and not "combined" in card
 ]
-print("Running prefit shapes for {} histograms".format(len(datacards)))
+print(("Running prefit shapes for {} histograms".format(len(datacards))))
 
 basedir = args.basedir
 cmds = []
@@ -79,6 +79,6 @@ for datacardfile in datacards:
 p = Pool(args.parallel)
 if args.dry_run:
     for cmd in cmds:
-        print cmd
+        print(cmd)
 else:
     p.map(execute, cmds)

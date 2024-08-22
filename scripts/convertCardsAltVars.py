@@ -8,7 +8,7 @@ def WriteToTFile(obj, file, path):
     file.cd()
     as_vec = path.split('/')
     if len(as_vec) >= 1:
-        for i in xrange(0, len(as_vec)-1):
+        for i in range(0, len(as_vec)-1):
             if not ROOT.gDirectory.GetDirectory(as_vec[i]):
                 ROOT.gDirectory.mkdir(as_vec[i])
             ROOT.gDirectory.cd(as_vec[i])
@@ -65,10 +65,10 @@ if '2017' in filename_3.split('/')[-1]: year = 2017
 if '2016' in filename_3.split('/')[-1]: year = 2016
 
 for key in original_file.GetListOfKeys():
-    print key
+    print(key)
     if isinstance(original_file.Get(key.GetName()),ROOT.TDirectory):
         dirname=key.GetName()
-        print dirname
+        print(dirname)
         #directory = original_file.Get(dirname)
 
         new_out_name=None

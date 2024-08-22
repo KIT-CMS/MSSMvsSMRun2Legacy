@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import ROOT as r
 from CombineHarvester.CombineTools.plotting import ModTDRStyle
@@ -160,16 +160,16 @@ if not os.path.exists(model):
 
 hists = {}
 # Difference between BSM quantities
-for higgs,quantities in BSM.items():
+for higgs,quantities in list(BSM.items()):
     hists[higgs] = {}
     for q in quantities:
         c.Clear()
         hists[higgs][q] = {}
         valid_sm_inputs = True
-        for release,inputfile in files.items():
+        for release,inputfile in list(files.items()):
             hists[higgs][q][release] = inputfile.Get(q)
             if not hists[higgs][q][release]:
-                print("Skipping "+q+" because quantity missing for release "+release+" of model "+model)
+                print(("Skipping "+q+" because quantity missing for release "+release+" of model "+model))
                 valid_sm_inputs = False
         if not valid_sm_inputs:
             continue
@@ -209,10 +209,10 @@ for qSM in SM:
     c.Clear()
     hists["HSM"][q] = {}
     valid_sm_inputs = True
-    for release,inputfile in files.items():
+    for release,inputfile in list(files.items()):
         hists["HSM"][q][release] = inputfile.Get(qSM[release])
         if not hists["HSM"][q][release]:
-            print("Skipping "+q+" because quantity missing for release "+release+" of model "+model)
+            print(("Skipping "+q+" because quantity missing for release "+release+" of model "+model))
             valid_sm_inputs = False
     if not valid_sm_inputs:
         continue

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -31,10 +31,10 @@ if not os.path.exists(os.path.join(outputfolder,category,process)):
     os.makedirs(os.path.join(outputfolder,category,process))
 
 if len(systup) != len(systdown):
-    print "Found different amount of Up & Down shapes for process %s in categoy %s. Up: %d, Down: %d. Aborting"%(process, category, len(systup), len(systdown))
+    print("Found different amount of Up & Down shapes for process %s in categoy %s. Up: %d, Down: %d. Aborting"%(process, category, len(systup), len(systdown)))
     exit(1)
 
-print "Making plots for %d shape systmatics."%len(systup)
+print("Making plots for %d shape systmatics."%len(systup))
 
 c = r.TCanvas()
 c.cd()
