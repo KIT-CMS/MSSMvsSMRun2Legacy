@@ -253,7 +253,7 @@ elif [[ $MODE == "setup" ]]; then
     --job-mode condor \
     --dry-run \
     --task-name bbH_full_cmb \
-    --X-rtd MINIMIZER_analytic \
+    --X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND \
     --cminDefaultMinimizerStrategy 0 \
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_bbh.txt
@@ -270,7 +270,7 @@ elif [[ $MODE == "setup" ]]; then
     --job-mode condor \
     --dry-run \
     --task-name ggH_full_cmb \
-    --X-rtd MINIMIZER_analytic \
+    --X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND \
     --cminDefaultMinimizerStrategy 0 \
     --cminDefaultMinimizerTolerance 0.01 \
     -v 1 | tee -a ${defaultdir}/logs/job_setup_modelind_ggh.txt
