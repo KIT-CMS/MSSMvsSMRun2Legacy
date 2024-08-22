@@ -322,8 +322,8 @@ elif [[ $MODE == "submit-local" ]]; then
     ############
     cp scripts/run_limits_locally.py ${defaultdir}/limits_ind/condor
     cd ${defaultdir}/limits_ind/condor
-    python run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
-    python run_limits_locally.py --cores 10 --njobs 31 --taskname condor_ggH_full_cmb.sh
+    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_bbH_full_cmb.sh
+    python3 run_limits_locally.py --cores 10 --njobs 31 --taskname condor_ggH_full_cmb.sh
 
 elif [[ $MODE == "collect" ]]; then
     for p in gg bb
@@ -466,7 +466,7 @@ elif [[ $MODE == "submit-ggH-bbH-scan" ]]; then
 elif [[ $MODE == "collect-ggH-bbH-scan" ]]; then
     cd ${defaultdir}/ggH_bbH_scan_ind/
     for mass in 60 80 100 120 125 130 140 160 180 200 250 300 350 400 450 500 600 700 800 900 1000 1200 1400 1600 1800 2000 2300 2600 2900 3200 3500; do
-        python ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plotMultiDimFit.py \
+        python3 ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plotMultiDimFit.py \
             --title-right="138 fb^{-1} (13 TeV)" \
             --cms-sub="Preliminary" \
             --mass $mass \
