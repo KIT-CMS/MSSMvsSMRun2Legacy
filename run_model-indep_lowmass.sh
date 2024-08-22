@@ -213,7 +213,7 @@ case "$MODE" in
     "submit-ggH-bbH-scan-gc")
         gcworkdir=${defaultdir}/ggH_bbH_scan_ind/gc_condor_${identifier_toy_submit}
         mkdir -p ${gcworkdir}
-        python scripts/build_gc_job.py \
+        python3 scripts/build_gc_job.py \
             --combine-script ${defaultdir}/ggH_bbH_scan_ind/condor/condor_ggH_bbH_likelihood_scan.sh \
             --workspace ${datacarddir}/combined/cmb/ws.root \
             --workdir ${gcworkdir} \
@@ -248,7 +248,7 @@ case "$MODE" in
                         int_arg=""
                         int_sub=""
                     fi
-                    python ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plotMultiDimFit.py \
+                    python3 ${CMSSW_BASE}/src/CombineHarvester/MSSMvsSMRun2Legacy/plotting/plotMultiDimFit.py \
                         --title-right="138 fb^{-1} (13 TeV)" \
                         --cms-sub=${cmssub} \
                         --mass $mass \
